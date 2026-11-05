@@ -1,6 +1,6 @@
 // 語嫣・永生戰棋 App 程式：只管 tactics/ 資料夾。
 // 遊戲檔案每次先抓網路上的最新版，抓不到（沒網路）才用手機裡存的那份。
-const CACHE = 'yyt-11';
+const CACHE = 'yyt-12';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
