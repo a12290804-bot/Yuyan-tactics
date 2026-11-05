@@ -142,6 +142,11 @@ body.pix #board .c,body.pix #board .u,body.pix #cut .por2,body.pix #cut .sd{imag
 #bar{position:fixed;left:0;right:0;bottom:0;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:#120e0bf2;border-top:1px solid var(--line);display:flex;gap:6px;justify-content:center;flex-wrap:wrap;z-index:20}
 button{font:inherit;font-size:14px;color:var(--ink);background:#2a2119;border:1px solid #5a4632;border-radius:8px;padding:8px 11px;min-height:42px;cursor:pointer}
 #bar button{font-size:13.5px}
+@media (max-width:440px){#bar{gap:4px;padding-left:6px;padding-right:6px}#bar button{font-size:13px;padding:8px 9px;white-space:nowrap}}
+#info{overflow:auto;-webkit-overflow-scrolling:touch}
+.prw{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:calc(16px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom));background:#000}
+.prw img{width:100%;max-width:640px;max-height:58vh;object-fit:contain;border-radius:8px;box-shadow:0 0 30px #000;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent);animation:prf .8s ease-out}
+@keyframes prf{from{opacity:0;transform:scale(1.03)}to{opacity:1;transform:none}}
 button.pri{background:#5a3f22;border-color:var(--gold);color:#fff3da}
 button.sk{background:#3a2a4a;border-color:#b48cff}
 button.dng{background:#4a1f1b;border-color:#a2543e}
@@ -238,7 +243,7 @@ function boot(){applyView();loadCostumes();camp=CAMP.fix(D,LS.get(CAMP_KEY));sav
 
 // ---------- 序章 ----------
 function prologue(after){let i=0;const P=D.prologue;const t=$('title');t.classList.remove('hide');const show=()=>{if(i>=P.length){camp.seenPrologue=true;saveCamp();t.classList.add('hide');after&&after();return;}const p=P[i];const img=(D.artMap&&D.artMap['prologue/'+p.future+'.webp'])?'prologue/'+p.future+'.webp':p.img;
-  t.style.backgroundImage=`linear-gradient(to bottom,#0000 35%,#000e 80%),url(${ART(img)})`;t.innerHTML=`<p style="font-size:16px;color:#efe3c8;max-width:440px;line-height:1.9;min-height:5em">${esc(p.txt)}</p><div style="display:flex;gap:8px"><button class="pri" onclick="event.stopPropagation();prologue.next()">${i<P.length-1?'繼續':'進入白鐵礦城'}</button><button onclick="event.stopPropagation();prologue.skip()">跳過</button></div><p class="note" style="margin-top:10px">${i+1}／${P.length}</p>`;};
+  t.style.backgroundImage=`linear-gradient(#000c,#000c),url(${ART(img)})`;t.innerHTML=`<div class="prw"><img src="${ART(img)}" alt=""><p style="font-size:16px;color:#efe3c8;max-width:440px;line-height:1.9;min-height:5em;margin-top:14px">${esc(p.txt)}</p><div style="display:flex;gap:8px"><button class="pri" onclick="event.stopPropagation();prologue.next()">${i<P.length-1?'繼續':'進入白鐵礦城'}</button><button onclick="event.stopPropagation();prologue.skip()">跳過</button></div><p class="note" style="margin-top:10px">${i+1}／${P.length}</p></div>`;};
  prologue.next=()=>{i++;SFX.play('click');show();};prologue.skip=()=>{i=P.length;show();};BGM.play('title');show();}
 // ---------- 背景音樂（沿用渡鴉公會網站上的曲子） ----------
 const BGM=(()=>{let el=null,cur=null,on=true;try{on=localStorage.getItem('yyt_bgm')!=='0';}catch(e){}
@@ -391,7 +396,7 @@ function render(){const H=cellsHi();let h='';const warnSet=new Set((st.warn||[])
   if(u&&VIS&&u.faction==='E'&&!VIS.has(k))u=null;
   if(u)inner+=token(u,ghost?' ghost':'');
   h+=`<div class="${cls}" data-x="${x}" data-y="${y}" role="button" aria-label="${T.name} ${x},${y}${u?' '+esc(u.name):''}">${inner}</div>`;}
- $('board').innerHTML=h;if(pixOn)applyPix();
+ $('board').innerHTML=h;if(pixOn)applyPix();setTimeout(fitInfo,0);
  $('rd').textContent='第 '+Math.min(st.round,MM().roundLimit)+'／'+MM().roundLimit+' 回合';$('ph').textContent=st.result?(st.result.win?'勝利':'失敗'):busy?'敵方行動中…':'我方回合';
  const O2=st.obj||{type:'gate'};if(!st.gate.none){$('gb').parentElement&&($('gb').style.width=Math.round(100*st.gate.hp/st.gate.maxHp)+'%');$('gl').textContent='城門';$('gh').textContent=st.gate.hp;$('gb').parentElement.style.display='';}else{$('gb').parentElement.style.display='none';$('gl').textContent=O2.seals&&(st.lit||[]).length<O2.seals.length?'燈座':O2.type==='boss'?'目標：擊倒指揮官':O2.type==='hold'?'驛站守住':O2.type==='rescue'?'救出':O2.type==='reach'?'到對岸':O2.type==='defend'?'過橋':'剩下敵人';$('gh').textContent=O2.seals&&(st.lit||[]).length<O2.seals.length?(st.lit||[]).length+'／'+O2.seals.length:O2.type==='hold'?st.hold+'／'+O2.need:O2.type==='rescue'?(st.done||[]).length+'／'+O2.need:O2.type==='reach'?C.alive(st,'P').filter(u=>O2.tiles.some(([x,y])=>u.x===x&&u.y===y)).length+'／'+O2.need:O2.type==='defend'?(st.breach||0)+'／'+O2.max:O2.type==='rout'?C.alive(st,'E').length:(st.units.some(u=>u.commander&&u.hp>0)?'未倒':'—');}$('cr').textContent='濁度 '+(st.corr||0);$('cr').style.color=st.corr>=75?'#ff8a6a':st.corr>=50?'#e8c56a':'';$('sub').textContent=MM().name+'・'+D.factions[st.faction].name;renderBar();}
 function skillBtn(u){return (u.skills||[]).filter(k=>k!=='shadowStep').map(k=>{const S=D.skills[k];const cd=u.cd[k]||0;return `<button class="sk" ${cd?'disabled':''} onclick="skillMode('${k}')">${ICO(S.icon)}${esc(S.name)}${cd?'（'+cd+'）':''}</button>`;}).join('');}
@@ -402,7 +407,7 @@ function renderBar(){let h='';const u=selU();
  else if(u&&sel.to&&sel.dash){h=(sel.target?`<button class="pri" onclick="commitDash()">確認影徑攻擊</button>`:'')+`<button onclick="commitDash(true)">影徑後待機</button><button class="dng" onclick="cancel()">取消</button>`;}
  else if(u&&sel.to){h=(sel.target?`<button class="pri" onclick="commit('ATTACK')">確認攻擊</button>`:'')+skillBtn(u)+`<button onclick="commit('WAIT')">待機</button><button onclick="commit('GUARD')">守備</button><button class="dng" onclick="cancel()">取消</button>`;}
  else if(u){h=`<button onclick="sel.to={x:selU().x,y:selU().y};pickedDest()">原地行動</button>`+((u.skills||[]).includes('shadowStep')&&!(u.cd.shadowStep>0)?`<button class="sk" onclick="toggleDash()">${sel.dash?'改回一般移動':'影徑移動（+1、無視控制區）'}</button>`:'')+`<button class="dng" onclick="cancel()">取消</button>`;}
- else{const left=C.alive(st,'P').filter(v=>!v.usedAct).length;h=`<button class="pri" onclick="endTurn()">結束回合${left?'（還有 '+left+' 隊）':''}</button><button onclick="toggleThreat()">${showThreat?'隱藏':'顯示'}敵方威脅</button><button onclick="help()">規則</button><button onclick="menu()">選單</button>`;}
+ else{const left=C.alive(st,'P').filter(v=>!v.usedAct).length;h=`<button class="pri" onclick="endTurn()">結束回合${left?'（'+left+'）':''}</button><button onclick="toggleThreat()">${showThreat?'隱藏':'看'}威脅</button><button onclick="help()">規則</button><button onclick="menu()">選單</button>`;}
  $('bar').innerHTML=h;}
 function toastInfo(html){$('info').innerHTML=html;}
 function intro(){const M=MM();const F=D.factions[st.faction];toastInfo(`<b>${esc(M.name)}</b>　敵方：<b>${esc(F.name)}</b><br><span class="note">${esc(F.desc)}</span><br>勝利：${esc(M.win)}<br>失敗：${esc(M.lose)}<br><span class="note">點藍色隊伍 → 點藍色格移動 → 點紅框敵人攻擊，或用技能／陣形／待機／守備。點敵人可看牠打得到哪裡。數字＝士兵人數。暗紅的污染地會擴散、會侵蝕士兵，青蒿的治療和夜漣的燈界可以擋住它。</span>`);}
@@ -481,6 +486,9 @@ function cutIn(evs,before,done){const X=exchangeOf(evs);if(!X||cutMode==='off'){
  T.push(setTimeout(()=>{hitShow(fx1,n1,X.main,A);kill(sD,X.lossD,X.downD);},330));
  let end=1000;if(X.counter&&Dd){T.push(setTimeout(()=>{sD.classList.add('lunge');},850));T.push(setTimeout(()=>{hitShow(fx2,n2,X.counter,Dd);kill(sA,X.lossA,X.downA);},1050));end=1650;}
  T.push(setTimeout(finish,end));}
+// 下方資訊欄：剩下的高度剛好放得下，不會被底下的按鈕蓋住
+function fitInfo(){const I=$('info'),B=$('bar');if(!I||!B||document.body.classList.contains('inhub'))return;const top=I.getBoundingClientRect().top+window.scrollY;const avail=window.innerHeight-B.offsetHeight-top-10;I.style.maxHeight=Math.max(96,avail)+'px';}
+window.addEventListener('resize',()=>setTimeout(fitInfo,50));
 // ---------- 格子大小與點陣模式 ----------
 let zoomLv=0,pixOn=false;try{zoomLv=+(localStorage.getItem('yyt_zoom')||0)||0;pixOn=localStorage.getItem('yyt_pix')==='1';}catch(e){}
 function applyView(){document.body.classList.toggle('z1',zoomLv===1);document.body.classList.toggle('z2',zoomLv===2);document.body.classList.toggle('pix',pixOn);}
