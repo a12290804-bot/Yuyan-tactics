@@ -1,10 +1,8 @@
-永生戰棋 v1.2 上傳清單（Yuyan-tactics 倉庫最外層，全部覆蓋）
+永生戰棋 v1.2.1 上傳清單（Yuyan-tactics 倉庫最外層，覆蓋）
 1. index.html
-2. core.js
-3. data.js
-4. camp.js
-5. talk.js
-6. sw.js
-（選擇性）docs/CHANGELOG.md → 放進 docs 資料夾
-sfx.js 沒改，圖片不用傳。舊存檔可以直接讀（天賦保留，第四條路是空的）。
-上傳後手機開網站，下拉重新整理一兩次就會換新版。
+2. data.js
+3. talk.js
+4. sw.js
+（選擇性）docs/CHANGELOG.md
+core.js、camp.js、sfx.js 沒改。圖片爸爸已經傳好了，不用動。
+如果 v1.2 還沒傳，先傳 v1.2 的 6 個檔，再傳這 4 個。

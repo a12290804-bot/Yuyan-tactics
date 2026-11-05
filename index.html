@@ -146,6 +146,18 @@ body.pix #board .c,body.pix #board .u,body.pix #cut .por2,body.pix #cut .sd{imag
 #talk.nar .ttx{color:#cbbfa6;font-style:italic}
 #talk .tnm{position:absolute;top:-14px;left:14px;background:#2a2015;border:1px solid var(--gold);border-radius:8px;padding:1px 12px;color:var(--gold);font-size:14px}
 #talk .tbt{position:absolute;right:8px;bottom:6px}
+.u.spr{background:none!important;border-color:transparent!important;box-shadow:none!important;border-radius:0;overflow:visible}
+.u.spr .spi{position:absolute;left:-28%;right:-28%;bottom:-6%;height:156%;background-size:600% 400%;background-repeat:no-repeat;image-rendering:pixelated;animation:sprIdle .9s steps(4) infinite;pointer-events:none;z-index:1}
+.u.spr::before{content:'';position:absolute;bottom:-2%;left:8%;right:8%;height:24%;border-radius:50%;background:#3e6aa099}.u.spr.E::before{background:#a8403599}
+.u.spr.acted .spi{animation:none;filter:grayscale(.7) brightness(.65)}
+.u.spr .hp{z-index:2}
+@keyframes sprIdle{from{background-position:0% 0%}to{background-position:80% 0%}}
+#cut .por2.spr2{width:52%;background-size:600% 400%;background-position:0% 0%;image-rendering:pixelated;-webkit-mask-image:none;mask-image:none;animation:sprIdle .9s steps(4) infinite}
+#cut .side.lunge .por2.spr2{animation:sprAtk .55s steps(6) 1 forwards}
+@keyframes sprAtk{from{background-position:0% 33.333%}to{background-position:120% 33.333%}}
+#cut .skp.spr3{width:58%;background-size:600% 400%;background-position:0% 66.667%;image-rendering:pixelated;-webkit-mask-image:none;mask-image:none;animation:sprSk .9s steps(6) 1 forwards}
+@keyframes sprSk{from{background-position:0% 66.667%}to{background-position:120% 66.667%}}
+.pxprev{width:96px;height:96px;background-size:600% 400%;image-rendering:pixelated;animation:sprIdle .9s steps(4) infinite;margin:4px auto 0}
 .sico{display:inline-block;width:18px;height:18px;border-radius:3px;background-size:300% 300%;vertical-align:middle;margin-right:3px}
 button .sico{width:20px;height:20px}
 .u .sb{position:absolute;left:-3px;top:-3px;display:flex;gap:1px;z-index:3}.u .sb b{font-size:8px;line-height:1;padding:1px 2px;border-radius:3px;background:#000c;color:#ffd27a}.u .sb b.bad{color:#ff8f7a}
@@ -257,7 +269,7 @@ let titleHasSave=false;
 function enterCity(){showHub();if(!camp.pcName)askName(()=>{drawHub();if(!camp.flags.hubTip){camp.flags.hubTip=true;saveCamp();toastInfo('先去<b>議事桌</b>選隊伍出戰。');}});}
 function titleScreen(hasSave){const t=$('title');t.style.backgroundImage=`linear-gradient(to bottom,#0000 40%,#000d 85%),url(${ART('backgrounds/cover.webp')})`;
  titleHasSave=hasSave;t.innerHTML=`<h2>永生戰棋</h2><p>渡鴉公會的外圍成員，來到天闕大陸北邊的白鐵礦城。</p><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${hasSave?'<button class="pri" onclick="SFX.unlock();$(\'title\').classList.add(\'hide\')">繼續戰鬥</button>':''}<button class="${hasSave?'':'pri'}" onclick="SFX.unlock();SFX.play('click');if(!camp.seenPrologue){prologue(enterCity);}else{$('title').classList.add('hide');enterCity();}">${hasSave?'回到據點':'開始'}</button><button onclick="SFX.unlock();prologue(()=>titleScreen(${hasSave}))">序章</button><button onclick="noticeShow()">公告${noticeSeen()?'':' ●'}</button></div><p class="note" style="margin-top:10px">${esc(D.version)}・紀錄只存在這台裝置</p>`;t.classList.remove('hide');}
-function boot(){applyView();loadCostumes();try{const lv=localStorage.getItem('yyt_lastver');if(lv&&lv!==D.version)setTimeout(()=>toastInfo('已更新到 '+D.version+'，更新內容可以看公告。'),1800);localStorage.setItem('yyt_lastver',D.version);}catch(e){}camp=CAMP.fix(D,LS.get(CAMP_KEY));saveCamp();const sv=LS.get(SAVE_KEY);
+function boot(){applyView();loadCostumes();setTimeout(sprPreload,400);try{const lv=localStorage.getItem('yyt_lastver');if(lv&&lv!==D.version)setTimeout(()=>toastInfo('已更新到 '+D.version+'，更新內容可以看公告。'),1800);localStorage.setItem('yyt_lastver',D.version);}catch(e){}camp=CAMP.fix(D,LS.get(CAMP_KEY));saveCamp();const sv=LS.get(SAVE_KEY);
  if(sv&&sv.v===4&&D.missions[sv.mission]&&sv.ruleset===D.rulesetVersion&&Array.isArray(sv.acts)){try{mid=sv.mission;const s2=C.replay(D,mid,sv.seed,sv.acts,{team:sv.team,level:sv.level});seed=sv.seed;acts=sv.acts;team=sv.team;level=sv.level|0;st=s2;render();logAll(true);
   if(!st.result){toastInfo('<b>已接續上一場</b>（第 '+st.round+' 回合）。');titleScreen(true);return;}if(camp.lastBattle!==st.battleInstanceId){titleScreen(false);showResult();return;}}catch(e){console.warn(e);}}
  team=CAMP.teamFor(D,camp);seed=1;acts=[];st=C.createBattle(D,mid,1,{team});render();titleScreen(false);}
@@ -417,7 +429,7 @@ function heroPage(id,back){const h=CAMP.heroOf(D,id),r=camp.roster[id],u=D.units
  const row=(k)=>`<span>${D.statName[k]}</span><span>${b[k]+Math.round(e[k]||0)}${k==='hit'||k==='eva'||k==='crit'?'%':''}${e[k]?` <span class="p">（裝備 ${e[k]>0?'+':''}${Math.round(e[k])}）</span>`:''}</span>`;
  const keys=['hp','atk','def',u.dmg==='MAGICAL'||u.mag>u.atk?'mag':null,'res','hit','eva','crit'].filter(Boolean);
  const slot=sl=>{const uid=r.eq&&r.eq[sl];const it=uid!=null&&camp.inv.find(x=>x.u===uid);return `<div class="sl ${it?'on':''}" onclick="eqPick('${id}','${sl}','${back||''}')">${it?eqIco(it)+`<b class="rar${it.r}">${esc(CAMP.eqName(D,it))}</b><br><span class="note">${stTxt(CAMP.eqStats(D,it))}</span>`:`<div style="height:54px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--dim)">＋</div><span class="note">${D.eqSlots[sl]}（空）</span>`}</div>`;};
- modal(`<div class="hp2"><img class="por" src="${heroCardImg(h)}" alt=""><div style="flex:1;min-width:0"><h2 style="margin:0"><span class="rar${h.r}">${esc(h.name)}</span></h2><div class="note">${esc(h.title)}・${D.rarityName[h.r]}${r.star?'・★'+r.star:''}・${ICO(D.troopIcon[u.troop])}${D.troopName[u.troop]}</div>
+ modal(`<div class="hp2"><div style="flex:none"><img class="por" src="${heroCardImg(h)}" alt="">${sprOf(id)?`<div class="pxprev" style="background-image:url(${sprOf(id)})" title="點陣小人"></div>`:''}</div><div style="flex:1;min-width:0"><h2 style="margin:0"><span class="rar${h.r}">${esc(h.name)}</span></h2><div class="note">${esc(h.title)}・${D.rarityName[h.r]}${r.star?'・★'+r.star:''}・${ICO(D.troopIcon[u.troop])}${D.troopName[u.troop]}</div>
   <div style="margin-top:4px">Lv <b>${r.lv}</b>／${D.xp.maxLv} <span class="note">經驗 ${r.xp}/${need}</span></div><div class="xpb"><i style="width:${r.lv>=D.xp.maxLv?100:Math.round(100*r.xp/need)}%"></i></div>
   <div class="stt">${keys.map(row).join('')}</div></div></div>
   ${affHtml(id,back)}
@@ -495,6 +507,7 @@ function threatOf(u){const out=new Set();const R=C.reachable(D,st,u);for(const k
 const STB={burn:'燃',bleed:'血',poison:'毒',slow:'緩',freeze:'凍',charm:'魅',blind:'盲',fear:'懼',seal:'封',taunt:'嘲',stealth:'隱',vuln:'破',brk:'甲',link:'線',regen:'生',ward:'衛',shell:'殼',might:'振',oath:'誓',echo:'狐',undying:'命',doom:'爆'};const STBAD=['burn','bleed','poison','slow','freeze','charm','blind','fear','seal','vuln','brk','link','doom'];
 function stBadges(u){const b=[];for(const k of Object.keys(STB))if(C.sv(u,k)>0)b.push(`<b class="${STBAD.includes(k)?'bad':''}">${STB[k]}</b>`);if(C.sv(u,'shield')>0)b.push('<b>盾</b>');return b.length?`<span class="sb">${b.slice(0,3).join('')}</span>`:'';}
 function token(u,extra){const n=C.soldiers(u);const ic=[];if(u.st.gs>0)ic.push('<b>護</b>');if(u.st.root>0)ic.push('<b class="r">縛</b>');if(u.st.mark>0)ic.push('<b class="m">標</b>');if(u.guard)ic.push('<b>守</b>');
+ const sp=pixOn&&u.hero&&sprOf(u.hero);if(sp)return `<div class="u ${u.faction} spr${u.usedAct&&u.faction==='P'?' acted':''}${extra||''}" title="${esc(u.name)}"><i class="spi" style="background-image:url(${sp})"></i>${stBadges(u)}<div class="hp"><i style="width:${Math.round(100*u.hp/u.maxHp)}%"></i></div>${u.solMax?`<span class="sn">${n}</span>`:''}${ic.length?`<span class="ic">${ic.join('')}</span>`:''}</div>`;
  return `<div class="u ${u.faction}${u.commander?' cmd':''}${u.usedAct&&u.faction==='P'?' acted':''}${u.art?' img'+((D.artMap&&D.artMap[u.art])||u.art.startsWith('../')?' raw':''):''}${extra||''}" title="${esc(u.name)}"${u.art?` style="background-image:url(${ART(u.art)})"`:''}>${stBadges(u)}${esc(u.glyph)}<div class="hp"><i style="width:${Math.round(100*u.hp/u.maxHp)}%"></i></div>${u.solMax?`<span class="sn">${n}</span>`:''}${ic.length?`<span class="ic">${ic.join('')}</span>`:''}</div>`;}
 function visSet(S){const M=D.missions[S.missionId];if(!M||!M.fog)return null;const v=new Set();const F=M.fog;
  for(const u of C.alive(S,'P')){const r=u.def==='P_SCOUT'?F.scout:u.def==='P_LANTERN'?F.lantern:F.vision;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(Math.abs(dx)+Math.abs(dy)<=r)v.add(C.key(u.x+dx,u.y+dy));}
@@ -587,8 +600,8 @@ function boardFx(evs,S){S=S||st;let t=0;for(const e of evs){const tg=e.d==='GATE
   else if(e.t==='spawn'&&e.a){const u=S.units.find(v=>v.id===e.a);if(u)fxAt(u.x,u.y,'fx_summon',2.2,t);}
   else if((e.t==='corrupt'||e.t==='warn')){for(const w of (S.warn||[]).slice(-3))fxAt(w.x,w.y,'fx_corrupt',1.4,t);}}}
 function btBg(S,tg){if(!tg)return 'bt_gate';const t=C.tileAt(S,tg.x,tg.y);if(t==='FLESH')return 'bt_corrupt';if(t==='FOREST'||t==='SWAMP')return 'bt_forest';if(tg.y>=8)return 'bt_gate';return 'bt_plain';}
-function sideHtml(u,cls,S){if(!u)return `<div class="side ${cls}"><div class="nm">城門</div></div>`;const n=Math.min(6,C.soldiers(u));const sd=u.faction==='P'?ART('soldiers/'+(D.soldierArt[u.def]||'sd_shield')+'.webp'):ART(u.art||u.por||'');
- return `<div class="side ${cls}"><div class="por2" style="background-image:url(${ART(u.por||u.art)})"></div><div class="sq">${Array.from({length:n},(_,i)=>`<div class="sd" data-i="${i}" style="background-image:url(${sd})"></div>`).join('')}</div><div class="nm">${esc(u.name)}・士兵 ${C.soldiers(u)}</div></div>`;}
+function sideHtml(u,cls,S){if(!u)return `<div class="side ${cls}"><div class="nm">城門</div></div>`;const sp=pixOn&&u.hero&&sprOf(u.hero);const n=Math.min(6,C.soldiers(u));const sd=u.faction==='P'?ART('soldiers/'+(D.soldierArt[u.def]||'sd_shield')+'.webp'):ART(u.art||u.por||'');
+ return `<div class="side ${cls}">${sp?`<div class="por2 spr2" style="background-image:url(${sp})"></div>`:`<div class="por2" style="background-image:url(${ART(u.por||u.art)})"></div>`}<div class="sq">${Array.from({length:n},(_,i)=>`<div class="sd" data-i="${i}" style="background-image:url(${sd})"></div>`).join('')}</div><div class="nm">${esc(u.name)}・士兵 ${C.soldiers(u)}</div></div>`;}
 // 找出第一組「攻擊（＋反擊）」
 function exchangeOf(evs){const i=evs.findIndex(e=>(e.t==='hit'||e.t==='miss')&&!e.counter);if(i<0)return null;const main=evs[i];const rest=evs.slice(i+1);const j=rest.findIndex(e=>(e.t==='hit'||e.t==='miss')&&!e.counter);const seg=j<0?rest:rest.slice(0,j);
  const counter=seg.find(e=>(e.t==='hit'||e.t==='miss')&&e.counter);const lossD=seg.filter(e=>e.t==='soldier'&&e.d===main.d).reduce((s,e)=>s+(e.n||0),0);const lossA=seg.filter(e=>e.t==='soldier'&&e.d===main.a).reduce((s,e)=>s+(e.n||0),0);
@@ -608,6 +621,13 @@ function cutIn(evs,before,done){const X=exchangeOf(evs);if(!X||cutMode==='off'){
 // 下方資訊欄：剩下的高度剛好放得下，不會被底下的按鈕蓋住
 function fitInfo(){const I=$('info'),B=$('bar');if(!I||!B||document.body.classList.contains('inhub'))return;const top=I.getBoundingClientRect().top+window.scrollY;const avail=window.innerHeight-B.offsetHeight-top-10;I.style.maxHeight=Math.max(96,avail)+'px';}
 window.addEventListener('resize',()=>setTimeout(fitInfo,50));
+// ---------- 點陣小人（grok 的素材表：綠底，去背後縮成每格 96） ----------
+const SPR=new Map(),SPRW=new Set();
+function sprOf(hid){const src=D.pixel&&D.pixel[hid];if(!src)return null;if(SPR.has(hid))return SPR.get(hid);if(SPRW.has(hid))return null;SPRW.add(hid);
+ const im=new Image();im.onload=()=>{try{const G=D.pixelGrid||{cols:6,rows:4};const cw=96;const cv=document.createElement('canvas');cv.width=G.cols*cw;cv.height=G.rows*cw;const g=cv.getContext('2d');g.imageSmoothingEnabled=im.naturalWidth>cv.width*1.5;g.drawImage(im,0,0,cv.width,cv.height);const d=g.getImageData(0,0,cv.width,cv.height),a=d.data;
+  for(let i=0;i<a.length;i+=4){const r=a[i],gg=a[i+1],b=a[i+2];if(gg>110&&gg>r*1.3&&gg>b*1.3)a[i+3]=0;else if(gg>r&&gg>b)a[i+1]=Math.max(r,b);}
+  g.putImageData(d,0,0);SPR.set(hid,cv.toDataURL());}catch(e){SPR.set(hid,null);}clearTimeout(sprOf.t);sprOf.t=setTimeout(()=>{if(st&&pixOn&&!document.body.classList.contains('inhub'))render();},80);};im.onerror=()=>SPR.set(hid,null);im.src=src;return null;}
+function sprPreload(){for(const k of Object.keys(D.pixel||{}))sprOf(k);}
 // ---------- 格子大小與點陣模式 ----------
 let zoomLv=0,pixOn=false;try{zoomLv=+(localStorage.getItem('yyt_zoom')||0)||0;pixOn=localStorage.getItem('yyt_pix')==='1';}catch(e){}
 function applyView(){document.body.classList.toggle('z1',zoomLv===1);document.body.classList.toggle('z2',zoomLv===2);document.body.classList.toggle('pix',pixOn);}
@@ -621,7 +641,7 @@ function applyPix(){if(!pixOn)return;const e=$('tcss');if(e){if(!e.dataset.orig)
  document.querySelectorAll('#board .u').forEach(el=>{const m=/url\(["']?([^"')]+)["']?\)/.exec(el.style.backgroundImage||'');if(!m||m[1].startsWith('data:'))return;const p=pixOf(m[1],22);if(p)el.style.backgroundImage=`url(${p})`;});}
 // 技能演出：技能插畫＋施放者＋技能名，之後才接攻擊的接戰演出
 function skillCut(u,sk,done){const S=D.skills[sk];const img=(D.skillArt&&D.skillArt[sk])||(S&&S.art);if(!u||!S||!img){done();return;}const el=$('cut');el.className='sk on';el.style.backgroundImage=`linear-gradient(90deg,#000c,#0002 55%,#0006),url(${img})`;
- el.innerHTML=`<div class="skp" style="background-image:url(${ART(u.por||u.art)})"></div><div class="skf"></div><div class="skn"><small>${esc(u.name)}</small><b>${esc(S.name)}</b><small>${SICO(S)}</small></div><div class="skip">點一下跳過</div>`;SFX.play('magic');
+ const sp=pixOn&&u.hero&&sprOf(u.hero);el.innerHTML=`${sp?`<div class="skp spr3" style="background-image:url(${sp})"></div>`:`<div class="skp" style="background-image:url(${ART(u.por||u.art)})"></div>`}<div class="skf"></div><div class="skn"><small>${esc(u.name)}</small><b>${esc(S.name)}</b><small>${SICO(S)}</small></div><div class="skip">點一下跳過</div>`;SFX.play('magic');
  let ended=false;const fin=()=>{if(ended)return;ended=true;clearTimeout(t);el.className='';el.innerHTML='';done();};el.onclick=fin;const t=setTimeout(fin,1250);}
 function send(a){const before=st;const r=C.apply(D,st,a);if(!r.ok){toastInfo('<span class="bad">不能這樣做：'+esc(r.error)+'</span>');return false;}acts.push(a);st=r.state;sel=null;persist();addLog(r.events);SFX.forEvents(r.events,D,st);
  const left=C.alive(st,'P').filter(u=>!u.usedAct).length;toastInfo(r.events.map(e=>esc(e.txt)).join('<br>')+(st.result?'':left?'':'<br><span class="note">大家都行動完了，按「結束回合」。</span>'));
