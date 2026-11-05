@@ -1,0 +1,6 @@
+《永生戰棋》v0.6 上傳清單：6 個檔案，全部傳到 Yuyan-tactics 最外層，同名覆蓋
+
+index.html、core.js、data.js、camp.js、sfx.js、sw.js
+
+（已經包含 v0.5 的內容；v0.5 還沒傳的話，直接傳這包就好）
+不用傳圖。
