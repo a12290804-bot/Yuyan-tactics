@@ -1,9 +1,10 @@
-永生戰棋 v1.1 上傳清單（Yuyan-tactics 倉庫最外層）
-1. index.html（覆蓋）
-2. data.js（覆蓋）
-3. camp.js（覆蓋）
-4. sw.js（覆蓋）
-5. talk.js（新檔案，放在最外層，跟 index.html 同一層）
+永生戰棋 v1.2 上傳清單（Yuyan-tactics 倉庫最外層，全部覆蓋）
+1. index.html
+2. core.js
+3. data.js
+4. camp.js
+5. talk.js
+6. sw.js
 （選擇性）docs/CHANGELOG.md → 放進 docs 資料夾
-core.js、sfx.js 沒改。第五批圖已經在倉庫最外層，不用動。
+sfx.js 沒改，圖片不用傳。舊存檔可以直接讀（天賦保留，第四條路是空的）。
 上傳後手機開網站，下拉重新整理一兩次就會換新版。
