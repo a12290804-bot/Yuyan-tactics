@@ -139,25 +139,34 @@ body.pix #board .c,body.pix #board .u,body.pix #cut .por2,body.pix #cut .sd{imag
 #tut.hide{display:none}
 #talk{position:fixed;inset:0;z-index:80;background:#000;overflow:hidden;cursor:pointer}#talk.hide{display:none}
 #talk .tbg{position:absolute;inset:0;background:#000 center/cover;filter:brightness(.55)}
-#talk .tl,#talk .tr{position:absolute;bottom:18vh;height:min(72vh,620px);max-width:58vw;object-fit:cover;object-position:50% 8%;transition:filter .25s,transform .25s;-webkit-mask-image:linear-gradient(to top,transparent,#000 22%);mask-image:linear-gradient(to top,transparent,#000 22%)}
-#talk .tl{left:-4vw;aspect-ratio:3/4}#talk .tr{right:-4vw;aspect-ratio:2/3}
-#talk .dim{filter:brightness(.45) grayscale(.3);transform:scale(.96)}
+#talk .tl,#talk .tr{position:absolute;bottom:17vh;width:min(56vw,440px);height:auto;max-height:66vh;object-fit:contain;object-position:50% 100%;transition:filter .25s,transform .25s;-webkit-mask-image:linear-gradient(to top,transparent,#000 24%,#000 88%,transparent),linear-gradient(to right,transparent,#000 16%,#000 84%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to top,transparent,#000 24%,#000 88%,transparent),linear-gradient(to right,transparent,#000 16%,#000 84%,transparent);mask-composite:intersect}
+#talk .tl{left:-4vw;z-index:1}#talk .tr{right:-4vw;z-index:1}
+#talk .dim{filter:brightness(.45) grayscale(.3);transform:scale(.94);z-index:0}
 #talk .tbox{position:absolute;left:8px;right:8px;bottom:calc(10px + env(safe-area-inset-bottom));max-width:620px;margin:0 auto;min-height:118px;background:#120d0aee;border:1px solid var(--gold);border-radius:12px;padding:12px 14px 34px;font-size:16px;line-height:1.75;color:#efe3c8}
 #talk.nar .ttx{color:#cbbfa6;font-style:italic}
 #talk .tnm{position:absolute;top:-14px;left:14px;background:#2a2015;border:1px solid var(--gold);border-radius:8px;padding:1px 12px;color:var(--gold);font-size:14px}
 #talk .tbt{position:absolute;right:8px;bottom:6px}
 .u.spr{background:none!important;border-color:transparent!important;box-shadow:none!important;border-radius:0;overflow:visible}
-.u.spr .spi{position:absolute;left:-28%;right:-28%;bottom:-6%;height:156%;background-size:600% 400%;background-repeat:no-repeat;image-rendering:pixelated;animation:sprIdle .9s steps(4) infinite;pointer-events:none;z-index:1}
+.u.spr .spi{position:absolute;left:-28%;right:-28%;bottom:-6%;height:156%;background-repeat:no-repeat;image-rendering:pixelated;animation:sprIdle .9s steps(4) infinite;pointer-events:none;z-index:1}
 .u.spr::before{content:'';position:absolute;bottom:-2%;left:8%;right:8%;height:24%;border-radius:50%;background:#3e6aa099}.u.spr.E::before{background:#a8403599}
 .u.spr.acted .spi{animation:none;filter:grayscale(.7) brightness(.65)}
 .u.spr .hp{z-index:2}
 @keyframes sprIdle{from{background-position:0% 0%}to{background-position:80% 0%}}
-#cut .por2.spr2{width:52%;background-size:600% 400%;background-position:0% 0%;image-rendering:pixelated;-webkit-mask-image:none;mask-image:none;animation:sprIdle .9s steps(4) infinite}
+@keyframes sprIdle4{from{background-position:0% 0%}to{background-position:133.333% 0%}}
+.g6r4{background-size:600% 400%!important}.g6r3{background-size:600% 300%!important}.g4r3{background-size:400% 300%!important}
+.spi.g4r3,.spr2.g4r3{animation-name:sprIdle4!important}
+.u.spr.E .spi{transform:scaleX(-1)}
+.u.spr.cmd .spi{height:180%;left:-40%;right:-40%}
+#cut .side.lunge .por2.spr2.g6r3{animation:sprAtk3 .55s steps(6) 1 forwards!important}
+#cut .side.lunge .por2.spr2.g4r3{animation:sprAtk43 .5s steps(4) 1 forwards!important}
+@keyframes sprAtk3{from{background-position:0% 50%}to{background-position:120% 50%}}
+@keyframes sprAtk43{from{background-position:0% 50%}to{background-position:133.333% 50%}}
+#cut .por2.spr2{width:52%;background-position:0% 0%;image-rendering:pixelated;-webkit-mask-image:none;mask-image:none;animation:sprIdle .9s steps(4) infinite}
 #cut .side.lunge .por2.spr2{animation:sprAtk .55s steps(6) 1 forwards}
 @keyframes sprAtk{from{background-position:0% 33.333%}to{background-position:120% 33.333%}}
-#cut .skp.spr3{width:58%;background-size:600% 400%;background-position:0% 66.667%;image-rendering:pixelated;-webkit-mask-image:none;mask-image:none;animation:sprSk .9s steps(6) 1 forwards}
+#cut .skp.spr3{width:58%;background-size:600% 400%!important;background-position:0% 66.667%;image-rendering:pixelated;-webkit-mask-image:none;mask-image:none;animation:sprSk .9s steps(6) 1 forwards}
 @keyframes sprSk{from{background-position:0% 66.667%}to{background-position:120% 66.667%}}
-.pxprev{width:96px;height:96px;background-size:600% 400%;image-rendering:pixelated;animation:sprIdle .9s steps(4) infinite;margin:4px auto 0}
+.pxprev{width:96px;height:96px;background-size:600% 400%!important;image-rendering:pixelated;animation:sprIdle .9s steps(4) infinite;margin:4px auto 0}
 .sico{display:inline-block;width:18px;height:18px;border-radius:3px;background-size:300% 300%;vertical-align:middle;margin-right:3px}
 button .sico{width:20px;height:20px}
 .u .sb{position:absolute;left:-3px;top:-3px;display:flex;gap:1px;z-index:3}.u .sb b{font-size:8px;line-height:1;padding:1px 2px;border-radius:3px;background:#000c;color:#ffd27a}.u .sb b.bad{color:#ff8f7a}
@@ -198,7 +207,9 @@ table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px
 .fxl{position:absolute;pointer-events:none;z-index:5;mix-blend-mode:screen;background:center/contain no-repeat;animation:fxa .7s ease-out forwards}
 @keyframes fxa{0%{opacity:0;transform:scale(.5)}25%{opacity:1;transform:scale(1.15)}100%{opacity:0;transform:scale(1.35)}}
 .dmgn{position:absolute;z-index:6;pointer-events:none;font-weight:700;color:#ffe2b0;text-shadow:0 0 4px #000,0 0 2px #000;font-size:14px;animation:dmga .9s ease-out forwards}
-.dmgn.crit{color:#ff9a6a;font-size:18px}.dmgn.heal{color:#9fe39b}.dmgn.miss{color:#ccc;font-size:12px}
+.dmgn.crit{color:#ff9a6a;font-size:18px}.dmgn.st{color:#ff9f8a;font-size:11px;top:-6px}.dmgn.stg{color:#9fd3ff;font-size:11px}
+#board.shake{animation:bshake .45s}@keyframes bshake{0%,100%{transform:none}20%{transform:translate(-4px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-3px,-1px)}80%{transform:translate(2px,1px)}}
+.rar3{color:#d9b8ff;text-shadow:0 0 6px #9b6bff88}.dmgn.heal{color:#9fe39b}.dmgn.miss{color:#ccc;font-size:12px}
 @keyframes dmga{0%{opacity:0;transform:translateY(4px)}20%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
 #cut{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top) + 70px);height:min(62vw,330px);max-width:540px;margin:0 auto;z-index:40;background:#000 center/cover;border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);overflow:hidden;display:none}
 #cut.on{display:block;animation:cutin .18s ease-out}
@@ -266,7 +277,10 @@ function startBattle(s,tm,lv){seed=(s==null?(Date.now()%2147483647):s)>>>0;team=
 function persist(){LS.set(SAVE_KEY,{v:4,mission:mid,ruleset:D.rulesetVersion,seed,acts,team,level});}
 function clearBattle(){LS.set(SAVE_KEY,null);acts=[];}
 let titleHasSave=false;
-function enterCity(){showHub();if(!camp.pcName)askName(()=>{drawHub();if(!camp.flags.hubTip){camp.flags.hubTip=true;saveCamp();toastInfo('先去<b>議事桌</b>選隊伍出戰。');}});}
+function enterCity(){showHub();const tip=()=>{if(!camp.flags.hubTip){camp.flags.hubTip=true;saveCamp();toastInfo('先去<b>議事桌</b>選隊伍出戰。');}};if(!camp.pcName)askName(()=>{drawHub();mythPick(tip);});else if(!camp.mythic)mythPick(()=>drawHub());}
+function mythPick(after){const L=D.heroes.filter(h=>h.myth);if(!L.length||camp.mythic){after&&after();return;}mythPick.after=after;
+ modal(`<h2>南門的燈下</h2><p class="say">登記完名字，守衛壓低聲音：「有兩位在等你。她們說，只會跟其中一個人走。」</p><p class="note">選一位神秘成員加入（只能選一位）。</p>`+L.map(h=>{const sk=(D.personal[h.id]||[]).map(k=>D.skills[k].name).join('、');const inn=(D.innateTxt||{})[h.id];return `<div class="ros" style="align-items:flex-start;flex-wrap:wrap"><img src="${CAMP.art(h)}" alt="" style="width:110px;height:auto;aspect-ratio:3/4;object-fit:cover;border-radius:8px"><div style="flex:1;min-width:150px"><b class="rar3">${esc(h.name)}</b> <span class="note">${esc(h.title)}・神秘</span><br><span class="note">${esc(h.bio||'')}</span><br><span class="say">招式：${esc(sk)}</span>${inn?`<br><span class="note">天生：${esc(inn[0])}——${esc(inn[1])}</span>`:''}<br><button class="pri" style="margin-top:6px" onclick="doMyth('${h.id}')">選 ${esc(h.name)}</button></div></div>`;}).join(''));}
+function doMyth(id){if(!confirm('確定選 '+CAMP.heroOf(D,id).name+'？之後不能換。'))return;const r=CAMP.chooseMythic(D,camp,id);if(!r.ok){toastInfo(r.error);return;}saveCamp();SFX.play('r2');closeModal();const h=CAMP.heroOf(D,id);const L=(TALK.chat[id]||[]).filter(x=>x[0]===0).map(x=>x[1]);talk([{who:id,t:L[0]||'……'}],{bg:'bg_talk_gate',hero:id},()=>{drawHub();toastInfo(esc(h.name)+' 加入了，也放進出戰隊伍。');const a=mythPick.after;a&&a();});}
 function titleScreen(hasSave){const t=$('title');t.style.backgroundImage=`linear-gradient(to bottom,#0000 40%,#000d 85%),url(${ART('backgrounds/cover.webp')})`;
  titleHasSave=hasSave;t.innerHTML=`<h2>永生戰棋</h2><p>渡鴉公會的外圍成員，來到天闕大陸北邊的白鐵礦城。</p><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${hasSave?'<button class="pri" onclick="SFX.unlock();$(\'title\').classList.add(\'hide\')">繼續戰鬥</button>':''}<button class="${hasSave?'':'pri'}" onclick="SFX.unlock();SFX.play('click');if(!camp.seenPrologue){prologue(enterCity);}else{$('title').classList.add('hide');enterCity();}">${hasSave?'回到據點':'開始'}</button><button onclick="SFX.unlock();prologue(()=>titleScreen(${hasSave}))">序章</button><button onclick="noticeShow()">公告${noticeSeen()?'':' ●'}</button></div><p class="note" style="margin-top:10px">${esc(D.version)}・紀錄只存在這台裝置</p>`;t.classList.remove('hide');}
 function boot(){applyView();loadCostumes();setTimeout(sprPreload,400);try{const lv=localStorage.getItem('yyt_lastver');if(lv&&lv!==D.version)setTimeout(()=>toastInfo('已更新到 '+D.version+'，更新內容可以看公告。'),1800);localStorage.setItem('yyt_lastver',D.version);}catch(e){}camp=CAMP.fix(D,LS.get(CAMP_KEY));saveCamp();const sv=LS.get(SAVE_KEY);
@@ -339,7 +353,8 @@ function noticeShow(){try{localStorage.setItem('yyt_notice',D.version)}catch(e){
  modal(`<div style="margin:-14px -16px 0;padding:14px 16px;background:linear-gradient(#000b,#000e),url(${ART('backgrounds/fac_quest.webp')}) center/cover;border-radius:12px 12px 0 0"><h2>南門告示</h2><p class="note">貼在南門內側的木板上。紙的邊角被風吹得捲起來。</p></div>`+
  N.map((a,i)=>i===0?`<p><b>${esc(a.title)}</b> <span class="note">${esc(a.ver)}</span></p><ul style="margin:4px 0 10px 18px;padding:0">${a.lines.map(x=>`<li style="margin:4px 0">${esc(x)}</li>`).join('')}</ul>`:`<details><summary style="cursor:pointer;color:var(--gold)">${esc(a.title)} <span class="note">${esc(a.ver)}</span></summary><ul style="margin:6px 0 4px 18px;padding:0">${a.lines.map(x=>`<li style="margin:3px 0">${esc(x)}</li>`).join('')}</ul></details>`).join('')+
  `<p><button onclick="closeModal();if(!$('title').classList.contains('hide'))titleScreen(titleHasSave);else drawHub()">好</button></p>`);}
-function hubMore(){modal(`<h2>設定</h2><p><button onclick="toggleSfx();hubMore()">${SFX.isOn()?'音效：開':'音效：關'}</button> <button onclick="toggleBgm();hubMore()">${BGM.isOn()?'音樂：開':'音樂：關'}</button></p><p><button onclick="askName(()=>{closeModal();drawHub();},true)">改名字和樣子</button></p><p><button onclick="help()">規則</button> <button onclick="closeModal();titleScreen(false)">回到標題</button></p><p class="note">${esc(D.version)}</p><button onclick="closeModal();drawHub()">關閉</button>`);}
+function resetAll(){if(!confirm('真的要刪除這台裝置上的存檔，從頭開始嗎？成員、裝備、好感全部都會消失。'))return;if(!confirm('最後確認：刪除後不能復原。'))return;try{localStorage.removeItem(CAMP_KEY);localStorage.removeItem(SAVE_KEY);}catch(e){}location.reload();}
+function hubMore(){modal(`<h2>設定</h2><p><button onclick="toggleSfx();hubMore()">${SFX.isOn()?'音效：開':'音效：關'}</button> <button onclick="toggleBgm();hubMore()">${BGM.isOn()?'音樂：開':'音樂：關'}</button></p><p><button onclick="askName(()=>{closeModal();drawHub();},true)">改名字和樣子</button></p><p><button onclick="help()">規則</button> <button onclick="closeModal();titleScreen(false)">回到標題</button></p><p><button onclick="resetAll()" style="border-color:#a84035;color:#ff9a8a">刪除存檔，從頭開始</button><br><span class="note">刪掉這台裝置上的所有紀錄。先用「存檔」匯出一份比較保險。</span></p><p class="note">${esc(D.version)}</p><button onclick="closeModal();drawHub()">關閉</button>`);}
 // ---------- 搬存檔 ----------
 function saveCode(){const o={k:'yyt',v:1,at:new Date().toISOString(),camp};const j=JSON.stringify(o);return 'YYT1:'+btoa(unescape(encodeURIComponent(j)));}
 function readCode(t){t=(t||'').trim();if(t.startsWith('YYT1:'))t=decodeURIComponent(escape(atob(t.slice(5))));const o=JSON.parse(t);if(!o||o.k!=='yyt'||!o.camp)throw new Error('bad');return o;}
@@ -434,7 +449,7 @@ function heroPage(id,back){const h=CAMP.heroOf(D,id),r=camp.roster[id],u=D.units
   <div class="stt">${keys.map(row).join('')}</div></div></div>
   ${affHtml(id,back)}
   <h3 style="margin:10px 0 2px">裝備</h3><div class="eqs">${['w','a','t'].map(slot).join('')}</div>
-  <h3 style="margin:10px 0 2px">技能</h3>${CAMP.allSkillsOf(D,id).map(([k,lv,tag])=>{const S=D.skills[k],has=sks.includes(k);return `<p style="margin:4px 0;${has?'':'opacity:.5'}">${SICO(S)}<b class="${tag.startsWith('專屬')?'rar2':''}">${esc(S.name)}</b> <span class="note">${tag}・冷卻 ${S.cd}${has?'':'・Lv'+lv+' 學會'}<br>${esc(S.desc||'')}</span></p>`;}).join('')}
+  ${h.bio?`<p class="note" style="margin:8px 0 0">${esc(h.bio)}</p>`:''}${(D.innateTxt||{})[id]?`<p style="margin:6px 0"><b class="rar3">天生・${esc(D.innateTxt[id][0])}</b> <span class="note">${esc(D.innateTxt[id][1])}</span></p>`:''}<h3 style="margin:10px 0 2px">技能</h3>${CAMP.allSkillsOf(D,id).map(([k,lv,tag])=>{const S=D.skills[k],has=sks.includes(k);return `<p style="margin:4px 0;${has?'':'opacity:.5'}">${SICO(S)}<b class="${tag.startsWith('專屬')?'rar2':''}">${esc(S.name)}</b> <span class="note">${tag}・冷卻 ${S.cd}${has?'':'・Lv'+lv+' 學會'}<br>${esc(S.desc||'')}</span></p>`;}).join('')}
   ${talHtml(id,back)}${cosHtml(id,back)}
   <h3 style="margin:10px 0 2px">士兵團</h3><p class="note">士兵 ${Math.round(r.sol*CAMP.soldiersOf(D,id,camp))}/${CAMP.soldiersOf(D,id,camp)}・兵團 Lv${r.sq.lv}・強化 ${'◆'.repeat(r.sq.tier)}${'◇'.repeat(D.squad.maxTier-r.sq.tier)}・被動：${r.sq.pas.map(k=>D.passives[k].name).join('、')||'—'}</p>
   <p>${r.lv<D.xp.maxLv?`<button ${camp.mats.record>0?'':'disabled'} onclick="doRecord('${id}','${back||''}')">讀戰記本（經驗 +${D.recordXp}，剩 ${camp.mats.record}）</button> `:''}<button onclick="${back==='barracks'?'barracks()':back==='storage'?'storage()':back==='wardrobe'?'wardrobe()':'rosterList()'}">返回</button></p>`);}
@@ -504,10 +519,10 @@ function cellsHi(){const H={reach:new Set(),dash:false,tgt:new Set(),ally:new Se
  if(showThreat){const VIS=visSet(st);for(const v of C.alive(st,'E'))if(!VIS||VIS.has(C.key(v.x,v.y)))for(const k of threatOf(v))H.threat.add(k);}
  return H;}
 function threatOf(u){const out=new Set();const R=C.reachable(D,st,u);for(const k of R.keys()){const [x,y]=k.split(',').map(Number);const [a,b]=C.rangeOf(D,st,u,{x,y});for(let dy=-b;dy<=b;dy++)for(let dx=-b;dx<=b;dx++){const d=Math.abs(dx)+Math.abs(dy);if(d<a||d>b)continue;const nx=x+dx,ny=y+dy;if(nx<0||ny<0||nx>=st.w||ny>=st.h)continue;if(d>1&&!C.los(D,st,{x,y},{x:nx,y:ny}))continue;out.add(C.key(nx,ny));}}return out;}
-const STB={burn:'燃',bleed:'血',poison:'毒',slow:'緩',freeze:'凍',charm:'魅',blind:'盲',fear:'懼',seal:'封',taunt:'嘲',stealth:'隱',vuln:'破',brk:'甲',link:'線',regen:'生',ward:'衛',shell:'殼',might:'振',oath:'誓',echo:'狐',undying:'命',doom:'爆'};const STBAD=['burn','bleed','poison','slow','freeze','charm','blind','fear','seal','vuln','brk','link','doom'];
+const STB={burn:'燃',bleed:'血',poison:'毒',slow:'緩',freeze:'凍',charm:'魅',blind:'盲',fear:'懼',seal:'封',taunt:'嘲',stealth:'隱',vuln:'破',brk:'甲',link:'線',regen:'生',ward:'衛',shell:'殼',might:'振',oath:'誓',echo:'狐',undying:'命',doom:'爆',pact:'契',resist:'抗'};const STBAD=['burn','bleed','poison','slow','freeze','charm','blind','fear','seal','vuln','brk','link','doom','pact'];
 function stBadges(u){const b=[];for(const k of Object.keys(STB))if(C.sv(u,k)>0)b.push(`<b class="${STBAD.includes(k)?'bad':''}">${STB[k]}</b>`);if(C.sv(u,'shield')>0)b.push('<b>盾</b>');return b.length?`<span class="sb">${b.slice(0,3).join('')}</span>`:'';}
 function token(u,extra){const n=C.soldiers(u);const ic=[];if(u.st.gs>0)ic.push('<b>護</b>');if(u.st.root>0)ic.push('<b class="r">縛</b>');if(u.st.mark>0)ic.push('<b class="m">標</b>');if(u.guard)ic.push('<b>守</b>');
- const sp=pixOn&&u.hero&&sprOf(u.hero);if(sp)return `<div class="u ${u.faction} spr${u.usedAct&&u.faction==='P'?' acted':''}${extra||''}" title="${esc(u.name)}"><i class="spi" style="background-image:url(${sp})"></i>${stBadges(u)}<div class="hp"><i style="width:${Math.round(100*u.hp/u.maxHp)}%"></i></div>${u.solMax?`<span class="sn">${n}</span>`:''}${ic.length?`<span class="ic">${ic.join('')}</span>`:''}</div>`;
+ const sk=pixOn&&sprKey(u);const sp=sk&&sprOf(sk);if(sp)return `<div class="u ${u.faction} spr${u.commander?' cmd':''}${u.usedAct&&u.faction==='P'?' acted':''}${extra||''}" title="${esc(u.name)}"><i class="spi ${sprCls(sk)}" style="background-image:url(${sp})"></i>${stBadges(u)}<div class="hp"><i style="width:${Math.round(100*u.hp/u.maxHp)}%"></i></div>${u.solMax?`<span class="sn">${n}</span>`:''}${ic.length?`<span class="ic">${ic.join('')}</span>`:''}</div>`;
  return `<div class="u ${u.faction}${u.commander?' cmd':''}${u.usedAct&&u.faction==='P'?' acted':''}${u.art?' img'+((D.artMap&&D.artMap[u.art])||u.art.startsWith('../')?' raw':''):''}${extra||''}" title="${esc(u.name)}"${u.art?` style="background-image:url(${ART(u.art)})"`:''}>${stBadges(u)}${esc(u.glyph)}<div class="hp"><i style="width:${Math.round(100*u.hp/u.maxHp)}%"></i></div>${u.solMax?`<span class="sn">${n}</span>`:''}${ic.length?`<span class="ic">${ic.join('')}</span>`:''}</div>`;}
 function visSet(S){const M=D.missions[S.missionId];if(!M||!M.fog)return null;const v=new Set();const F=M.fog;
  for(const u of C.alive(S,'P')){const r=u.def==='P_SCOUT'?F.scout:u.def==='P_LANTERN'?F.lantern:F.vision;for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++)if(Math.abs(dx)+Math.abs(dy)<=r)v.add(C.key(u.x+dx,u.y+dy));}
@@ -521,7 +536,7 @@ function render(){const H=cellsHi();let h='';const warnSet=new Set((st.warn||[])
   if(u&&VIS&&u.faction==='E'&&!VIS.has(k))u=null;
   if(u)inner+=token(u,ghost?' ghost':'');
   h+=`<div class="${cls}" data-x="${x}" data-y="${y}" role="button" aria-label="${T.name} ${x},${y}${u?' '+esc(u.name):''}">${inner}</div>`;}
- $('board').innerHTML=h;if(pixOn)applyPix();setTimeout(fitInfo,0);tutDraw();
+ $('board').innerHTML=h;if(pixOn){applyPix();sprPreloadE();}setTimeout(fitInfo,0);tutDraw();
  $('rd').textContent='第 '+Math.min(st.round,MM().roundLimit)+'／'+MM().roundLimit+' 回合';$('ph').textContent=st.result?(st.result.win?'勝利':'失敗'):busy?'敵方行動中…':'我方回合';
  const O2=st.obj||{type:'gate'};if(!st.gate.none){$('gb').parentElement&&($('gb').style.width=Math.round(100*st.gate.hp/st.gate.maxHp)+'%');$('gl').textContent='城門';$('gh').textContent=st.gate.hp;$('gb').parentElement.style.display='';}else{$('gb').parentElement.style.display='none';$('gl').textContent=O2.seals&&(st.lit||[]).length<O2.seals.length?'燈座':O2.type==='boss'?'目標：擊倒指揮官':O2.type==='hold'?'驛站守住':O2.type==='rescue'?'救出':O2.type==='reach'?'到對岸':O2.type==='defend'?'過橋':'剩下敵人';$('gh').textContent=O2.seals&&(st.lit||[]).length<O2.seals.length?(st.lit||[]).length+'／'+O2.seals.length:O2.type==='hold'?st.hold+'／'+O2.need:O2.type==='rescue'?(st.done||[]).length+'／'+O2.need:O2.type==='reach'?C.alive(st,'P').filter(u=>O2.tiles.some(([x,y])=>u.x===x&&u.y===y)).length+'／'+O2.need:O2.type==='defend'?(st.breach||0)+'／'+O2.max:O2.type==='rout'?C.alive(st,'E').length:(st.units.some(u=>u.commander&&u.hp>0)?'未倒':'—');}$('cr').textContent='濁度 '+(st.corr||0);$('cr').style.color=st.corr>=75?'#ff8a6a':st.corr>=50?'#e8c56a':'';$('sub').textContent=MM().name+'・'+D.factions[st.faction].name;renderBar();}
 function skillBtn(u){const sealed=C.sv(u,'seal')>0;return (u.skills||[]).filter(k=>k!=='shadowStep').map(k=>{const S=D.skills[k];const cd=u.cd[k]||0;return `<button class="sk" ${cd||sealed?'disabled':''} onclick="skillMode('${k}')">${SICO(S)}${esc(S.name)}${cd?'（'+cd+'）':''}</button>`;}).join('');}
@@ -587,21 +602,22 @@ function fxAt(x,y,name,scale,delay){const b=cellBox(x,y);const k=scale||1.6;cons
 function numAt(x,y,txt,cls,delay){const b=cellBox(x,y);const d=document.createElement('div');d.className='dmgn '+(cls||'');d.textContent=txt;d.style.cssText=`left:${b.l}px;top:${b.t}px;width:${b.w}px;text-align:center;animation-delay:${delay||0}ms`;$('board').appendChild(d);setTimeout(()=>d.remove(),1100+(delay||0));}
 function atkFx(a){return !a?'fx_slash':a.dmg==='MAGICAL'?'fx_magic':a.rmax>=2?'fx_arrow':a.troop==='SPEAR'?'fx_pierce':'fx_slash';}
 function boardFx(evs,S){S=S||st;let t=0;for(const e of evs){const tg=e.d==='GATE'?S.gate:S.units.find(v=>v.id===e.d);const at=S.units.find(v=>v.id===e.a);
-  if(e.t==='hit'&&tg){fxAt(tg.x,tg.y,atkFx(at),1.5,t);fxAt(tg.x,tg.y,e.crit?'fx_crit':'fx_hit',1.3,t+120);numAt(tg.x,tg.y,(e.crit?'暴擊 ':'')+e.dmg,e.crit?'crit':'',t+120);t+=180;}
+  if(e.t==='hit'&&tg){fxAt(tg.x,tg.y,e.fx||atkFx(at),e.fx?1.9:1.5,t);fxAt(tg.x,tg.y,e.crit?'fx_crit':'fx_hit',1.3,t+120);numAt(tg.x,tg.y,(e.crit?'暴擊 ':'')+e.dmg,e.crit?'crit':'',t+120);t+=180;}
   else if(e.t==='miss'&&tg){fxAt(tg.x,tg.y,'fx_miss',1.3,t);numAt(tg.x,tg.y,'落空','miss',t);t+=150;}
   else if(e.t==='down'&&tg){fxAt(tg.x,tg.y,'fx_rout',1.8,t+200);}
-  else if(e.t==='heal'&&tg){fxAt(tg.x,tg.y,'fx_heal',1.5,t);}
+  else if(e.t==='heal'&&tg){fxAt(tg.x,tg.y,'fx_heal',1.6,t);if(e.h)numAt(tg.x,tg.y,'+'+e.h,'heal',t);t+=60;}
   else if(e.t==='zone'&&at){const z=S.zones&&S.zones.find(z=>z.owner===at.id);if(z)fxAt(z.x,z.y,'fx_lamp',3.4,t);}
-  else if(e.t==='status'&&tg){fxAt(tg.x,tg.y,/束縛/.test(e.txt)?'fx_bind':'fx_mark',1.4,t);}
-  else if(e.t==='skill'&&at){const GS=e.sk&&D.skills[e.sk];if(GS&&GS.kind==='gen'&&GS.tg==='self'&&GS.fx)fxAt(at.x,at.y,GS.fx,GS.shape==='around'||GS.shape==='allyAround'?3:2,t);else if(/守護/.test(e.txt))fxAt(at.x,at.y,'fx_guard',2,t);else if(/影徑/.test(e.txt))fxAt(at.x,at.y,'fx_shadow',1.6,t);}
-  else if(e.t==='dot'&&tg){fxAt(tg.x,tg.y,'fx_corrupt',1.2,t);}
-  else if(e.t==='shield'&&tg){fxAt(tg.x,tg.y,'fx_guard',1.4,t);}
+  else if(e.t==='status'&&tg){const nm=(e.txt.split('：')[1]||'').replace(/（.*/,'');const bad=/燃燒|流血|中毒|減速|凍住|魅惑|致盲|恐懼|封印|破綻|破甲|連線|厄契|延爆|標記|束縛/.test(nm);fxAt(tg.x,tg.y,/束縛|連線|厄契/.test(nm)?'fx_bind':/燃燒/.test(nm)?'fx_magic':bad?'fx_mark':'fx_guard',1.3,t);if(nm)numAt(tg.x,tg.y,nm,bad?'st':'stg',t+80);t+=90;}
+  else if(e.t==='skill'&&at){const GS=e.sk&&D.skills[e.sk];if(GS&&GS.kind==='gen'&&e.big){const B=$('board');B.classList.remove('shake');void B.offsetWidth;B.classList.add('shake');}if(GS&&GS.kind==='gen'&&e.at&&GS.fx){fxAt(e.at.x,e.at.y,GS.fx,3.3,t);t+=120;}if(GS&&GS.kind==='gen'&&GS.tg==='self'&&GS.fx)fxAt(at.x,at.y,GS.fx,GS.shape==='around'||GS.shape==='allyAround'?3.2:2,t);else if(/守護/.test(e.txt))fxAt(at.x,at.y,'fx_guard',2,t);else if(/影徑/.test(e.txt))fxAt(at.x,at.y,'fx_shadow',1.6,t);}
+  else if(e.t==='dot'&&tg){fxAt(tg.x,tg.y,/燃燒/.test(e.txt)?'fx_magic':'fx_corrupt',1.3,t);numAt(tg.x,tg.y,(e.txt.match(/(燃燒|流血|中毒)/)||[''])[0],'st',t);t+=80;}
+  else if(e.t==='shield'&&tg){fxAt(tg.x,tg.y,'fx_guard',1.6,t);numAt(tg.x,tg.y,'護盾','stg',t);}
+  else if(e.t==='share'&&tg){fxAt(tg.x,tg.y,'fx_bind',1.4,t);}
   else if(e.t==='purify'&&at){fxAt(at.x,at.y,'fx_purify',2.6,t);}
   else if(e.t==='spawn'&&e.a){const u=S.units.find(v=>v.id===e.a);if(u)fxAt(u.x,u.y,'fx_summon',2.2,t);}
   else if((e.t==='corrupt'||e.t==='warn')){for(const w of (S.warn||[]).slice(-3))fxAt(w.x,w.y,'fx_corrupt',1.4,t);}}}
 function btBg(S,tg){if(!tg)return 'bt_gate';const t=C.tileAt(S,tg.x,tg.y);if(t==='FLESH')return 'bt_corrupt';if(t==='FOREST'||t==='SWAMP')return 'bt_forest';if(tg.y>=8)return 'bt_gate';return 'bt_plain';}
-function sideHtml(u,cls,S){if(!u)return `<div class="side ${cls}"><div class="nm">城門</div></div>`;const sp=pixOn&&u.hero&&sprOf(u.hero);const n=Math.min(6,C.soldiers(u));const sd=u.faction==='P'?ART('soldiers/'+(D.soldierArt[u.def]||'sd_shield')+'.webp'):ART(u.art||u.por||'');
- return `<div class="side ${cls}">${sp?`<div class="por2 spr2" style="background-image:url(${sp})"></div>`:`<div class="por2" style="background-image:url(${ART(u.por||u.art)})"></div>`}<div class="sq">${Array.from({length:n},(_,i)=>`<div class="sd" data-i="${i}" style="background-image:url(${sd})"></div>`).join('')}</div><div class="nm">${esc(u.name)}・士兵 ${C.soldiers(u)}</div></div>`;}
+function sideHtml(u,cls,S){if(!u)return `<div class="side ${cls}"><div class="nm">城門</div></div>`;const sk=pixOn&&sprKey(u);const sp=sk&&sprOf(sk);const n=Math.min(6,C.soldiers(u));const sd=u.faction==='P'?ART('soldiers/'+(D.soldierArt[u.def]||'sd_shield')+'.webp'):ART(u.art||u.por||'');
+ return `<div class="side ${cls}">${sp?`<div class="por2 spr2 ${sprCls(sk)}" style="background-image:url(${sp})"></div>`:`<div class="por2" style="background-image:url(${ART(u.por||u.art)})"></div>`}<div class="sq">${Array.from({length:n},(_,i)=>`<div class="sd" data-i="${i}" style="background-image:url(${sd})"></div>`).join('')}</div><div class="nm">${esc(u.name)}・士兵 ${C.soldiers(u)}</div></div>`;}
 // 找出第一組「攻擊（＋反擊）」
 function exchangeOf(evs){const i=evs.findIndex(e=>(e.t==='hit'||e.t==='miss')&&!e.counter);if(i<0)return null;const main=evs[i];const rest=evs.slice(i+1);const j=rest.findIndex(e=>(e.t==='hit'||e.t==='miss')&&!e.counter);const seg=j<0?rest:rest.slice(0,j);
  const counter=seg.find(e=>(e.t==='hit'||e.t==='miss')&&e.counter);const lossD=seg.filter(e=>e.t==='soldier'&&e.d===main.d).reduce((s,e)=>s+(e.n||0),0);const lossA=seg.filter(e=>e.t==='soldier'&&e.d===main.a).reduce((s,e)=>s+(e.n||0),0);
@@ -623,11 +639,15 @@ function fitInfo(){const I=$('info'),B=$('bar');if(!I||!B||document.body.classLi
 window.addEventListener('resize',()=>setTimeout(fitInfo,50));
 // ---------- 點陣小人（grok 的素材表：綠底，去背後縮成每格 96） ----------
 const SPR=new Map(),SPRW=new Set();
-function sprOf(hid){const src=D.pixel&&D.pixel[hid];if(!src)return null;if(SPR.has(hid))return SPR.get(hid);if(SPRW.has(hid))return null;SPRW.add(hid);
- const im=new Image();im.onload=()=>{try{const G=D.pixelGrid||{cols:6,rows:4};const cw=96;const cv=document.createElement('canvas');cv.width=G.cols*cw;cv.height=G.rows*cw;const g=cv.getContext('2d');g.imageSmoothingEnabled=im.naturalWidth>cv.width*1.5;g.drawImage(im,0,0,cv.width,cv.height);const d=g.getImageData(0,0,cv.width,cv.height),a=d.data;
+function sprG(k){const e=D.pixel&&D.pixel[k];if(!e)return null;return typeof e==='string'?{src:e,cols:6,rows:4}:e;}
+function sprKey(u){if(u.hero&&D.pixel&&D.pixel[u.hero])return u.hero;const m=/tok_(\w+)/.exec(u.art||'');return m&&D.pixel&&D.pixel['m:'+m[1]]?'m:'+m[1]:null;}
+function sprCls(k){const g=sprG(k);return 'g'+g.cols+'r'+g.rows;}
+function sprOf(hid){const E=sprG(hid);if(!E)return null;const src=E.src;if(SPR.has(hid))return SPR.get(hid);if(SPRW.has(hid))return null;SPRW.add(hid);
+ const im=new Image();im.onload=()=>{try{const G=E;const cw=96;const cv=document.createElement('canvas');cv.width=G.cols*cw;cv.height=G.rows*cw;const g=cv.getContext('2d');g.imageSmoothingEnabled=im.naturalWidth>cv.width*1.5;g.drawImage(im,0,0,cv.width,cv.height);const d=g.getImageData(0,0,cv.width,cv.height),a=d.data;
   for(let i=0;i<a.length;i+=4){const r=a[i],gg=a[i+1],b=a[i+2];if(gg>110&&gg>r*1.3&&gg>b*1.3)a[i+3]=0;else if(gg>r&&gg>b)a[i+1]=Math.max(r,b);}
   g.putImageData(d,0,0);SPR.set(hid,cv.toDataURL());}catch(e){SPR.set(hid,null);}clearTimeout(sprOf.t);sprOf.t=setTimeout(()=>{if(st&&pixOn&&!document.body.classList.contains('inhub'))render();},80);};im.onerror=()=>SPR.set(hid,null);im.src=src;return null;}
-function sprPreload(){for(const k of Object.keys(D.pixel||{}))sprOf(k);}
+function sprPreload(){for(const k of Object.keys(D.pixel||{}))if(!k.startsWith('m:'))sprOf(k);}
+function sprPreloadE(){if(!st)return;for(const u of st.units){const k=sprKey(u);if(k)sprOf(k);}}
 // ---------- 格子大小與點陣模式 ----------
 let zoomLv=0,pixOn=false;try{zoomLv=+(localStorage.getItem('yyt_zoom')||0)||0;pixOn=localStorage.getItem('yyt_pix')==='1';}catch(e){}
 function applyView(){document.body.classList.toggle('z1',zoomLv===1);document.body.classList.toggle('z2',zoomLv===2);document.body.classList.toggle('pix',pixOn);}
@@ -641,7 +661,7 @@ function applyPix(){if(!pixOn)return;const e=$('tcss');if(e){if(!e.dataset.orig)
  document.querySelectorAll('#board .u').forEach(el=>{const m=/url\(["']?([^"')]+)["']?\)/.exec(el.style.backgroundImage||'');if(!m||m[1].startsWith('data:'))return;const p=pixOf(m[1],22);if(p)el.style.backgroundImage=`url(${p})`;});}
 // 技能演出：技能插畫＋施放者＋技能名，之後才接攻擊的接戰演出
 function skillCut(u,sk,done){const S=D.skills[sk];const img=(D.skillArt&&D.skillArt[sk])||(S&&S.art);if(!u||!S||!img){done();return;}const el=$('cut');el.className='sk on';el.style.backgroundImage=`linear-gradient(90deg,#000c,#0002 55%,#0006),url(${img})`;
- const sp=pixOn&&u.hero&&sprOf(u.hero);el.innerHTML=`${sp?`<div class="skp spr3" style="background-image:url(${sp})"></div>`:`<div class="skp" style="background-image:url(${ART(u.por||u.art)})"></div>`}<div class="skf"></div><div class="skn"><small>${esc(u.name)}</small><b>${esc(S.name)}</b><small>${SICO(S)}</small></div><div class="skip">點一下跳過</div>`;SFX.play('magic');
+ const spk=pixOn&&sprKey(u);const sp=spk&&sprOf(spk);el.innerHTML=`${sp&&sprG(spk).rows===4?`<div class="skp spr3" style="background-image:url(${sp})"></div>`:`<div class="skp" style="background-image:url(${ART(u.por||u.art)})"></div>`}<div class="skf"></div><div class="skn"><small>${esc(u.name)}</small><b>${esc(S.name)}</b><small>${SICO(S)}</small></div><div class="skip">點一下跳過</div>`;SFX.play('magic');
  let ended=false;const fin=()=>{if(ended)return;ended=true;clearTimeout(t);el.className='';el.innerHTML='';done();};el.onclick=fin;const t=setTimeout(fin,1250);}
 function send(a){const before=st;const r=C.apply(D,st,a);if(!r.ok){toastInfo('<span class="bad">不能這樣做：'+esc(r.error)+'</span>');return false;}acts.push(a);st=r.state;sel=null;persist();addLog(r.events);SFX.forEvents(r.events,D,st);
  const left=C.alive(st,'P').filter(u=>!u.usedAct).length;toastInfo(r.events.map(e=>esc(e.txt)).join('<br>')+(st.result?'':left?'':'<br><span class="note">大家都行動完了，按「結束回合」。</span>'));
@@ -675,10 +695,11 @@ function showResult(){if(!st.result)return;const M=MM();const g=st.gate.hp;const
  <button class="pri" onclick="afterResult()">回到據點</button> <button onclick="retry()">同一場重打</button> <button onclick="closeModal()">看棋盤</button>`);}
 function dropTxt(d){const eq=d.eq.map(x=>x.full?`<span class="note">（倉庫滿了，${esc(D.equip[x.b].name)} 直接變成白鐵 +${x.ore}）</span>`:`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0">${eqIco(x)}<span class="rar${x.r}">${esc(D.equip[x.b].name)}</span><span class="note">（${D.eqRarity.name[x.r]}）</span></span>`).join('');
  const m=Object.entries(d.mats).map(([k,n])=>esc(D.mats[k].name)+' +'+n).join('・');return `<br>掉落：${m}${eq?'<br>'+eq:''}`;}
+function retreat(){if(busy||!st||st.result)return;if(!confirm('撤退會算這一場輸了（拿輸的獎勵，士兵損失會帶回去）。確定撤退？'))return;const a={type:'RETREAT'};const r=C.apply(D,st,a);if(!r.ok){toastInfo(r.error);return;}acts.push(a);st=r.state;persist();closeModal();render();showResult();}
 function afterResult(){closeModal();const m=st.missionId,won=st.result&&st.result.win;clearBattle();showHub();
  const B=TALK.battle[m];const end=()=>{if(m==='MISSION_CHURCH'&&won&&!camp.flags.end1)playEnding(()=>{showHub();toastInfo('第一章完。謝謝你守住白鐵礦城。');});};
  if(won&&camp.cleared[m]&&B&&B.clear&&!camp.flags['clr_'+m]){camp.flags['clr_'+m]=true;saveCamp();talk(castLines(B.clear,camp.team),{bg:'bg_talk_camp'},()=>{showHub();end();});}else end();}
-function menu(){modal(`<h2>選單</h2><p><button onclick="closeModal();showHub()">回到據點（戰鬥會保留）</button></p><p><button onclick="if(confirm('重新開始這一場（同樣的隊伍、同樣的敵人）？'))retry()">同一場重打</button></p><p><button onclick="toggleSfx()">${SFX.isOn()?'音效：開（點一下關掉）':'音效：關（點一下打開）'}</button></p><p><button onclick="toggleBgm()">${BGM.isOn()?'音樂：開（點一下關掉）':'音樂：關（點一下打開）'}</button></p><p>格子大小：${[[0,'標準'],[1,'大'],[2,'特大']].map(([k,n])=>`<button ${zoomLv===k?'class="pri"':''} onclick="setZoom(${k});menu()">${n}</button>`).join(' ')}<br><span class="note">大／特大時棋盤可以上下左右滑，輪到誰會自動移過去。</span></p><p>點陣模式：<button ${pixOn?'class="pri"':''} onclick="setPix(!pixOn);menu()">${pixOn?'開':'關'}</button><br><span class="note">把棋盤上的地形和棋子變成像素風。</span></p><p>接戰演出：${[['all','全部'],['mine','只演我方攻擊'],['off','關掉']].map(([k,n])=>`<button ${cutMode===k?'class="pri"':''} onclick="setCut('${k}');menu()">${n}</button>`).join(' ')}</p>
+function menu(){modal(`<h2>選單</h2><p><button onclick="closeModal();showHub()">回到據點（戰鬥會保留）</button></p>${st&&!st.result?'<p><button onclick="retreat()">撤退（放棄這場，算輸）</button></p>':''}<p><button onclick="if(confirm('重新開始這一場（同樣的隊伍、同樣的敵人）？'))retry()">同一場重打</button></p><p><button onclick="toggleSfx()">${SFX.isOn()?'音效：開（點一下關掉）':'音效：關（點一下打開）'}</button></p><p><button onclick="toggleBgm()">${BGM.isOn()?'音樂：開（點一下關掉）':'音樂：關（點一下打開）'}</button></p><p>格子大小：${[[0,'標準'],[1,'大'],[2,'特大']].map(([k,n])=>`<button ${zoomLv===k?'class="pri"':''} onclick="setZoom(${k});menu()">${n}</button>`).join(' ')}<br><span class="note">大／特大時棋盤可以上下左右滑，輪到誰會自動移過去。</span></p><p>點陣模式：<button ${pixOn?'class="pri"':''} onclick="setPix(!pixOn);menu()">${pixOn?'開':'關'}</button><br><span class="note">把棋盤上的地形和棋子變成像素風。</span></p><p>接戰演出：${[['all','全部'],['mine','只演我方攻擊'],['off','關掉']].map(([k,n])=>`<button ${cutMode===k?'class="pri"':''} onclick="setCut('${k}');menu()">${n}</button>`).join(' ')}</p>
  <p class="note">${esc(D.version||'')}</p><button onclick="closeModal()">關閉</button>`);}
 function help(){const tr=Object.entries(D.terrain).map(([k,t])=>`<tr><td><i class="${k}" style="display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle"></i> ${t.name}</td><td>${t.pass?t.cost:'不能走'}</td><td>${t.def?(t.def>0?'+':'')+Math.round(t.def*100)+'%':'—'}</td></tr>`).join('');
  modal(`<h2>規則</h2><p><b>回合：</b>每一隊可以「移動一次＋行動一次」（攻擊、技能、待機或守備），全部動完按結束回合，敵人照同樣規則行動。</p>

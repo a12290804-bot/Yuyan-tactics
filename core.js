@@ -122,22 +122,25 @@ function strike(D,st,att,from,tid,ev,o){o=o||{};const p=withPos(att,from,()=>cal
  if(r1>=p.hit){ev.push({t:'miss',a:att.id,d:tid,counter:!!o.counter,txt:att.name+' '+verb+' '+tname+'：落空'});return {hit:false};}
  if(tgt&&tm(tgt,'block')&&roll(st)<tm(tgt,'block')){ev.push({t:'miss',a:att.id,d:tid,counter:!!o.counter,txt:tname+' 用背甲擋下了 '+att.name+' 的'+verb});return {hit:false};}
  let d=p.dmg;let crit=r2<p.crit;if(!o.counter&&sv(att,'sure')>0){crit=true;att.st.sure=0;}if(crit)d=Math.floor(d*1.5);
- ev.push({t:'hit',a:att.id,d:tid,dmg:d,crit,counter:!!o.counter,cm:p.cm,txt:att.name+' '+verb+' '+tname+'：'+(crit?'暴擊 ':'')+d+(p.cm>1?'（克制）':p.cm<1?'（被克）':'')+(p.notes.length?'〔'+p.notes.join('、')+'〕':'')});
+ ev.push({t:'hit',a:att.id,d:tid,dmg:d,crit,counter:!!o.counter,cm:p.cm,fx:o.fx||null,txt:att.name+' '+verb+' '+tname+'：'+(crit?'暴擊 ':'')+d+(p.cm>1?'（克制）':p.cm<1?'（被克）':'')+(p.notes.length?'〔'+p.notes.join('、')+'〕':'')});
  if(tgt){dealTo(D,st,tgt,d,ev,{...o,att});if(tgt.hp<=0&&tgt.faction!==att.faction){att.kills=(att.kills||0)+1;onKill(D,st,att,ev);}else if(tgt.hp>0)afterHit(D,st,att,tgt,d,ev,o);}else{st.gate.hp=Math.max(0,st.gate.hp-d);if(st.gate.hp<=0)ev.push({t:'gate',txt:'城門被打破了'});}
+ if(tgt&&sv(att,'pact')>0&&att.hp>0&&d>0){const rc2=Math.max(1,Math.round(d*.08*(att.st.pactN||1)));ev.push({t:'hit',a:tgt.id,d:att.id,dmg:rc2,txt:att.name+' 被厄契反噬：'+rc2});dealTo(D,st,att,rc2,ev,{noShare:true});}
  if(tgt&&!o.counter&&!o.echo&&!o.extra&&att.hp>0){if(sv(att,'echo')>0&&tgt.hp>0)strike(D,st,att,from,tid,ev,{mult:.4,noCounter:true,echo:true,label:'狐火撲咬'});
   if(o.normal&&tm(att,'extraHit')&&tgt.hp>0&&roll(st)<tm(att,'extraHit'))strike(D,st,att,from,tid,ev,{mult:.5,noCounter:true,extra:true,label:'多刺一下'});}
  return {hit:true,dmg:d};}
 
 // ---------- v1.2：狀態、通用技能（專屬技／奧義）、個人天賦 ----------
-const STN={burn:'燃燒',bleed:'流血',poison:'中毒',slow:'減速',freeze:'凍住',charm:'魅惑',blind:'致盲',fear:'恐懼',seal:'封印',taunt:'嘲諷',regen:'再生',stealth:'隱身',vuln:'破綻',brk:'破甲',link:'連線',evade:'閃身',might:'振奮',ward:'護衛',shell:'縮殼',undying:'不倒',proxy:'替身線',echo:'狐火',lit:'照明',mark:'標記',root:'束縛',oath:'誓約'};
+const STN={burn:'燃燒',bleed:'流血',poison:'中毒',slow:'減速',freeze:'凍住',charm:'魅惑',blind:'致盲',fear:'恐懼',seal:'封印',taunt:'嘲諷',regen:'再生',stealth:'隱身',vuln:'破綻',brk:'破甲',link:'連線',evade:'閃身',might:'振奮',ward:'護衛',shell:'縮殼',undying:'不倒',proxy:'替身線',echo:'狐火',lit:'照明',mark:'標記',root:'束縛',oath:'誓約',pact:'厄契',resist:'抵抗'};
 const DOTS=['burn','bleed','poison'];
-const TIMED=['slow','blind','fear','seal','taunt','regen','stealth','vuln','brk','link','evade','might','ward','shell','undying','proxy','echo','lit','oath'];
+const TIMED=['slow','blind','fear','seal','taunt','regen','stealth','vuln','brk','link','evade','might','ward','shell','undying','proxy','echo','lit','oath','pact','resist'];
 const BAD=['burn','bleed','poison','freeze','charm','slow','blind','fear','seal','vuln','brk','root','mark','lit'];
 function sv(u,k){return (u&&u.st&&u.st[k])||0;}
 function tm(u,k){const v=u&&u.tm&&u.tm[k];return v||0;}
 function addSt(D,st,u,k,dur,ev,src){if(!u||u.hp<=0||!dur)return false;if(tm(u,'imm_'+k))return false;
  if((k==='freeze'||k==='charm')&&u.commander)k='slow';if(tm(u,'imm_'+k))return false;
+ if(src&&src.faction!==u.faction&&BAD.concat(['pact']).includes(k)&&sv(u,'resist')>0&&roll(st)<.5){ev.push({t:'status',d:u.id,txt:u.name+' 在月光裡抵抗了'+(STN[k]||k)});return false;}
  if(src&&src.faction!==u.faction)dur+=tm(src,'stDur');
+ if(k==='pact'){u.st.pactN=Math.min(5,(u.st.pactN||0)+1);u.st.pact=Math.max(sv(u,'pact'),dur);ev.push({t:'status',d:u.id,txt:u.name+'：厄契 ×'+u.st.pactN+'（'+dur+' 回合）'});return true;}
  if(DOTS.includes(k)){const cap=3+(src?tm(src,'dotCap'):0);u.st[k+'N']=Math.min(cap,(u.st[k+'N']||0)+1);u.st[k]=Math.max(sv(u,k),dur);if(src&&tm(src,'dotP'))u.st[k+'P']=Math.max(u.st[k+'P']||0,tm(src,'dotP'));}
  else u.st[k]=Math.max(sv(u,k),dur);
  if(k==='link'&&src&&tm(src,'linkSlow'))u.st.slow=Math.max(sv(u,'slow'),dur);
@@ -151,7 +154,7 @@ function healU(D,st,src,t,pct,solPct,ev,label,low){let m=1+tm(src,'healP')+((st.
  if(tm(src,'healCleanse'))for(const k of DOTS){t.st[k]=0;t.st[k+'N']=0;}
  if(tm(src,'healRegen')&&src.id!==t.id)addSt(D,st,t,'regen',2,ev,src);
  if(tm(src,'overHealMight')&&want>h&&pct>0)addSt(D,st,t,'might',2,ev,src);
- if(h>0||soldiers(t)>s0)ev.push({t:'heal',a:src.id,d:t.id,txt:(label?label+'：':'')+t.name+' 回復 '+h+(soldiers(t)>s0?'，士兵 '+s0+'→'+soldiers(t):'')});return h;}
+ if(h>0||soldiers(t)>s0)ev.push({t:'heal',a:src.id,d:t.id,h,txt:(label?label+'：':'')+t.name+' 回復 '+h+(soldiers(t)>s0?'，士兵 '+s0+'→'+soldiers(t):'')});return h;}
 // 打人的一方：加成
 function calcMods(D,st,att,tgt,o,notes){let s=0;const add=(v,n)=>{if(v){s+=v;notes.push(n+(v>0?' +':' ')+Math.round(v*100)+'%');}};
  if(sv(att,'fear')>0&&!tm(att,'noFearPen'))add(-.2,'恐懼');
@@ -164,12 +167,12 @@ function calcMods(D,st,att,tgt,o,notes){let s=0;const add=(v,n)=>{if(v){s+=v;not
  if(alive(st,att.faction).length===1)add(tm(att,'lastStand'),'活到最後');
  if(o.counter)add(tm(att,'counterP'),'騎士');
  if(o.chargeP&&o.charge)add(+(o.chargeP*o.charge).toFixed(2),'衝鋒');
- if(tgt){if(sv(tgt,'vuln')>0)add(.2,'破綻');if(sv(tgt,'seal')>0)add(tm(att,'vsSealP'),'對封印');if(sv(tgt,'bleed')>0)add(tm(att,'vsBleedP'),'對流血');if(sv(tgt,'blind')>0)add(tm(att,'vsBlindP'),'對致盲');if(tgt.st.mark>0)add(tm(att,'vsMarkP'),'交叉比對');if(tgt.hp<tgt.maxHp*.3)add(tm(att,'execLow'),'結案');}
+ if(tgt){if(sv(tgt,'vuln')>0)add(.2,'破綻');if(sv(tgt,'seal')>0)add(tm(att,'vsSealP'),'對封印');if(sv(tgt,'bleed')>0)add(tm(att,'vsBleedP'),'對流血');if(sv(tgt,'blind')>0)add(tm(att,'vsBlindP'),'對致盲');if(tgt.st.mark>0)add(tm(att,'vsMarkP'),'交叉比對');if(tgt.hp<tgt.maxHp*.3)add(tm(att,'execLow'),'結案');if(sv(tgt,'pact')>0)add(tm(att,'vsPactP'),'違約金');}
  return s;}
 // 被打的一方：減傷
 function takeMods(D,st,tgt,o,notes){let r=0;const add=(v,n)=>{if(v){r+=v;notes.push(n+' −'+Math.round(v*100)+'%');}};
  add(tm(tgt,'dr'),'減傷');if(sv(tgt,'ward')>0)add(.3,'護衛');if(sv(tgt,'taunt')>0)add(tm(tgt,'tauntDR'),'鴉羽披風');if(o.area)add(tm(tgt,'aoeDR'),'落石經驗');if(tgt.slumber>0)add(.5,'蟄伏');
- let cov=0;for(const v of alive(st,tgt.faction))if(v.id!==tgt.id&&manhattan(v,tgt)===1)cov=Math.max(cov,tm(v,'coverAdj'));add(cov,'有人替你擋');
+ let cov=0,au=0;for(const v of alive(st,tgt.faction)){if(v.id!==tgt.id&&manhattan(v,tgt)===1)cov=Math.max(cov,tm(v,'coverAdj'));if(manhattan(v,tgt)<=2)au=Math.max(au,tm(v,'auraDR'));}add(cov,'有人替你擋');add(au,'月燈');
  return Math.min(.8,r);}
 function canCounter(t){return !(sv(t,'fear')>0)&&!(sv(t,'freeze')>0)&&!(sv(t,'charm')>0)&&!(sv(t,'shell')>0);}
 // 傷害轉移：誓約、替身線
@@ -179,6 +182,7 @@ function redirect(D,st,tgt,d,ev,src){if(src.noShare||src.redir)return d;
  if(pr>0){const L=alive(st).find(v=>v.faction!==tgt.faction&&sv(v,'link')>0);if(L){const r=Math.floor(d*pr);if(r>0){d-=r;ev.push({t:'share',a:L.id,d:tgt.id,dmg:r,txt:'絲線把 '+r+' 點傷害轉給 '+L.name});applySplit(D,st,L,r,ev);}}}
  return d;}
 function takenHit(D,st,t,ev){t.hitN=(t.hitN||0)+1;
+ if(t.hp>0&&t.hp<t.maxHp*.3&&!t.emergDone){const o=alive(st,t.faction).find(v=>tm(v,'emergShield')&&(v.emergCd||0)<=st.round);if(o){t.emergDone=1;o.emergCd=st.round+3;t.st.shield=Math.max(sv(t,'shield'),Math.round(t.maxHp*tm(o,'emergShield')));ev.push({t:'shield',d:t.id,txt:o.name+'〔未熄的歸途〕月燈替 '+t.name+' 張開護盾'});}}
  if(tm(t,'hitShield')&&t.hitN%3===0){t.st.shield=Math.max(sv(t,'shield'),Math.round(t.maxHp*tm(t,'hitShield')));ev.push({t:'shield',d:t.id,txt:t.name+'〔三層〕得到護盾'});}
  if(tm(t,'rockBlast')&&t.hitN%6===0){ev.push({t:'skill',a:t.id,txt:t.name+'〔岩層〕崩落！'});for(const e of alive(st).filter(v=>v.faction!==t.faction&&manhattan(v,t)<=2))if(e.hp>0)strike(D,st,t,{x:t.x,y:t.y},e.id,ev,{mult:tm(t,'rockBlast'),noCounter:true,area:true,label:'岩層崩落',noShare:true});}
  if(t.slumber>0&&t.hp<t.maxHp*.6)wake(D,st,t,ev);}
@@ -187,7 +191,8 @@ function afterHit(D,st,att,tgt,d,ev,o){
  const th=tm(tgt,'thornSt');if(!o.counter&&Array.isArray(th)&&att.hp>0&&roll(st)<th[2])addSt(D,st,att,th[0],th[1],ev,tgt);
  if(!o.counter&&tm(tgt,'thornDmg')&&att.hp>0&&manhattan(att,tgt)===1){const r=Math.max(1,Math.round(d*tm(tgt,'thornDmg')));ev.push({t:'hit',a:tgt.id,d:att.id,dmg:r,txt:tgt.name+'〔逆鱗〕反彈 '+r});dealTo(D,st,att,r,ev,{noShare:true});}
  if(sv(tgt,'link')>0&&!o.linkSpread){for(const v of alive(st,tgt.faction))if(v.id!==tgt.id&&sv(v,'link')>0){const r=Math.max(1,Math.round(d*.3));ev.push({t:'hit',a:att.id,d:v.id,dmg:r,txt:'絲線把傷害傳給 '+v.name+'：'+r});dealTo(D,st,v,r,ev,{noShare:true,linkSpread:true});}}}
-function saveLife(D,st,t,ev){let pct=0;if(sv(t,'undying')>0){pct=.25;t.st.undying=0;}else if(tm(t,'undyingOnce')&&!t.lifeUsed){pct=tm(t,'undyingOnce');t.lifeUsed=1;}
+function saveLife(D,st,t,ev){const bl=alive(st,t.faction).find(v=>v.id!==t.id&&tm(v,'bearLethal')&&(v.bearCd||0)<=st.round&&v.hp>Math.round(t.maxHp*.2));if(bl&&!(sv(t,'undying')>0)&&!(tm(t,'undyingOnce')&&!t.lifeUsed)){const give=Math.round(t.maxHp*.2);t.hp=give;bl.hp=Math.max(1,bl.hp-give);bl.bearCd=st.round+3;ev.push({t:'share',a:bl.id,d:t.id,dmg:give,txt:bl.name+' 用緋線把 '+t.name+' 拉回來（替他承受 '+give+'）'});addSt(D,st,bl,'might',2,ev,null);return true;}
+ let pct=0;if(sv(t,'undying')>0){pct=.25;t.st.undying=0;}else if(tm(t,'undyingOnce')&&!t.lifeUsed){pct=tm(t,'undyingOnce');t.lifeUsed=1;}
  if(!pct)return false;t.hp=Math.max(1,Math.round(t.maxHp*pct));ev.push({t:'heal',d:t.id,txt:t.name+' 撐住了（留下 '+t.hp+' 生命）'});return true;}
 function onDown(D,st,t,ev){st.downN=st.downN||{};st.downN[t.faction]=(st.downN[t.faction]||0)+1;
  if(tm(t,'deathBlast')){ev.push({t:'skill',a:t.id,txt:t.name+'〔還火〕'});for(const e of alive(st).filter(v=>v.faction!==t.faction&&manhattan(v,t)<=2)){const dm=Math.round((t.dmg==='MAGICAL'?t.mag:t.atk)*tm(t,'deathBlast'));ev.push({t:'hit',a:t.id,d:e.id,dmg:dm,txt:'還火燒到 '+e.name+'：'+dm});dealTo(D,st,e,dm,ev,{noShare:true});}}
@@ -211,7 +216,7 @@ function tickSt(D,st,ev){for(const u of alive(st)){
  if(tm(u,'auraCleanse'))for(const a of alive(st,u.faction))if(manhattan(a,u)<=2){for(const k of DOTS)if(sv(a,k)>0){a.st[k]=0;a.st[k+'N']=0;break;}}
  if(tm(u,'selfCleanse3')&&st.round%3===0&&clearBad(u,9))ev.push({t:'say',txt:u.name+'〔蛻皮〕清掉了身上的壞狀態'});
  if(sv(u,'doom')>0){u.st.doom--;if(u.st.doom<=0&&u.st.doomV){const v=u.st.doomV;u.st.doomV=0;ev.push({t:'hit',a:u.st.doomBy||u.id,d:u.id,dmg:v,txt:u.name+' 身上的延爆詛咒爆開：'+v});dealTo(D,st,u,v,ev,{noShare:true});}}
- for(const k of TIMED)if(sv(u,k)>0)u.st[k]--;
+ for(const k of TIMED)if(sv(u,k)>0){u.st[k]--;if(k==='pact'&&u.st.pact<=0)u.st.pactN=0;}
  if(u.slumber>0&&st.round>=3)wake(D,st,u,ev);}}
 // 通用技能：可以點的目標
 function genTargets(D,st,u,to,S){const [a,b]=S.range||[0,0];
@@ -225,27 +230,29 @@ function genArea(D,st,u,to,S,a){const isFoe=v=>v.faction!==u.faction&&sv(v,'stea
  else if(S.shape==='line'){const t=st.units.find(v=>v.id===a.target);if(t){const dx=Math.sign(t.x-to.x),dy=Math.sign(t.y-to.y);for(let i=1;i<=(S.len||3);i++){const v=unitAt(st,to.x+dx*i,to.y+dy*i);if(v&&isFoe(v))foes.push(v);}}}
  else if(S.shape==='area'){const c=a.at;if(c)for(const v of alive(st))if(Math.abs(v.x-c.x)<=1&&Math.abs(v.y-c.y)<=1&&isFoe(v))foes.push(v);}
  else if(S.shape==='around'){for(const v of alive(st))if(isFoe(v)&&manhattan(v,to)<=(S.r||1))foes.push(v);}
+ else if(S.shape==='areaAlly'){const cc=a.at;if(cc)for(const v of alive(st,u.faction))if(Math.abs(v.x-cc.x)<=1&&Math.abs(v.y-cc.y)<=1)allies.push(v);}
  else if(S.shape==='allyAround'){for(const v of alive(st,u.faction)){const d=v.id===u.id?0:manhattan(v,to);if(d<=(S.r||1))allies.push(v);}}
  return {foes,allies};}
 function applyHitSt(D,st,u,f,S,ev){for(const s of S.st||[]){if(s[2]!=null&&s[2]<1&&roll(st)>=s[2])continue;addSt(D,st,f,s[0],s[1],ev,u);}
  const ss=tm(u,'skillSt');if(Array.isArray(ss)&&roll(st)<ss[2])addSt(D,st,f,ss[0],ss[1],ev,u);
  if(tm(u,'slowFreeze')&&sv(f,'slow')>0&&roll(st)<tm(u,'slowFreeze'))addSt(D,st,f,'freeze',1,ev,u);}
-function doGen(D,st,u,to,S,a,ev,cost){ev.push({t:'skill',a:u.id,sk:a.skill,txt:u.name+'「'+S.name+'」'});
+function doGen(D,st,u,to,S,a,ev,cost){ev.push({t:'skill',a:u.id,sk:a.skill,at:a.at||null,tgt:a.target||null,big:S.cd>=5,txt:u.name+'「'+S.name+'」'});
  const A=genArea(D,st,u,to,S,a);const self=S.self||{};
  if(self.heal)healU(D,st,u,u,self.heal,0,ev,'');
  if(self.shield)u.st.shield=Math.max(sv(u,'shield'),Math.round(u.maxHp*self.shield));
- const so={mult:S.mult,noCounter:true,area:S.shape!=='one',skill:true,label:S.name,useDef:S.useDef,charge:cost,chargeP:S.chargeP};
- const hitOne=(f,mult)=>{if(f.hp<=0)return null;let m=mult;if(S.shatter&&(sv(f,'freeze')>0||sv(f,'slow')>0)){m*=S.shatter;ev.push({t:'say',txt:f.name+' 碎裂！'});}
-  const r=strike(D,st,u,to,f.id,ev,{...so,mult:m});if(r.hit&&f.hp>0)applyHitSt(D,st,u,f,S,ev);return r;};
+ const so={mult:S.mult,noCounter:true,area:S.shape!=='one',skill:true,label:S.name,useDef:S.useDef,charge:cost,chargeP:S.chargeP,fx:S.fx};
+ const hitOne=(f,mult)=>{if(f.hp<=0)return null;let m=mult;const pn=f.st.pactN||0;if(S.pactJudge&&pn){m+=S.pactJudge*pn;ev.push({t:'say',txt:'裁定：'+f.name+' 身上 '+pn+' 層厄契'});}if(S.shatter&&(sv(f,'freeze')>0||sv(f,'slow')>0)){m*=S.shatter;ev.push({t:'say',txt:f.name+' 碎裂！'});}
+  const r=strike(D,st,u,to,f.id,ev,{...so,mult:m});if(r.hit&&f.hp>0)applyHitSt(D,st,u,f,S,ev);if(S.pactJudge&&pn&&r.hit){f.st.pact=0;f.st.pactN=0;if(pn>=3&&f.hp>0){addSt(D,st,f,'brk',2,ev,u);addSt(D,st,f,'fear',2,ev,u);}}return r;};
  if(S.shape==='rand'){const [ra,rb]=S.range||[1,3];for(let i=0;i<(S.hits||1);i++){const pool=alive(st).filter(v=>v.faction!==u.faction&&sv(v,'stealth')<=0&&manhattan(v,to)>=ra&&manhattan(v,to)<=rb);if(!pool.length)break;hitOne(pool[Math.floor(roll(st)*pool.length)%pool.length],S.mult);}}
  else if(S.mult>0){for(const f of A.foes)for(let h=0;h<(S.hits||1)&&f.hp>0;h++){const r=hitOne(f,S.mult);if(r&&r.hit&&tm(u,'bounce')&&roll(st)<tm(u,'bounce')){const o2=alive(st).find(v=>v.faction!==u.faction&&v.id!==f.id&&manhattan(v,f)<=2);if(o2){ev.push({t:'say',txt:'漣漪彈到 '+o2.name});strike(D,st,u,to,o2.id,ev,{...so,mult:S.mult*.5});}}}}
  else if(!S.doom){for(const f of A.foes)applyHitSt(D,st,u,f,S,ev);}
  if(S.doom){for(const f of A.foes){const p=withPos(u,to,()=>calc(D,st,u,to,f.id,{mult:S.doom*(1+tm(u,'doomP')),skill:true}));f.st.doom=3;f.st.doomV=Math.max(f.st.doomV||0,p.dmg);f.st.doomBy=u.id;ev.push({t:'status',d:f.id,txt:f.name+'：延爆詛咒（3 回合後爆開，約 '+p.dmg+'）'});}}
  if(S.quench)for(const f of A.foes){f.st.burn=0;f.st.burnN=0;}
+ if(S.blockWarn&&a.at&&st.warn){const w0=st.warn.length;st.warn=st.warn.filter(w=>!(Math.abs(w.x-a.at.x)<=1&&Math.abs(w.y-a.at.y)<=1));if(st.warn.length<w0)ev.push({t:'purify',txt:'封界擋下了 '+(w0-st.warn.length)+' 格正在擴散的污染'});}
  const al=S.ally;if(al){for(const t of A.allies){let pct=al.heal||0;if(S.perPoison)pct+=S.perPoison*alive(st).filter(v=>v.faction!==u.faction&&sv(v,'poison')>0).length;
    if(pct||al.sol)healU(D,st,u,t,pct,al.sol||0,ev,'',al.low);
    if(al.shield)t.st.shield=Math.max(sv(t,'shield'),Math.round(t.maxHp*al.shield));
-   if(al.cleanse){const n=clearBad(t,al.cleanse);if(n)ev.push({t:'say',txt:t.name+' 解除了 '+n+' 個壞狀態'});}
+   if(al.cleanse){const hadDot=['burn','bleed','poison','doom'].some(k=>sv(t,k)>0);const n=clearBad(t,al.cleanse);if(n)ev.push({t:'say',txt:t.name+' 解除了 '+n+' 個壞狀態'});if(al.cleanseShield&&hadDot&&n){t.st.shield=Math.max(sv(t,'shield'),Math.round(t.maxHp*al.cleanseShield));ev.push({t:'shield',d:t.id,txt:t.name+' 得到月光護盾'});}}
    for(const s of al.st||[]){if(s[2]!=null&&roll(st)>=s[2])continue;addSt(D,st,t,s[0],s[1],ev,u);}}
   if(al.shield&&A.allies.length)ev.push({t:'say',txt:'護盾：'+A.allies.map(v=>v.name).join('、')});}
  if(S.oath){const t=st.units.find(v=>v.id===a.target);if(t){t.st.oath=S.oath;t.oathBy=u.id;ev.push({t:'status',d:t.id,txt:u.name+' 和 '+t.name+' 立誓（'+S.oath+' 回合）'});}}
@@ -259,6 +266,7 @@ function aiGen(D,st,u,pos,c,sk,S,add,posPen,near,allies){const base={type:'ACT',
  const dmgV=(f,mult,hits)=>{const p=preview(D,st,u,pos,f.id,{mult:mult*(hits||1),noCounter:true,skill:true,area:S.shape!=='one',useDef:S.useDef});return scoreHit(D,st,u,pos,f.id,p);};
  const foeVal=list=>list.reduce((s,f)=>s+(S.mult>0?dmgV(f,S.mult,S.hits):0)+stV(f)+(S.doom?4:0),0);
  if(S.tg==='enemy'){for(const tid of withPos(u,pos,()=>genTargets(D,st,u,pos,S))){const A=withPos(u,pos,()=>genArea(D,st,u,pos,S,{target:tid}));if(!A.foes.length)continue;add(foeVal(A.foes)+1+pp,{...base,target:tid});}return;}
+ if(S.tg==='tile'&&S.shape==='areaAlly'){if(near>4)return;let best=null,bv=0;for(const t of allies.concat([u])){for(const [dx,dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]){const x=(t.id===u.id?pos.x:t.x)+dx,y=(t.id===u.id?pos.y:t.y)+dy;const d=Math.abs(x-pos.x)+Math.abs(y-pos.y);if(d<S.range[0]||d>S.range[1]||!inside(st,x,y))continue;const A=withPos(u,pos,()=>genArea(D,st,u,pos,S,{at:{x,y}}));const v=A.allies.length*1.6;if(v>bv){bv=v;best={x,y};}}}if(best&&bv>=3)add(bv+pp,{...base,at:best});return;}
  if(S.tg==='tile'){if(near>6)return;const seen=new Set();for(const f of alive(st).filter(v=>v.faction!==u.faction)){for(const [dx,dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]){const x=f.x+dx,y=f.y+dy;const k=key(x,y);if(seen.has(k)||!inside(st,x,y))continue;seen.add(k);const d=Math.abs(x-pos.x)+Math.abs(y-pos.y);if(d<S.range[0]||d>S.range[1])continue;const A=withPos(u,pos,()=>genArea(D,st,u,pos,S,{at:{x,y}}));if(!A.foes.length)continue;add(foeVal(A.foes)+(A.foes.length>1?3:0)+pp,{...base,at:{x,y}});}}return;}
  if(S.tg==='ally'){for(const tid of withPos(u,pos,()=>genTargets(D,st,u,pos,S))){const t=st.units.find(v=>v.id===tid);let v=0;if(S.ally){const miss=(t.maxHp-t.hp)/t.maxHp;v+=miss*14*(S.ally.heal?1:0)+(S.ally.cleanse?BAD.filter(k=>sv(t,k)>0).length*2:0);}if(S.oath)v+=(t.id!==u.id&&near<=4&&!(sv(t,'oath')>0))?(1-t.hp/t.maxHp)*10+3:-5;if(S.poisonNear)v+=1;if(v>2.5)add(v+pp,{...base,target:tid});}return;}
  const A=withPos(u,pos,()=>genArea(D,st,u,pos,S,{}));let v=0;
@@ -281,6 +289,7 @@ function skillTargets(D,st,u,to,sk){sk=sk||u.skills[0];const S=D.skills[sk];if(!
   if(S.kind==='zone'){const out=[];for(let y=0;y<st.h;y++)for(let x=0;x<st.w;x++){const d=Math.abs(x-to.x)+Math.abs(y-to.y);if(d>=S.range[0]&&d<=S.range[1])out.push(key(x,y));}return out;}
   return [];});}
 function validate(D,st,a){if(st.result)return 'battle_over';
+ if(a.type==='RETREAT'){if(st.result)return 'over';return null;}
  if(a.type==='END_PHASE')return st.phase==='PLAYER'?null:'not_player_phase';
  if(a.type!=='ACT')return 'bad_type';const u=st.units.find(v=>v.id===a.actorId);if(!u||u.hp<=0)return 'no_actor';
  const want=st.phase==='PLAYER'?'P':'E';if(u.faction!==want)return 'not_your_unit';if(u.usedAct)return 'already_acted';
@@ -296,7 +305,8 @@ function validate(D,st,a){if(st.result)return 'battle_over';
  return null;}
 
 function apply(D,st0,a){const err=validate(D,st0,a);if(err)return {ok:false,error:err,state:st0,events:[]};const st=clone(st0);const ev=[];
- if(a.type==='END_PHASE'){phaseEnd(st,'P');runEnemyPhase(D,st,ev);}else doAct(D,st,a,ev);
+ if(a.type==='RETREAT'){st.result={win:false,reason:'撤退了'};st.phase='RESULT';ev.push({t:'end',txt:'失敗：撤退了'});}
+ else if(a.type==='END_PHASE'){phaseEnd(st,'P');runEnemyPhase(D,st,ev);}else doAct(D,st,a,ev);
  st.eventLog.push(...ev.map(e=>({...e,round:st.round})));if(st.eventLog.length>500)st.eventLog=st.eventLog.slice(-500);
  return {ok:true,state:st,events:ev};}
 

@@ -19,15 +19,17 @@ function fix(D,c){if(!c||c.v!==1)return newCamp(D);c.roster=c.roster||{};for(con
  c.gifts=c.gifts&&typeof c.gifts==='object'?c.gifts:{};for(const k of Object.keys(c.gifts))c.gifts[k]=Math.max(0,c.gifts[k]|0);if(typeof c.pcName!=='string')c.pcName='';c.pcName=c.pcName.slice(0,12);if(c.pcLook!=='b')c.pcLook='a';c.flags=c.flags&&typeof c.flags==='object'?c.flags:{};
  return c;}
 function mult(D,id,c){const h=heroOf(D,id),r=c.roster[id];return D.rarityMult[h.r]*(1+D.starStep*(r?r.star:0))*(1+D.xp.statStep*((r?r.lv:1)-1));}
-function skillsOf(D,id,c){const h=heroOf(D,id),u=D.units[h.unit],r=c.roster[id];const lv=r?r.lv:1;const P=(D.personal||{})[id]||[];const A=D.personalAt||{skill:1,ult:10};const out=[u.skill];if(P[0]&&lv>=A.skill)out.push(P[0]);if(lv>=D.secondAt&&D.secondSkill[h.unit])out.push(D.secondSkill[h.unit]);if(P[1]&&lv>=A.ult)out.push(P[1]);return out;}
+function skillsOf(D,id,c){const h=heroOf(D,id),u=D.units[h.unit],r=c.roster[id];const lv=r?r.lv:1;return allSkillsOf(D,id).filter(x=>lv>=x[1]).map(x=>x[0]);}
 // 全部技能（含還沒學會的），給角色頁看
-function allSkillsOf(D,id){const h=heroOf(D,id),u=D.units[h.unit];const P=(D.personal||{})[id]||[];const A=D.personalAt||{skill:1,ult:10};return [[u.skill,1,'職業技'],P[0]?[P[0],A.skill,'專屬技']:null,D.secondSkill[h.unit]?[D.secondSkill[h.unit],D.secondAt,'職業進階']:null,P[1]?[P[1],A.ult,'專屬奧義']:null].filter(Boolean);}
+function allSkillsOf(D,id){const h=heroOf(D,id),u=D.units[h.unit];const P=(D.personal||{})[id]||[];const A=D.personalAt||{skill:1,ult:10};const L=(D.personalLv||{})[id];
+ if(L)return [[u.skill,1,'職業技'],...P.map((k,i)=>[k,L[i],i===P.length-1?'專屬奧義':'專屬技']),D.secondSkill[h.unit]?[D.secondSkill[h.unit],D.secondAt,'職業進階']:null].filter(Boolean).sort((a,b)=>a[1]-b[1]);
+ return [[u.skill,1,'職業技'],P[0]?[P[0],A.skill,'專屬技']:null,D.secondSkill[h.unit]?[D.secondSkill[h.unit],D.secondAt,'職業進階']:null,P[1]?[P[1],A.ult,'專屬奧義']:null].filter(Boolean);}
 function soldiersOf(D,id,c){const h=heroOf(D,id),r=c.roster[id];return (D.units[h.unit].soldiers||5)+((r.sq||{}).tier||0)+(D.talents?talFx(D,r,h.unit).sold:0);}
 function slotsOf(D,r){return D.squad.slotsAt.filter(l=>r.sq.lv>=l).length;}
-function art(h){return RG+h.src;}
+function art(h){return h.src&&h.src.startsWith('inbox/')?h.src:RG+h.src;}
 // 出戰隊伍 → 戰鬥核心要的格式（士兵比例延續）
 function teamFor(D,c,cosArt){return c.team.map(id=>{const h=heroOf(D,id),r=c.roster[id],Q=D.squad,T=talFx(D,r,h.unit);const o={def:h.unit,rid:id,hero:id,name:h.name,title:h.title,lv:r.lv,mult:+mult(D,id,c).toFixed(3),sol:+(r.sol).toFixed(3),art:art(h),skills:skillsOf(D,id,c),soldiers:soldiersOf(D,id,c),hpPer:+((1+Q.hpStep*(r.sq.lv-1))*(1+T.solP)).toFixed(3),sb:+(Q.baseBonus+Q.bonusStep*(r.sq.lv-1)+T.sb).toFixed(3),pas:r.sq.pas.slice(),eq:heroEq(D,c,id)};
-  const tal={};for(const k of ['atkP','defP','resP','hpP','crit','hit','eva','move'])if(T[k])tal[k]=T[k];if(Object.keys(T.tm).length)o.tm=T.tm;if(T.flags.length)tal.flags=T.flags.slice();if(Object.keys(tal).length)o.tal=tal;const cp=r.cos&&cosArt&&cosArt(r.cos,id);if(cp)o.por=cp;return o;});}
+  const tal={};for(const k of ['atkP','defP','resP','hpP','crit','hit','eva','move'])if(T[k])tal[k]=T[k];const inn=(D.innate||{})[id];if(inn)Object.assign(T.tm,inn);if(Object.keys(T.tm).length)o.tm=T.tm;if(T.flags.length)tal.flags=T.flags.slice();if(Object.keys(tal).length)o.tal=tal;const cp=r.cos&&cosArt&&cosArt(r.cos,id);if(cp)o.por=cp;return o;});}
 // ---------- 裝備 ----------
 function fits(D,id,e,sl){if(!e)return false;const B=D.equip[e.b],h=heroOf(D,id);if(!B||!h)return false;if(sl&&B.slot!==sl)return false;return !B.units||B.units.includes(h.unit);}
 function eqStats(D,e){const B=D.equip[e.b],k=D.eqRarity.mult[e.r]*(1+D.eqPlusStep*(e.p||0));const o={};for(const s of Object.keys(B.st))o[s]=+(B.st[s]*k).toFixed(1);return o;}
@@ -65,6 +67,8 @@ function talReset(D,c,id){const r=c.roster[id];if(!r.tal.length)return {ok:false
 function talFx(D,r,unit){const o={atkP:0,defP:0,resP:0,hpP:0,crit:0,hit:0,eva:0,solP:0,sb:0,sold:0,move:0,flags:[],tm:{}};for(const n of (r.tal||[])){const T=talNode(D,n);if(!T)continue;for(const [k,v] of Object.entries(T.n.fx)){if(k==='flag')o.flags.push(v);else if(k in o&&k!=='tm'&&k!=='flags')o[k]+=v;else if(typeof v==='number')o.tm[k]=(o.tm[k]||0)+v;else o.tm[k]=v;}}
  // 治療師的「鋒」改成治療量
  if(unit==='P_HEALER'&&o.atkP){o.tm.healP=(o.tm.healP||0)+o.atkP*2.5;o.atkP=0;}if(o.tm.quick){o.flags.push('quick');delete o.tm.quick;}return o;}
+// ---------- 神秘角色：開局二選一 ----------
+function chooseMythic(D,c,id){const h=heroOf(D,id);if(!h||!h.myth)return {ok:false,error:'沒有這位'};if(c.mythic)return {ok:false,error:'已經選過了'};c.mythic=id;if(!c.roster[id])c.roster[id]=blankHero();if(!c.team.includes(id)){if(c.team.length>=TS(D))c.team[c.team.length-1]=id;else c.team.push(id);}return {ok:true};}
 // ---------- 渡鴉幣與時裝 ----------
 function buyCostume(D,c,cid,price){if(c.cosOwned.includes(cid))return {ok:false,error:'已經有了'};if(c.coins<price)return {ok:false,error:'渡鴉幣不夠（要 '+price+'）'};c.coins-=price;c.cosOwned.push(cid);return {ok:true};}
 // ---------- 好感與禮物 ----------
@@ -106,7 +110,7 @@ function forget(D,c,id,pk){const r=c.roster[id];r.sq.pas=r.sq.pas.filter(p=>p!==
 function addXp(D,r,n){const X=D.xp;let up=0;r.xp+=n;while(r.lv<X.maxLv&&r.xp>=X.perLevel*r.lv){r.xp-=X.perLevel*r.lv;r.lv++;up++;}if(r.lv>=X.maxLv)r.xp=0;return up;}
 // ---------- 戰後 ----------
 function afterBattle(D,c,st,rng){rng=rng||Math.random;if(c.lastBattle===st.battleInstanceId)return {dup:true};c.lastBattle=st.battleInstanceId;const R=D.rewards;const win=st.result&&st.result.win;const got={tickets:0,supply:0};
- if(win){got.tickets+=R.win.tickets;got.supply+=R.win.supply;if(!st.gate.none&&st.gate.hp>=200)got.tickets+=R.winClean.tickets;c.wins++;c.cleared=c.cleared||{};if(!c.cleared[st.missionId]){c.cleared[st.missionId]=true;got.first=true;got.tickets+=2;c.tickets+=0;}}else{got.tickets+=R.lose.tickets;got.supply+=R.lose.supply;}
+ if(win){got.tickets+=R.win.tickets;got.supply+=R.win.supply;if(!st.gate.none&&st.gate.hp>=200)got.tickets+=R.winClean.tickets;c.wins++;c.cleared=c.cleared||{};if(!c.cleared[st.missionId]){c.cleared[st.missionId]=true;got.first=true;got.tickets+=2;got.supply+=(R.firstSupply||0);}}else{got.tickets+=R.lose.tickets;got.supply+=R.lose.supply;}
  c.battles++;c.tickets+=got.tickets;c.supply+=got.supply;
  got.xp={};got.lvUp={};const X=D.xp;
  for(const u of st.units)if(u.faction==='P'&&u.rid&&c.roster[u.rid]){const r=c.roster[u.rid];r.sol=u.hp>0?+(u.sol/Math.max(1,u.solMax)).toFixed(3):0;const k=u.kills||0;const xp=X.join+(win?X.win:0)+X.kill*k;const up=addXp(D,r,xp);got.xp[u.rid]=xp;if(up)got.lvUp[u.rid]=r.lv;got.supply+=(D.rewards.perKill||0)*k;c.supply+=(D.rewards.perKill||0)*k;}
@@ -114,6 +118,6 @@ function afterBattle(D,c,st,rng){rng=rng||Math.random;if(c.lastBattle===st.battl
  if(D.giftDrop&&win&&rng()<D.giftDrop.chance){const g=D.giftDrop.list[Math.floor(rng()*D.giftDrop.list.length)%D.giftDrop.list.length];addGift(c,g);got.gift=g;}
  if(D.quests)got.quests=questCheck(D,c,st,rng);
  c.log.unshift({t:'battle',win,fac:st.faction,got:{tickets:got.tickets,supply:got.supply}});c.log=c.log.slice(0,30);return got;}
-const API={allSkillsOf,buyCostume,affTier,chat,giveGift,addGift,questNew,questFill,questText,questMet,questGive,questCheck,questReroll,talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
+const API={chooseMythic,allSkillsOf,buyCostume,affTier,chat,giveGift,addGift,questNew,questFill,questText,questMet,questGive,questCheck,questReroll,talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.CAMP=API;
 })(this);
