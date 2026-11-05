@@ -2,7 +2,7 @@
 // 規則：純函式、不碰畫面、不呼叫 Math.random 或系統時間；所有隨機都來自 seed + rngIndex。
 (function(root){
 'use strict';
-const SCHEMA=4;
+const SCHEMA=5;
 
 // ---------- 小工具 ----------
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -13,25 +13,28 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function rngAt(seed,idx){let z=(seed>>>0)^Math.imul(idx+1,0x9E3779B1);z=Math.imul(z^(z>>>16),0x85EBCA6B);z=Math.imul(z^(z>>>13),0xC2B2AE35);z^=z>>>16;return (z>>>0)/4294967296;}
 function roll(st){const v=rngAt(st.seed,st.rngIndex);st.rngIndex++;return v;}
-function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.tiles.join(''),st.result]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
+function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.hold,st.tiles.join(''),st.result]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
 
 // ---------- 建立戰鬥 ----------
 function makeUnit(D,def,id,faction,x,y,ov){const b={...D.units[def],...(ov||{})};if(!b)throw new Error('unknown unit '+def);const n=b.soldiers||0,hp1=b.hpPer||10;
  return {id,def,name:b.name,glyph:b.glyph,troop:b.troop,faction,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,fly:!!b.fly,art:b.art||null,por:b.por||null,hero:b.hero||null,cls:b.cls||null,
   sol:n*hp1,solMax:n*hp1,hpPer:hp1,skills:b.skills||(b.skill?[b.skill]:[]),pas:b.pas||[],sb:b.sb!=null?b.sb:null,cd:{},st:{root:0,mark:0,gs:0},usedAct:false,guard:false,stay:false,kills:0,lv:b.lv||1};}
+// 裝備加成（平的數值，加在等級、星級之後）
+function applyEq(u,e){const r=Math.round;if(e.hp){const k=r(e.hp);u.hp+=k;u.maxHp+=k;}for(const s of ['atk','def','mag','res'])if(e[s])u[s]=Math.max(0,u[s]+r(e[s]));for(const s of ['hit','eva','crit'])if(e[s])u[s]=(u[s]||0)+r(e[s]);u.eq=1;}
 const hasP=(u,k)=>!!(u&&u.pas&&u.pas.includes(k));
 function createBattle(D,missionId,seed,opts){opts=opts||{};const M=D.missions[missionId];if(!M)throw new Error('unknown mission');
- const team=(opts.team&&opts.team.length?opts.team:D.defaultTeam).slice(0,D.deploySlots.length);for(const t of team){const d=typeof t==='string'?t:t&&t.def;if(!D.units[d]||d[0]!=='P')throw new Error('bad team '+JSON.stringify(t));}
+ const team=(opts.team&&opts.team.length?opts.team:D.defaultTeam).slice(0,(M.deploy||D.deploySlots).length);for(const t of team){const d=typeof t==='string'?t:t&&t.def;if(!D.units[d]||d[0]!=='P')throw new Error('bad team '+JSON.stringify(t));}
  const tiles=[];for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)tiles.push(M.legend[M.map[y][x]]);
  const st={schemaVersion:SCHEMA,rulesetVersion:D.rulesetVersion,missionId,battleInstanceId:missionId+'_'+(seed>>>0).toString(16),seed:seed>>>0,rngIndex:0,round:1,phase:'PLAYER',w:M.w,h:M.h,tiles,team:team.slice(),
-  gate:{...M.gate,maxHp:M.gate.hp},units:[],zones:[],warn:[],corr:0,pressure:false,result:null,eventLog:[],nextId:1};
+  gate:M.gate?{...M.gate,maxHp:M.gate.hp}:{none:true,x:-99,y:-99,hp:0,maxHp:0,def:0,res:0},obj:M.obj||{type:'gate'},hold:0,units:[],zones:[],warn:[],corr:0,pressure:false,result:null,eventLog:[],nextId:1};
  const fk=Object.keys(D.factions);st.faction=opts.faction&&D.factions[opts.faction]?opts.faction:fk[Math.floor(rngAt(st.seed,0x7ffff)*fk.length)];const F=D.factions[st.faction];
- team.forEach((t,i)=>{const [x,y]=D.deploySlots[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
+ const DEP=M.deploy||D.deploySlots;team.forEach((t,i)=>{const [x,y]=DEP[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
   const b=D.units[t.def],k=t.mult||1;const ov={name:t.name||b.name,cls:t.title||b.cls,hero:t.hero||null,art:t.art||null,por:t.por||t.art||null,hp:Math.round(b.hp*k),atk:Math.round(b.atk*k),def:Math.round(b.def*k),mag:Math.round(b.mag*k),res:Math.round(b.res*k),lv:t.lv||1};
   if(t.skills)ov.skills=t.skills.filter(x=>D.skills[x]);if(t.pas)ov.pas=t.pas.filter(x=>D.passives[x]);if(t.soldiers)ov.soldiers=t.soldiers;if(t.hpPer)ov.hpPer=Math.round(b.hpPer*t.hpPer);if(t.sb!=null)ov.sb=t.sb;
-  const u=makeUnit(D,t.def,'P'+(i+1),'P',x,y,ov);if(t.sol!=null)u.sol=Math.round(u.solMax*Math.max(0,Math.min(1,t.sol)));if(t.rid)u.rid=t.rid;st.units.push(u);});
+  const u=makeUnit(D,t.def,'P'+(i+1),'P',x,y,ov);if(t.sol!=null)u.sol=Math.round(u.solMax*Math.max(0,Math.min(1,t.sol)));if(t.rid)u.rid=t.rid;if(t.eq)applyEq(u,t.eq);st.units.push(u);});
  M.enemySlots.forEach(([x,y],i)=>{const [t,name,art]=F.slots[i];st.units.push(makeUnit(D,t,'E'+(i+1),'E',x,y,{name,glyph:name[0],art:'enemies/tok_'+art+'.webp',por:'enemies/por_'+art+'.webp'}));});
- st.nextId=M.enemySlots.length+1;st.level=Math.max(0,opts.level|0);const em=1+(D.levelStep||0)*Math.min(st.level,D.levelMax||0);if(em!==1)for(const u of st.units)if(u.faction==='E'){u.hp=u.maxHp=Math.round(u.hp*em);u.atk=Math.round(u.atk*em);u.mag=Math.round(u.mag*em);}
+ st.nextId=M.enemySlots.length+1;st.level=Math.max(0,(opts.level|0)+(M.threat||0));
+ if(M.commanderStart)spawnCmd(D,st,M,[]);const em=1+(D.levelStep||0)*Math.min(st.level,D.levelMax||0);if(em!==1)for(const u of st.units)if(u.faction==='E'){u.hp=u.maxHp=Math.round(u.hp*em);u.atk=Math.round(u.atk*em);u.mag=Math.round(u.mag*em);}
  st.eventLog.push(...roundStart(D,st).map(e=>({...e,round:1})));return st;}
 
 // ---------- 地圖查詢 ----------
@@ -88,7 +91,7 @@ function calc(D,st,att,from,tid,o){o=o||{};const tgt=tid==='GATE'?null:st.units.
  if(tgt&&hasP(tgt,'hold')&&tgt.stay)inMod-=.1;
  if(inMod)dmg=Math.max(1,Math.floor(dmg*(1+inMod)));
  const hit=tgt?clamp(.9+(att.hit+(hasP(att,'night')?10:0)-tgt.eva)/100,.2,1):1;
- return {dmg,hit,crit:.05,cm,notes,tgt};}
+ return {dmg,hit,crit:clamp((att.crit==null?5:att.crit)/100,0,.5),cm,notes,tgt};}
 // 攻擊預估（含反擊）
 function preview(D,st,att,from,tid,o){o=o||{};const p=withPos(att,from,()=>calc(D,st,att,from,tid,o));const tgt=p.tgt;let counter=null;
  if(tgt&&!o.noCounter){const [a,b]=rangeOf(D,st,tgt,tgt);const d=manhattan(from,tgt);if(d>=a&&d<=b&&(d===1||los(D,st,tgt,from))){const c=withPos(att,from,()=>calc(D,st,tgt,{x:tgt.x,y:tgt.y},att.id,{counter:true}));counter={possible:true,dmg:c.dmg,hit:c.hit,notes:c.notes};}}
@@ -185,12 +188,15 @@ function roundStart(D,st,ev=[]){const M=M_(D,st);
  if(changed){updCorr(D,st);ev.push({t:'corrupt',txt:changed+' 格變成了污染地（濁度 '+st.corr+'）'});}
  for(const e of M.events.filter(e=>e.round===st.round)){
   if(e.terrain)for(const [x,y,t] of e.terrain){if(inZone(st,x,y,'P')){ev.push({t:'stabilize',txt:'燈界穩住了 ('+x+','+y+')：這一格沒有被異變改寫。'});continue;}st.tiles[y*st.w+x]=t;}
-  if(e.spawnCommander){const F=D.factions[st.faction];const [t,name,art]=F.commander;const [cx,cy]=M.commanderAt;const p=freeNear(D,st,cx,cy);if(p){const u=makeUnit(D,t,'E'+(st.nextId++),'E',p.x,p.y,{name,glyph:name[0],art:'bosses/tok_'+art+'.webp',por:'bosses/por_'+art+'.webp',commander:true});const em=1+(D.levelStep||0)*Math.min(st.level||0,D.levelMax||0);if(em!==1){u.hp=u.maxHp=Math.round(u.hp*em);u.atk=Math.round(u.atk*em);u.mag=Math.round(u.mag*em);}st.units.push(u);ev.push({t:'spawn',a:u.id,txt:u.name+' 進場：'+F.line});}}
+  if(e.spawnCommander)spawnCmd(D,st,M,ev);
   if(e.wave){const F=D.factions[st.faction];const em=1+(D.levelStep||0)*Math.min(st.level||0,D.levelMax||0);for(const [si,x,y] of e.wave){const [t,name,art]=F.slots[si];const p=freeNear(D,st,x,y);if(!p)continue;const u=makeUnit(D,t,'E'+(st.nextId++),'E',p.x,p.y,{name,glyph:name[0],art:'enemies/tok_'+art+'.webp',por:'enemies/por_'+art+'.webp'});if(em!==1){u.hp=u.maxHp=Math.round(u.hp*em);u.atk=Math.round(u.atk*em);u.mag=Math.round(u.mag*em);}st.units.push(u);}ev.push({t:'spawn',txt:'援軍進場'});}
   if(e.warn)for(const [x,y] of e.warn)st.warn.push({x,y,to:'FLESH',at:st.round+1});if(e.pressure)st.pressure=true;
   if(e.say)ev.push({t:'say',txt:'【第 '+st.round+' 回合】'+e.say});}
  if(st.round>1&&st.round%2===0)for(const u of alive(st,'P'))if(hasP(u,'refill')&&u.sol<u.solMax){const n0=soldiers(u);u.sol=Math.min(u.solMax,u.sol+u.hpPer);if(soldiers(u)>n0)ev.push({t:'heal',d:u.id,txt:u.name+'〔補員〕補回 1 名士兵'});}
  phaseStart(st,'P');st.phase='PLAYER';return ev;}
+function spawnCmd(D,st,M,ev){const F=D.factions[st.faction];const [t,name,art]=F.commander;const [cx,cy]=M.commanderAt;const p=freeNear(D,st,cx,cy);if(!p)return;const u=makeUnit(D,t,'E'+(st.nextId++),'E',p.x,p.y,{name,glyph:name[0],art:'bosses/tok_'+art+'.webp',por:'bosses/por_'+art+'.webp',commander:true});const em=1+(D.levelStep||0)*Math.min(st.level||0,D.levelMax||0);if(em!==1){u.hp=u.maxHp=Math.round(u.hp*em);u.atk=Math.round(u.atk*em);u.mag=Math.round(u.mag*em);}
+ if(M.commanderLeash){u.anchor={x:p.x,y:p.y};u.leash=M.commanderLeash;}st.units.push(u);ev.push({t:'spawn',a:u.id,txt:u.name+' 進場：'+F.line});}
+function pendingSpawns(D,st){const M=M_(D,st);return M.events.some(e=>e.round>st.round&&(e.wave||e.spawnCommander));}
 function freeNear(D,st,x,y){for(let r=0;r<6;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.abs(dx)+Math.abs(dy)!==r)continue;const nx=x+dx,ny=y+dy;if(inside(st,nx,ny)&&T(D,st,nx,ny).pass&&!unitAt(st,nx,ny))return {x:nx,y:ny};}return null;}
 function runEnemyPhase(D,st,ev){st.phase='ENEMY';phaseStart(st,'E');
  const order=alive(st,'E').map(u=>u.id);st.frames=[];
@@ -202,7 +208,10 @@ function roundEnd(D,st,ev){const M=M_(D,st);
  for(const u of st.units){if(u.st.mark>0)u.st.mark--;if(u.st.gs>0)u.st.gs--;}
  pollute(D,st,ev);if(st.result)return;
  st.zones=st.zones.filter(z=>z.until>st.round);
- if(st.round>=M.roundLimit&&st.gate.hp>0&&alive(st,'P').length){st.result={win:true,reason:'守住城門到第 '+M.roundLimit+' 回合結束'};ev.push({t:'end',txt:'勝利：'+st.result.reason});st.phase='RESULT';return;}
+ const O=st.obj||{type:'gate'};
+ if(O.type==='hold'){const on=f=>alive(st,f).some(u=>O.tiles.some(([x,y])=>u.x===x&&u.y===y));if(on('P')&&!on('E')){st.hold++;ev.push({t:'say',txt:'守住驛站一回合（'+st.hold+'／'+O.need+'）'});if(st.hold>=O.need){st.result={win:true,reason:'守住驛站 '+O.need+' 回合'};ev.push({t:'end',txt:'勝利：'+st.result.reason});st.phase='RESULT';return;}}}
+ if(st.round>=M.roundLimit&&alive(st,'P').length){if(O.type==='gate'&&st.gate.hp>0){st.result={win:true,reason:'守住城門到第 '+M.roundLimit+' 回合結束'};ev.push({t:'end',txt:'勝利：'+st.result.reason});}
+  else{st.result={win:false,reason:O.type==='boss'?'時間到了，指揮退回礦坑深處':O.type==='hold'?'時間到了，驛站沒能守住':'時間到了，霧裡還有敵人'};ev.push({t:'end',txt:'失敗：'+st.result.reason});}st.phase='RESULT';return;}
  st.round++;roundStart(D,st,ev);checkEnd(D,st,ev);}
 function updCorr(D,st){const n=st.tiles.filter(t=>t==='FLESH').length;st.corr=Math.min(100,n*D.corruption.perTile);}
 // 污染：侵蝕站在上面的我方、到 100 時壓迫城門、往外擴散（先預告，隔一回合才生效）
@@ -215,9 +224,9 @@ function pollute(D,st,ev){const K=D.corruption;updCorr(D,st);
   const nb=DIRS.map(([dx,dy])=>({x:s.x+dx,y:s.y+dy})).filter(p=>inside(st,p.x,p.y)&&T(D,st,p.x,p.y).pass&&tileAt(st,p.x,p.y)!=='FLESH'&&!st.warn.some(w=>w.x===p.x&&w.y===p.y)&&!inZone(st,p.x,p.y,'P'));
   if(!nb.length)continue;const p=nb[Math.floor(roll(st)*nb.length)];st.warn.push({x:p.x,y:p.y,to:'FLESH',at:st.round+2});made++;}
  if(made)ev.push({t:'warn',txt:'污染正在擴散：'+made+' 格出現暗紅的微光，下下回合開始時會變成污染地（濁度 '+st.corr+'）'});}
-function checkEnd(D,st,ev){if(st.result)return;const lose=st.gate.hp<=0?'城門被打破':!alive(st,'P').length?'我方全滅':null;
- const cmdDown=st.units.some(u=>u.commander&&u.hp<=0);
- if(lose){st.result={win:false,reason:lose};}else if(cmdDown){st.result={win:true,reason:'擊倒敵軍指揮官，城門還在'};}
+function checkEnd(D,st,ev){if(st.result)return;const O=st.obj||{type:'gate'};const lose=(!st.gate.none&&st.gate.hp<=0)?'城門被打破':!alive(st,'P').length?'我方全滅':null;
+ const cmdDown=st.units.some(u=>u.commander&&u.hp<=0);const routed=O.type==='rout'&&!alive(st,'E').length&&!pendingSpawns(D,st);
+ if(lose){st.result={win:false,reason:lose};}else if(cmdDown&&O.type!=='rout'){st.result={win:true,reason:O.type==='gate'?'擊倒敵軍指揮官，城門還在':'擊倒敵方指揮官'};}else if(routed){st.result={win:true,reason:'霧裡的敵人全部清掉了'};}
  if(st.result){st.phase='RESULT';ev.push({t:'end',txt:(st.result.win?'勝利：':'失敗：')+st.result.reason});}}
 
 // ---------- AI（敵我共用；只送出合法行動） ----------
@@ -230,11 +239,14 @@ function scoreHit(D,st,u,c,tid,p,extra){const tgt=tid==='GATE'?null:st.units.fin
  const terr=terrainDef(D,st,c.x,c.y)*10;const cnt=(p.cm-1)*10;const risk=p.counter&&!p.kill?(p.counter.dmg*p.counter.hit/Math.max(1,effHp(u)))*10:0;
  return killV*4+objV*3+terr*2+cnt*2-risk*3+(extra||0);}
 function plan(D,st,u,style){const opts=[];const add=(s,a)=>opts.push({s,a});
- const R=reachable(D,st,u);const cand=[...R.keys()].map(k=>{const [x,y]=k.split(',').map(Number);return {x,y,c:R.get(k)};}).sort((a,b)=>a.y-b.y||a.x-b.x);
+ const R=reachable(D,st,u);let cand=[...R.keys()].map(k=>{const [x,y]=k.split(',').map(Number);return {x,y,c:R.get(k)};}).sort((a,b)=>a.y-b.y||a.x-b.x);
+ if(u.anchor&&u.leash){const c2=cand.filter(c=>manhattan(c,u.anchor)<=u.leash);if(c2.length)cand=c2;}
+ const O=st.obj||{type:'gate'};
  const foes=alive(st).filter(v=>v.faction!==u.faction);const allies=alive(st,u.faction);
  const near=foes.length?Math.min(...foes.map(f=>manhattan(f,u))):99;
  const hold=style==='hold'&&u.faction==='P';
- const posPen=c=>(hold&&c.y<6?-(6-c.y)*1.5:0)-(u.faction==='P'&&tileAt(st,c.x,c.y)==='FLESH'&&!hasP(u,'clean')?1.5:0);
+ const objTiles=O.type==='hold'?O.tiles.map(([x,y])=>({x,y})):null;
+ const posPen=c=>(hold&&O.type==='gate'&&c.y<6?-(6-c.y)*1.5:0)+(objTiles&&objTiles.some(t=>t.x===c.x&&t.y===c.y)?(u.faction==='P'?2.5:2):0)-(u.faction==='P'&&tileAt(st,c.x,c.y)==='FLESH'&&!hasP(u,'clean')?1.5:0);
  const ready=u.skills.filter(k=>!(u.cd[k]>0)&&D.skills[k]);
  for(const c of cand){const pos={x:c.x,y:c.y};
   for(const tid of withPos(u,pos,()=>targetsFrom(D,st,u,pos))){const p=preview(D,st,u,pos,tid,{charge:c.c});add(scoreHit(D,st,u,pos,tid,p)+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'ATTACK',target:tid});}
@@ -258,11 +270,16 @@ function plan(D,st,u,style){const opts=[];const add=(s,a)=>opts.push({s,a});
  opts.sort((a,b)=>b.s-a.s);const best=opts[0];
  if(best&&best.s>(hold?-2:-6))return best.a;
  // 沒有好的選擇：往目標靠近（守門打法：留在門前）
- let goals;if(u.faction==='E'&&(u.troop!=='ARCHER'&&u.troop!=='MAGE'||st.pressure)){const g=st.gate;goals=[{x:g.x,y:g.y-1},...foes];}else if(hold){goals=[{x:st.gate.x,y:st.gate.y-1},{x:st.gate.x-1,y:st.gate.y-1},{x:st.gate.x+1,y:st.gate.y-1},{x:st.gate.x,y:st.gate.y-2}];}else goals=foes;
+ let goals;const gateOn=!st.gate.none;
+ if(objTiles)goals=[...objTiles,...(u.faction==='E'?foes:[])];
+ else if(u.faction==='E'&&gateOn&&(u.troop!=='ARCHER'&&u.troop!=='MAGE'||st.pressure)){const g=st.gate;goals=[{x:g.x,y:g.y-1},...foes];}
+ else if(hold&&gateOn){goals=[{x:st.gate.x,y:st.gate.y-1},{x:st.gate.x-1,y:st.gate.y-1},{x:st.gate.x+1,y:st.gate.y-1},{x:st.gate.x,y:st.gate.y-2}];}
+ else if(u.faction==='P'&&O.type==='boss'){const cm=foes.filter(f=>f.commander);goals=cm.length?cm:foes;}
+ else goals=foes;
  if(!goals.length)return {type:'ACT',actorId:u.id,to:{x:u.x,y:u.y},act:'WAIT'};
  const dm=distMap(D,st,goals);let pick=null;
  for(const c of cand){const d=dm.get(key(c.x,c.y))??999;const s=-d+terrainDef(D,st,c.x,c.y)*2;if(!pick||s>pick.s+1e-9)pick={s,c:{x:c.x,y:c.y}};}
- return {type:'ACT',actorId:u.id,to:pick.c,act:(hold||near<=3)?'GUARD':'WAIT'};}
+ return {type:'ACT',actorId:u.id,to:pick.c,act:((hold&&gateOn)||near<=3)?'GUARD':'WAIT'};}
 
 // ---------- 重播 ----------
 function replay(D,missionId,seed,actions,opts){let st=createBattle(D,missionId,seed,opts);for(const a of actions){const r=apply(D,st,a);if(!r.ok)throw new Error('replay failed at '+JSON.stringify(a)+': '+r.error);st=r.state;}return st;}

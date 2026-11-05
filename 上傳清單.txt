@@ -1,6 +1,10 @@
-《永生戰棋》v0.6 上傳清單：6 個檔案，全部傳到 Yuyan-tactics 最外層，同名覆蓋
-
-index.html、core.js、data.js、camp.js、sfx.js、sw.js
-
-（已經包含 v0.5 的內容；v0.5 還沒傳的話，直接傳這包就好）
-不用傳圖。
+永生戰棋 v0.8 上傳清單（Yuyan-tactics 倉庫最外層，直接覆蓋）
+1. index.html
+2. core.js
+3. data.js
+4. camp.js
+5. sw.js
+（選擇性）docs/CHANGELOG.md → 放進 docs 資料夾
+sfx.js 這次沒改，不用傳。圖片都已經在 inbox，不用再傳。
+舊存檔可以直接讀，裝備欄會是空的。
+上傳後手機開網站，下拉重新整理一兩次就會換新版。

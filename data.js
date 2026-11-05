@@ -2,23 +2,32 @@
 (function(root){
 const DATA={
  rulesetVersion:'v0.5',
+ bgm:{title:'hall',base:'hall',map:'explore',battle:'battle',boss:'boss',win:'hall'},bgmRoot:'../raven-guild/audio/',
+ prologue:[
+  {img:'battle/bt_plain.webp',future:'pr_1',txt:'天闕大陸的北邊，白鐵礦城的礦坑從來沒有停過。'},
+  {img:'backgrounds/fac_lighthouse.webp',future:'pr_1',txt:'渡鴉公會在城的北境有一座分站。這幾年，分站的燈一盞一盞熄了，只剩下礦坑底下的機器還在挖。'},
+  {img:'backgrounds/fac_council.webp',future:'pr_2',txt:'這個月，暮簡村地方站收到一封退回來的信。信封上沒有寄件人，只有一枚燒焦的渡鴉印。'},
+  {img:'backgrounds/cover_wall.webp',future:'pr_3',txt:'公會沒有派正式成員。去的是我們——名冊最後幾頁的外圍成員：還沒拿到徽章的盾衛、只會點燈的術士、背著藥箱的人。'},
+  {img:'backgrounds/base_bg.webp',future:'pr_3',txt:'任務只有一句：「到白鐵礦城南門，把燈重新點起來。」'},
+  {img:'battle/bt_gate.webp',future:'pr_4',txt:'我們到的那晚，南門已經破了一半。霧裡有提燈的隊伍，正慢慢往城門走過來。'}
+ ],
  // 我方兵種對應的小兵圖（接戰演出）
  soldierArt:{P_SHIELD:'sd_shield',P_SPEAR:'sd_spear',P_LANTERN:'sd_lantern',P_ARCHER:'sd_archer',P_HEALER:'sd_healer',P_WEAVER:'sd_weaver',P_SCOUT:'sd_scout'},
  // 大地圖：白鐵礦城周圍（位置是圖上的比例；名稱是暫定）
  region:[
-  {id:'south',name:'南門',x:.48,y:.61,open:true,mission:'MISSION_BC_001',desc:'據點的城門。守住它。'},
-  {id:'mine',name:'礦坑入口',x:.17,y:.15,desc:'白鐵礦坑往地面的出口，機器的聲音沒有停過。'},
-  {id:'post',name:'廢棄驛站',x:.47,y:.12,desc:'以前的驛站，門口還掛著退件的牌子。'},
-  {id:'wood',name:'枯樹林',x:.78,y:.16,desc:'樹全死了，但林子裡有燈在走。'},
-  {id:'fog',name:'霧裡的村落',x:.15,y:.41,desc:'看得到屋頂，走不到門口。'},
-  {id:'marsh',name:'沼澤',x:.8,y:.43,desc:'水底下有東西在呼吸。'},
-  {id:'bridge',name:'石橋',x:.8,y:.62,desc:'通往東邊唯一的路。'},
-  {id:'bell',name:'鐘樓廢墟',x:.2,y:.68,desc:'山丘上的鐘樓，鐘早就不見了，聲音還在。'},
-  {id:'church',name:'半塌的教堂',x:.72,y:.8,desc:'祭壇上的香還沒燒完。'}
+  {id:'south',scene:'bt_gate',name:'南門',x:.48,y:.61,mission:'MISSION_BC_001',desc:'據點的城門。守住它。'},
+  {id:'mine',scene:'lv_mine',name:'礦坑入口',x:.17,y:.15,mission:'MISSION_MINE',needs:['MISSION_BC_001'],desc:'白鐵礦坑往地面的出口，機器的聲音沒有停過。'},
+  {id:'post',scene:'lv_post',name:'廢棄驛站',x:.47,y:.12,mission:'MISSION_POST',needs:['MISSION_MINE'],desc:'以前的驛站，門口還掛著退件的牌子。'},
+  {id:'wood',scene:'lv_wood',name:'枯樹林',x:.78,y:.16,mission:'MISSION_WOOD',needs:['MISSION_POST'],desc:'樹全死了，但林子裡有燈在走。'},
+  {id:'fog',scene:'lv_fog',name:'霧裡的村落',x:.15,y:.41,desc:'看得到屋頂，走不到門口。'},
+  {id:'marsh',scene:'lv_marsh',name:'沼澤',x:.8,y:.43,desc:'水底下有東西在呼吸。'},
+  {id:'bridge',scene:'lv_bridge',name:'石橋',x:.8,y:.62,desc:'通往東邊唯一的路。'},
+  {id:'bell',scene:'lv_bell',name:'鐘樓廢墟',x:.2,y:.68,desc:'山丘上的鐘樓，鐘早就不見了，聲音還在。'},
+  {id:'church',scene:'lv_church',name:'半塌的教堂',x:.72,y:.8,desc:'祭壇上的香還沒燒完。'}
  ],
  artRoot:'assets/art/',
  // 輕量版：直接用 inbox 原圖與渡鴉公會網站上的圖（之後有整理好的 assets 再拿掉這張表）
- artMap:{"terrain/t_plain.webp": "inbox/grok_1793874360251.jpg", "terrain/t_forest.webp": "inbox/grok_1793874364828.jpg", "terrain/t_hill.webp": "inbox/grok_1793874367354.jpg", "terrain/t_swamp.webp": "inbox/grok_1793874369982.jpg", "terrain/t_wall.webp": "inbox/grok_1793874372208.jpg", "terrain/t_gate.webp": "inbox/grok_1793874374474.jpg", "terrain/t_shallow.webp": "inbox/grok_1793874377521.jpg", "terrain/t_deep.webp": "inbox/grok_1793874380360.jpg", "terrain/t_flesh.webp": "inbox/grok_1793874383076.jpg", "terrain/t_rubble.webp": "inbox/grok_1793874386264.jpg", "icons/sk_guard.webp": "inbox/grok_1793874392069.jpg", "icons/sk_pierce.webp": "inbox/grok_1793874395253.jpg", "icons/sk_lamp.webp": "inbox/grok_1793874398055.jpg", "icons/sk_mark.webp": "inbox/grok_1793874400976.jpg", "icons/sk_mend.webp": "inbox/grok_1793874403938.jpg", "icons/sk_bind.webp": "inbox/grok_1793874406930.jpg", "icons/sk_shadow.webp": "inbox/grok_1793874410153.jpg", "icons/fm_shieldwall.webp": "inbox/grok_1793874412830.jpg", "icons/fm_pike.webp": "inbox/grok_1793874415961.jpg", "icons/fm_skirmish.webp": "inbox/grok_1793874418935.jpg", "icons/fm_assault.webp": "inbox/grok_1793874422056.jpg", "status/st_root.webp": "inbox/grok_1793874666398.jpg", "status/st_mark.webp": "inbox/grok_1793874669089.jpg", "status/st_guard.webp": "inbox/grok_1793874671632.jpg", "status/st_defend.webp": "inbox/grok_1793874681100.jpg", "icons/tr_infantry.webp": "inbox/grok_1793874684370.jpg", "icons/tr_cavalry.webp": "inbox/grok_1793874691055.jpg", "icons/tr_archer.webp": "inbox/grok_1793874694645.jpg", "icons/tr_flying.webp": "inbox/grok_1793874698569.jpg", "icons/tr_mage.webp": "inbox/grok_1793874701551.jpg", "icons/tr_cleric.webp": "inbox/grok_1793874704650.jpg", "icons/tr_beast.webp": "inbox/grok_1793874707721.jpg", "icons/tr_spear.webp": "inbox/grok_1793874762484.jpg", "backgrounds/cover.webp": "inbox/grok_1793874478434.jpg", "heroes/tok_shieldF.webp": "../raven-guild/images/h_shieldF.webp", "heroes/por_shieldF.webp": "../raven-guild/images/h_shieldF.webp", "heroes/tok_spear.webp": "../raven-guild/images/h_spear.webp", "heroes/por_spear.webp": "../raven-guild/images/h_spear.webp", "heroes/tok_mageF.webp": "../raven-guild/images/h_mageF.webp", "heroes/por_mageF.webp": "../raven-guild/images/h_mageF.webp", "heroes/tok_moli.webp": "../raven-guild/art/opt/file_00000000b62481fbba1cd7e4208bd93f.webp", "heroes/por_moli.webp": "../raven-guild/art/opt/file_00000000b62481fbba1cd7e4208bd93f.webp", "heroes/tok_healerF.webp": "../raven-guild/images/h_healerF.webp", "heroes/por_healerF.webp": "../raven-guild/images/h_healerF.webp", "heroes/tok_spider.webp": "../raven-guild/images/h_spider.webp", "heroes/por_spider.webp": "../raven-guild/images/h_spider.webp", "heroes/tok_archerH.webp": "../raven-guild/images/h_archerH.webp", "heroes/por_archerH.webp": "../raven-guild/images/h_archerH.webp", "enemies/tok_dutyghost.webp": "../raven-guild/images/m_dutyghost.webp", "enemies/por_dutyghost.webp": "../raven-guild/images/m_dutyghost.webp", "enemies/tok_returndog.webp": "../raven-guild/images/m_returndog.webp", "enemies/por_returndog.webp": "../raven-guild/images/m_returndog.webp", "enemies/tok_stampbug.webp": "../raven-guild/images/m_stampbug.webp", "enemies/por_stampbug.webp": "../raven-guild/images/m_stampbug.webp", "enemies/tok_lackcrow.webp": "../raven-guild/images/m_lackcrow.webp", "enemies/por_lackcrow.webp": "../raven-guild/images/m_lackcrow.webp", "enemies/tok_deadletters.webp": "../raven-guild/images/m_deadletters.webp", "enemies/por_deadletters.webp": "../raven-guild/images/m_deadletters.webp", "enemies/tok_paper.webp": "../raven-guild/images/m_paper.webp", "enemies/por_paper.webp": "../raven-guild/images/m_paper.webp", "enemies/tok_palanquin.webp": "../raven-guild/art/opt/file_00000000970c820b8dd306530646d135.webp", "enemies/por_palanquin.webp": "../raven-guild/art/opt/file_00000000970c820b8dd306530646d135.webp", "enemies/tok_moneycrow.webp": "../raven-guild/art/opt/file_00000000e6d8821183a09c10fae8bf5c.webp", "enemies/por_moneycrow.webp": "../raven-guild/art/opt/file_00000000e6d8821183a09c10fae8bf5c.webp", "enemies/tok_redpaper.webp": "../raven-guild/art/opt/file_00000000f7c082118b7693f86fb0b21b.webp", "enemies/por_redpaper.webp": "../raven-guild/art/opt/file_00000000f7c082118b7693f86fb0b21b.webp", "enemies/tok_paleworship.webp": "../raven-guild/art/opt/file_00000000844c820b842051a31f79cd41.webp", "enemies/por_paleworship.webp": "../raven-guild/art/opt/file_00000000844c820b842051a31f79cd41.webp", "enemies/tok_whiteminer.webp": "../raven-guild/images/m_whiteminer.webp", "enemies/por_whiteminer.webp": "../raven-guild/images/m_whiteminer.webp", "enemies/tok_minecart.webp": "../raven-guild/images/m_minecart.webp", "enemies/por_minecart.webp": "../raven-guild/images/m_minecart.webp", "enemies/tok_rustrat.webp": "../raven-guild/images/m_rustrat.webp", "enemies/por_rustrat.webp": "../raven-guild/images/m_rustrat.webp", "enemies/tok_rustlung.webp": "../raven-guild/images/m_rustlung.webp", "enemies/por_rustlung.webp": "../raven-guild/images/m_rustlung.webp", "enemies/tok_leech.webp": "../raven-guild/images/m_leech.webp", "enemies/por_leech.webp": "../raven-guild/images/m_leech.webp", "bosses/tok_wusign.webp": "../raven-guild/images/b_wusign.webp", "bosses/por_wusign.webp": "../raven-guild/images/b_wusign.webp", "bosses/tok_paperking.webp": "../raven-guild/art/opt/file_00000000a06c81f5b3d8ea4b3a2e17d0.webp", "bosses/por_paperking.webp": "../raven-guild/art/opt/file_00000000a06c81f5b3d8ea4b3a2e17d0.webp", "bosses/tok_deepdrill.webp": "../raven-guild/images/b_deepdrill.webp", "bosses/por_deepdrill.webp": "../raven-guild/images/b_deepdrill.webp", "backgrounds/base_bg.webp": "inbox/grok_1793874425445.jpg", "backgrounds/recruit_bg.webp": "inbox/grok_1793874471833.jpg", "backgrounds/fac_council.webp": "inbox/grok_1793874428353.jpg", "backgrounds/fac_recruit.webp": "inbox/grok_1793874430947.jpg", "backgrounds/fac_barracks.webp": "inbox/grok_1793874448076.jpg", "backgrounds/fac_workshop.webp": "inbox/grok_1793874450875.jpg", "backgrounds/fac_lighthouse.webp": "inbox/grok_1793874453370.jpg", "backgrounds/fac_storage.webp": "inbox/grok_1793874455965.jpg", "backgrounds/cover_wall.webp": "inbox/grok_1793874474840.jpg", "ui/card_common.webp": "inbox/grok_1793874458608.jpg", "ui/card_elite.webp": "inbox/grok_1793874461359.jpg", "ui/card_legend.webp": "inbox/grok_1793874464413.jpg", "ui/card_back.webp": "inbox/grok_1793874468466.jpg", "fx/fx_slash.webp": "inbox/grok_1793877490158.jpg", "fx/fx_arrow.webp": "inbox/grok_1793877500480.jpg", "fx/fx_hit.webp": "inbox/grok_1793877508513.jpg", "fx/fx_crit.webp": "inbox/grok_1793877511871.jpg", "fx/fx_miss.webp": "inbox/grok_1793877515603.jpg", "fx/fx_lamp.webp": "inbox/grok_1793877573521.jpg", "fx/fx_heal.webp": "inbox/grok_1793877577062.jpg", "fx/fx_shadow.webp": "inbox/grok_1793877590864.jpg", "fx/fx_mark.webp": "inbox/grok_1793877593857.jpg", "fx/fx_corrupt.webp": "inbox/grok_1793877596623.jpg", "fx/fx_purify.webp": "inbox/grok_1793877599450.jpg", "fx/fx_rout.webp": "inbox/grok_1793877602504.jpg", "fx/fx_summon.webp": "inbox/grok_1793877605685.jpg", "battle/bt_plain.webp": "inbox/grok_1793877609306.jpg", "battle/bt_forest.webp": "inbox/grok_1793877612210.jpg", "battle/bt_gate.webp": "inbox/grok_1793877614927.jpg", "battle/bt_corrupt.webp": "inbox/grok_1793877617740.jpg", "soldiers/sd_shield.webp": "inbox/grok_1793877623933.jpg", "soldiers/sd_spear.webp": "inbox/grok_1793877626960.jpg", "soldiers/sd_lantern.webp": "inbox/grok_1793877630221.jpg", "soldiers/sd_archer.webp": "inbox/grok_1793877632922.jpg", "soldiers/sd_healer.webp": "inbox/grok_1793877635889.jpg", "soldiers/sd_weaver.webp": "inbox/grok_1793877639104.jpg", "soldiers/sd_scout.webp": "inbox/grok_1793877641990.jpg", "fx/fx_pierce.webp": "inbox/grok_1793877711031.jpg", "fx/fx_magic.webp": "inbox/grok_1793877713277.jpg", "fx/fx_guard.webp": "inbox/grok_1793877716817.jpg", "fx/fx_bind.webp": "inbox/grok_1793877720583.jpg", "backgrounds/mp_region.webp": "inbox/grok_1793877647112.jpg"},
+ artMap:{"terrain/t_plain.webp": "inbox/grok_1793874360251.jpg", "terrain/t_forest.webp": "inbox/grok_1793874364828.jpg", "terrain/t_hill.webp": "inbox/grok_1793874367354.jpg", "terrain/t_swamp.webp": "inbox/grok_1793874369982.jpg", "terrain/t_wall.webp": "inbox/grok_1793874372208.jpg", "terrain/t_gate.webp": "inbox/grok_1793874374474.jpg", "terrain/t_shallow.webp": "inbox/grok_1793874377521.jpg", "terrain/t_deep.webp": "inbox/grok_1793874380360.jpg", "terrain/t_flesh.webp": "inbox/grok_1793874383076.jpg", "terrain/t_rubble.webp": "inbox/grok_1793874386264.jpg", "icons/sk_guard.webp": "inbox/grok_1793874392069.jpg", "icons/sk_pierce.webp": "inbox/grok_1793874395253.jpg", "icons/sk_lamp.webp": "inbox/grok_1793874398055.jpg", "icons/sk_mark.webp": "inbox/grok_1793874400976.jpg", "icons/sk_mend.webp": "inbox/grok_1793874403938.jpg", "icons/sk_bind.webp": "inbox/grok_1793874406930.jpg", "icons/sk_shadow.webp": "inbox/grok_1793874410153.jpg", "icons/fm_shieldwall.webp": "inbox/grok_1793874412830.jpg", "icons/fm_pike.webp": "inbox/grok_1793874415961.jpg", "icons/fm_skirmish.webp": "inbox/grok_1793874418935.jpg", "icons/fm_assault.webp": "inbox/grok_1793874422056.jpg", "status/st_root.webp": "inbox/grok_1793874666398.jpg", "status/st_mark.webp": "inbox/grok_1793874669089.jpg", "status/st_guard.webp": "inbox/grok_1793874671632.jpg", "status/st_defend.webp": "inbox/grok_1793874681100.jpg", "icons/tr_infantry.webp": "inbox/grok_1793874684370.jpg", "icons/tr_cavalry.webp": "inbox/grok_1793874691055.jpg", "icons/tr_archer.webp": "inbox/grok_1793874694645.jpg", "icons/tr_flying.webp": "inbox/grok_1793874698569.jpg", "icons/tr_mage.webp": "inbox/grok_1793874701551.jpg", "icons/tr_cleric.webp": "inbox/grok_1793874704650.jpg", "icons/tr_beast.webp": "inbox/grok_1793874707721.jpg", "icons/tr_spear.webp": "inbox/grok_1793874762484.jpg", "backgrounds/cover.webp": "inbox/grok_1793874478434.jpg", "heroes/tok_shieldF.webp": "../raven-guild/images/h_shieldF.webp", "heroes/por_shieldF.webp": "../raven-guild/images/h_shieldF.webp", "heroes/tok_spear.webp": "../raven-guild/images/h_spear.webp", "heroes/por_spear.webp": "../raven-guild/images/h_spear.webp", "heroes/tok_mageF.webp": "../raven-guild/images/h_mageF.webp", "heroes/por_mageF.webp": "../raven-guild/images/h_mageF.webp", "heroes/tok_moli.webp": "../raven-guild/art/opt/file_00000000b62481fbba1cd7e4208bd93f.webp", "heroes/por_moli.webp": "../raven-guild/art/opt/file_00000000b62481fbba1cd7e4208bd93f.webp", "heroes/tok_healerF.webp": "../raven-guild/images/h_healerF.webp", "heroes/por_healerF.webp": "../raven-guild/images/h_healerF.webp", "heroes/tok_spider.webp": "../raven-guild/images/h_spider.webp", "heroes/por_spider.webp": "../raven-guild/images/h_spider.webp", "heroes/tok_archerH.webp": "../raven-guild/images/h_archerH.webp", "heroes/por_archerH.webp": "../raven-guild/images/h_archerH.webp", "enemies/tok_dutyghost.webp": "../raven-guild/images/m_dutyghost.webp", "enemies/por_dutyghost.webp": "../raven-guild/images/m_dutyghost.webp", "enemies/tok_returndog.webp": "../raven-guild/images/m_returndog.webp", "enemies/por_returndog.webp": "../raven-guild/images/m_returndog.webp", "enemies/tok_stampbug.webp": "../raven-guild/images/m_stampbug.webp", "enemies/por_stampbug.webp": "../raven-guild/images/m_stampbug.webp", "enemies/tok_lackcrow.webp": "../raven-guild/images/m_lackcrow.webp", "enemies/por_lackcrow.webp": "../raven-guild/images/m_lackcrow.webp", "enemies/tok_deadletters.webp": "../raven-guild/images/m_deadletters.webp", "enemies/por_deadletters.webp": "../raven-guild/images/m_deadletters.webp", "enemies/tok_paper.webp": "../raven-guild/images/m_paper.webp", "enemies/por_paper.webp": "../raven-guild/images/m_paper.webp", "enemies/tok_palanquin.webp": "../raven-guild/art/opt/file_00000000970c820b8dd306530646d135.webp", "enemies/por_palanquin.webp": "../raven-guild/art/opt/file_00000000970c820b8dd306530646d135.webp", "enemies/tok_moneycrow.webp": "../raven-guild/art/opt/file_00000000e6d8821183a09c10fae8bf5c.webp", "enemies/por_moneycrow.webp": "../raven-guild/art/opt/file_00000000e6d8821183a09c10fae8bf5c.webp", "enemies/tok_redpaper.webp": "../raven-guild/art/opt/file_00000000f7c082118b7693f86fb0b21b.webp", "enemies/por_redpaper.webp": "../raven-guild/art/opt/file_00000000f7c082118b7693f86fb0b21b.webp", "enemies/tok_paleworship.webp": "../raven-guild/art/opt/file_00000000844c820b842051a31f79cd41.webp", "enemies/por_paleworship.webp": "../raven-guild/art/opt/file_00000000844c820b842051a31f79cd41.webp", "enemies/tok_whiteminer.webp": "../raven-guild/images/m_whiteminer.webp", "enemies/por_whiteminer.webp": "../raven-guild/images/m_whiteminer.webp", "enemies/tok_minecart.webp": "../raven-guild/images/m_minecart.webp", "enemies/por_minecart.webp": "../raven-guild/images/m_minecart.webp", "enemies/tok_rustrat.webp": "../raven-guild/images/m_rustrat.webp", "enemies/por_rustrat.webp": "../raven-guild/images/m_rustrat.webp", "enemies/tok_rustlung.webp": "../raven-guild/images/m_rustlung.webp", "enemies/por_rustlung.webp": "../raven-guild/images/m_rustlung.webp", "enemies/tok_leech.webp": "../raven-guild/images/m_leech.webp", "enemies/por_leech.webp": "../raven-guild/images/m_leech.webp", "bosses/tok_wusign.webp": "../raven-guild/images/b_wusign.webp", "bosses/por_wusign.webp": "../raven-guild/images/b_wusign.webp", "bosses/tok_paperking.webp": "../raven-guild/art/opt/file_00000000a06c81f5b3d8ea4b3a2e17d0.webp", "bosses/por_paperking.webp": "../raven-guild/art/opt/file_00000000a06c81f5b3d8ea4b3a2e17d0.webp", "bosses/tok_deepdrill.webp": "../raven-guild/images/b_deepdrill.webp", "bosses/por_deepdrill.webp": "../raven-guild/images/b_deepdrill.webp", "backgrounds/base_bg.webp": "inbox/grok_1793874425445.jpg", "backgrounds/recruit_bg.webp": "inbox/grok_1793874471833.jpg", "backgrounds/fac_council.webp": "inbox/grok_1793874428353.jpg", "backgrounds/fac_recruit.webp": "inbox/grok_1793874430947.jpg", "backgrounds/fac_barracks.webp": "inbox/grok_1793874448076.jpg", "backgrounds/fac_workshop.webp": "inbox/grok_1793874450875.jpg", "backgrounds/fac_lighthouse.webp": "inbox/grok_1793874453370.jpg", "backgrounds/fac_storage.webp": "inbox/grok_1793874455965.jpg", "backgrounds/cover_wall.webp": "inbox/grok_1793874474840.jpg", "ui/card_common.webp": "inbox/grok_1793874458608.jpg", "ui/card_elite.webp": "inbox/grok_1793874461359.jpg", "ui/card_legend.webp": "inbox/grok_1793874464413.jpg", "ui/card_back.webp": "inbox/grok_1793874468466.jpg", "fx/fx_slash.webp": "inbox/grok_1793877490158.jpg", "fx/fx_arrow.webp": "inbox/grok_1793877500480.jpg", "fx/fx_hit.webp": "inbox/grok_1793877508513.jpg", "fx/fx_crit.webp": "inbox/grok_1793877511871.jpg", "fx/fx_miss.webp": "inbox/grok_1793877515603.jpg", "fx/fx_lamp.webp": "inbox/grok_1793877573521.jpg", "fx/fx_heal.webp": "inbox/grok_1793877577062.jpg", "fx/fx_shadow.webp": "inbox/grok_1793877590864.jpg", "fx/fx_mark.webp": "inbox/grok_1793877593857.jpg", "fx/fx_corrupt.webp": "inbox/grok_1793877596623.jpg", "fx/fx_purify.webp": "inbox/grok_1793877599450.jpg", "fx/fx_rout.webp": "inbox/grok_1793877602504.jpg", "fx/fx_summon.webp": "inbox/grok_1793877605685.jpg", "battle/bt_plain.webp": "inbox/grok_1793877609306.jpg", "battle/bt_forest.webp": "inbox/grok_1793877612210.jpg", "battle/bt_gate.webp": "inbox/grok_1793877614927.jpg", "battle/bt_corrupt.webp": "inbox/grok_1793877617740.jpg", "soldiers/sd_shield.webp": "inbox/grok_1793877623933.jpg", "soldiers/sd_spear.webp": "inbox/grok_1793877626960.jpg", "soldiers/sd_lantern.webp": "inbox/grok_1793877630221.jpg", "soldiers/sd_archer.webp": "inbox/grok_1793877632922.jpg", "soldiers/sd_healer.webp": "inbox/grok_1793877635889.jpg", "soldiers/sd_weaver.webp": "inbox/grok_1793877639104.jpg", "soldiers/sd_scout.webp": "inbox/grok_1793877641990.jpg", "fx/fx_pierce.webp": "inbox/grok_1793877711031.jpg", "fx/fx_magic.webp": "inbox/grok_1793877713277.jpg", "fx/fx_guard.webp": "inbox/grok_1793877716817.jpg", "fx/fx_bind.webp": "inbox/grok_1793877720583.jpg", "backgrounds/mp_region.webp": "inbox/grok_1793877647112.jpg", "prologue/pr_1.webp": "inbox/grok_1793881280266.jpg", "prologue/pr_2.webp": "inbox/grok_1793881283151.jpg", "prologue/pr_3.webp": "inbox/grok_1793881286948.jpg", "prologue/pr_4.webp": "inbox/grok_1793881289553.jpg", "scenes/lv_mine.webp": "inbox/grok_1793881292816.jpg", "scenes/lv_post.webp": "inbox/grok_1793881295585.jpg", "scenes/lv_wood.webp": "inbox/grok_1793881297951.jpg", "scenes/lv_fog.webp": "inbox/grok_1793881300496.jpg", "scenes/lv_marsh.webp": "inbox/grok_1793881302786.jpg", "scenes/lv_bridge.webp": "inbox/grok_1793881305058.jpg", "scenes/lv_bell.webp": "inbox/grok_1793881308157.jpg", "scenes/lv_church.webp": "inbox/grok_1793881310594.jpg", "equip/eq_w_shield.webp": "inbox/grok_1793881314592.jpg", "equip/eq_w_spear.webp": "inbox/grok_1793881317291.jpg", "equip/eq_w_kit.webp": "inbox/grok_1793881339185.jpg", "equip/eq_w_thread.webp": "inbox/grok_1793881342073.jpg", "equip/eq_w_dagger.webp": "inbox/grok_1793881344946.jpg", "equip/eq_a_light.webp": "inbox/grok_1793881347433.jpg", "equip/eq_a_heavy.webp": "inbox/grok_1793881349958.jpg", "equip/eq_a_robe.webp": "inbox/grok_1793881352406.jpg", "equip/eq_t_badge.webp": "inbox/grok_1793881355085.jpg", "equip/eq_t_ring.webp": "inbox/grok_1793881357536.jpg", "equip/eq_t_charm.webp": "inbox/grok_1793881360118.jpg", "equip/eq_t_feather.webp": "inbox/grok_1793881362905.jpg", "items/it_ore.webp": "inbox/grok_1793881365140.jpg", "items/it_supply.webp": "inbox/grok_1793881367748.jpg", "items/it_ticket.webp": "inbox/grok_1793881370880.jpg", "items/it_record.webp": "inbox/grok_1793881373898.jpg", "items/it_relic.webp": "inbox/grok_1793881377927.jpg", "equip/eq_w_lantern.webp": "inbox/grok_1793881470715.jpg", "equip/eq_w_bow.webp": "inbox/grok_1793881473023.jpg"},
  terrain:{
   PLAIN:{name:'平原',cost:1,def:0,pass:true,glyph:'',art:'terrain/t_plain.webp'},
   FOREST:{name:'森林',cost:2,def:.15,pass:true,glyph:'林',art:'terrain/t_forest.webp'},
@@ -29,6 +38,7 @@ const DATA={
   DEEP_WATER:{name:'深水',cost:99,def:0,pass:false,glyph:'淵',art:'terrain/t_deep.webp',flyPass:true},
   FLESH:{name:'污染地',cost:2,def:-.10,pass:true,glyph:'肉',art:'terrain/t_flesh.webp'},
   RUBBLE:{name:'瓦礫',cost:2,def:.05,pass:true,glyph:'礫',art:'terrain/t_rubble.webp'},
+  STATION:{name:'驛站據點',cost:1,def:.1,pass:true,glyph:'驛',art:'terrain/t_plain.webp'},
   GATE:{name:'城門',cost:99,def:0,pass:false,blockLos:true,glyph:'門',art:'terrain/t_gate.webp'}
  },
  // 兵種克制：攻方 → 被克方
@@ -89,8 +99,44 @@ const DATA={
  gacha:{rates:[.80,.17,.03],pity:50,tenGuarantee:1,firstTen:1,startTickets:10},
  rewards:{win:{tickets:3,supply:40},winClean:{tickets:1},lose:{tickets:1,supply:15},perKill:2},
  xp:{join:40,win:40,kill:15,perLevel:100,maxLv:20,statStep:.04},
- squad:{maxLv:10,lvCost:15,hpStep:.05,bonusStep:.015,maxTier:3,tierCost:50,passiveCost:40,slotsAt:[2,5,8],baseBonus:.2},
+ squad:{maxLv:5,lvCost:15,hpStep:.05,bonusStep:.015,maxTier:3,tierCost:50,passiveCost:40,slotsAt:[2,5,8],baseBonus:.2},
  barracks:{costPerSoldier:2},
+ // ---------- 裝備與素材（v0.8，數值是測試提案） ----------
+ // 每人三格：武器（依職業）、防具（依職業群）、飾品（大家都能戴）
+ eqSlots:{w:'武器',a:'防具',t:'飾品'},
+ eqRarity:{name:['普通','精良','稀有'],mult:[1,1.35,1.7]},
+ eqPlusMax:5,eqPlusStep:.12,
+ statName:{hp:'生命',atk:'攻擊',def:'防禦',mag:'法力',res:'抗性',hit:'命中',eva:'迴避',crit:'暴擊'},
+ equip:{
+  w_shield:{slot:'w',name:'鴉羽紋盾劍',icon:'eq_w_shield',units:['P_SHIELD'],st:{atk:2,def:1.5}},
+  w_spear:{slot:'w',name:'外圍長槍',icon:'eq_w_spear',units:['P_SPEAR'],st:{atk:3,hit:3}},
+  w_lantern:{slot:'w',name:'法術提燈',icon:'eq_w_lantern',units:['P_LANTERN'],st:{mag:3,res:1}},
+  w_bow:{slot:'w',name:'夜行長弓',icon:'eq_w_bow',units:['P_ARCHER'],st:{atk:2.5,hit:4}},
+  w_kit:{slot:'w',name:'舊藥箱',icon:'eq_w_kit',units:['P_HEALER'],st:{mag:2,res:2}},
+  w_thread:{slot:'w',name:'光絲梭子',icon:'eq_w_thread',units:['P_WEAVER'],st:{mag:2.5,eva:3}},
+  w_dagger:{slot:'w',name:'彎短刀',icon:'eq_w_dagger',units:['P_SCOUT'],st:{atk:2.5,crit:3}},
+  a_light:{slot:'a',name:'輕皮甲',icon:'eq_a_light',units:['P_ARCHER','P_SCOUT','P_SPEAR'],st:{def:1,eva:4}},
+  a_heavy:{slot:'a',name:'重鐵甲',icon:'eq_a_heavy',units:['P_SHIELD','P_SPEAR'],st:{def:2,hp:8,eva:-3}},
+  a_robe:{slot:'a',name:'法袍',icon:'eq_a_robe',units:['P_LANTERN','P_HEALER','P_WEAVER'],st:{res:2,hp:5}},
+  t_badge:{slot:'t',name:'渡鴉徽章',icon:'eq_t_badge',st:{hp:8,def:.5,res:.5}},
+  t_ring:{slot:'t',name:'黑鐵戒指',icon:'eq_t_ring',st:{atk:1.5,mag:1.5}},
+  t_charm:{slot:'t',name:'護身符',icon:'eq_t_charm',st:{res:2,eva:2}},
+  t_feather:{slot:'t',name:'黑羽飾',icon:'eq_t_feather',st:{hit:3,eva:2}}
+ },
+ // 素材：招集券與補給是原本就有的，另外三種新素材
+ mats:{
+  ore:{name:'白鐵礦石',icon:'it_ore',desc:'強化裝備用。拆解不要的裝備也會拿到。'},
+  record:{name:'戰記本',icon:'it_record',desc:'讀了就能拿到經驗。對一名成員使用：經驗 +100。'},
+  relic:{name:'發光的舊物',icon:'it_relic',desc:'不知道是誰留下的。之後的天賦會用到，先收好。'}
+ },
+ matIcon:{tickets:'it_ticket',supply:'it_supply'},
+ // 強化：白鐵 =（目前＋1）×2×（稀有度＋1）；補給 = 10×（目前＋1）
+ enhance:{ore:2,supply:10},
+ dismantle:{base:1,perR:2,perPlus:1},
+ recordXp:100,
+ // 掉落：勝利一定有素材；裝備看機率；第一次通關一定給一件精良以上
+ drops:{winEqChance:.6,loseEqChance:.15,rarity:[.72,.24,.04],winOre:[3,6],loseOre:[1,2],recordChance:.4,relicChance:.1,relicThreat:1,firstClearR:1},
+ invMax:60,
  levelStep:.05,levelMax:25,
  // 敵方勢力：每一場隨機抽一個（同一個種子一定抽到同一個）
  factions:{
@@ -158,7 +204,7 @@ const DATA={
     'WWWWWGWWWWWW',
     '............'],
    legend:{'.':'PLAIN',F:'FOREST',H:'HILL',S:'SWAMP',W:'WALL',w:'SHALLOW_WATER',D:'DEEP_WATER',G:'GATE',X:'FLESH'},
-   gate:{x:5,y:10,hp:300,def:10,res:0},
+   gate:{x:5,y:10,hp:300,def:10,res:0},obj:{type:'gate'},
    enemySlots:[[5,0],[6,0],[5,1],[6,1],[3,2],[8,2]],commanderAt:[6,0],
    events:[
     {round:1,say:'鳶的回報：霧裡的隊伍從北方中路壓過來，快的那幾隻會先衝。'},
@@ -174,7 +220,92 @@ const DATA={
     {id:'BROKEN_WALL',when:'勝利但城門生命 < 150',world:'安定 −10，記錄「破牆」',next:'城門出現破洞入口'},
     {id:'DEFEAT',when:'失敗後接受戰敗',world:'勢力掌控轉為危險、補給 −10',next:'觸發奪回城門的支線'}
    ]
-  }
+  },
+
+  MISSION_MINE:{
+   name:'礦坑入口・擊破掘進的指揮',place:'礦坑入口',chapter:1,threat:0,
+   intro:'礦坑口的軌道一路延伸到地面上。敵人的指揮守在坑口，只要它還在，坑裡的東西就會一直爬出來。',
+   w:12,h:12,roundLimit:12,
+   map:[
+    'WWW.....WWWW',
+    'W.....R..WWW',
+    'W..R.....F.W',
+    'WW...H...F.W',
+    'W....RR....W',
+    '..F.......R.',
+    '..F..S......',
+    '.....S..H...',
+    'R.........F.',
+    '...H........',
+    '............',
+    '............'],
+   legend:{'.':'PLAIN',F:'FOREST',H:'HILL',S:'SWAMP',W:'WALL',R:'RUBBLE'},
+   obj:{type:'boss'},commanderStart:true,commanderAt:[5,1],commanderLeash:2,
+   deploy:[[5,10],[6,10],[4,11],[7,11],[3,10],[8,10]],
+   enemySlots:[[3,2],[7,2],[4,3],[6,3],[5,4]],
+   events:[
+    {round:1,say:'坑口的機器聲越來越近。擊倒敵方指揮就能獲勝；拖太久（第 12 回合結束），它就會退回礦坑深處。'},
+    {round:3,wave:[[2,4,0]],say:'坑裡又爬出一隊。'},
+    {round:5,warn:[[5,4],[6,4]],say:'坑口的瓦礫開始發出暗紅的光。'},
+    {round:6,wave:[[0,4,0],[5,6,0]],say:'第二批從坑口湧出來。'},
+    {round:9,wave:[[2,5,0]],pressure:true,say:'指揮開始催促它們往前壓。'}
+   ],
+   win:'擊倒敵方指揮官。',lose:'第 12 回合結束還沒擊倒指揮官，或我方全滅。'},
+  MISSION_POST:{
+   name:'廢棄驛站・奪回驛站',place:'廢棄驛站',chapter:1,threat:1,
+   intro:'荒野上的舊驛站是礦城往外的第一個中繼點。佔住驛站中央（金框的格子），守住它。',
+   w:12,h:12,roundLimit:10,
+   map:[
+    '..F......F..',
+    '.....R......',
+    '..H.....H...',
+    '....PPP.....',
+    'R...PPP...R.',
+    '......F.....',
+    '.F..........',
+    '....S...S...',
+    '..........F.',
+    '...H....H...',
+    '............',
+    '............'],
+   legend:{'.':'PLAIN',F:'FOREST',H:'HILL',S:'SWAMP',R:'RUBBLE',P:'STATION'},
+   obj:{type:'hold',tiles:[[4,3],[5,3],[6,3],[4,4],[5,4],[6,4]],need:2},
+   deploy:[[5,10],[6,10],[4,11],[7,11],[3,10],[8,10]],
+   enemySlots:[[1,0],[10,0],[5,0],[0,6],[11,6],[6,1]],commanderAt:[5,0],
+   events:[
+    {round:1,say:'回合結束時，只要驛站裡有我方、而且沒有敵人，就算守住一回合。累積守住 2 回合就獲勝。'},
+    {round:3,wave:[[2,2,0],[4,9,0]],say:'驛站兩側的廢屋裡又走出兩隊。'},
+    {round:4,spawnCommander:true,say:'敵方指揮來了，它也想要這個驛站。'},
+    {round:6,wave:[[3,0,8]],say:'有東西從南邊繞過來了。'}
+   ],
+   win:'累積守住驛站 2 回合（或擊倒敵方指揮官）。',lose:'第 10 回合結束還沒守住，或我方全滅。'},
+  MISSION_WOOD:{
+   name:'枯樹林・霧中掃蕩',place:'枯樹林',chapter:1,threat:1,
+   intro:'枯樹林裡起了霧，只看得到身邊幾格。林子裡的燈火是敵人——把它們全部清掉。',
+   w:12,h:12,roundLimit:12,fog:{vision:3,scout:5,lantern:4},
+   map:[
+    'F.F..FF..F.F',
+    '.F..F..F..F.',
+    'F..F..F..F..',
+    '..F..S..F..F',
+    'F...F...F...',
+    '.F..FF.F..F.',
+    '..F.....F...',
+    'F..F..F...F.',
+    '.....F..F...',
+    '..F......F..',
+    '............',
+    '............'],
+   legend:{'.':'PLAIN',F:'FOREST',S:'SWAMP'},
+   obj:{type:'rout'},
+   deploy:[[5,10],[6,10],[4,11],[7,11],[3,10],[8,10]],
+   enemySlots:[[2,1],[9,1],[5,3],[1,5],[10,5],[6,6]],commanderAt:[6,0],
+   events:[
+    {round:1,say:'霧很濃：我方附近 3 格（斥候 5 格、提燈 4 格、燈界裡）才看得到敵人。擊倒所有敵人就獲勝。'},
+    {round:4,wave:[[2,0,0]],say:'霧的深處又亮起一盞燈。'},
+    {round:5,spawnCommander:true,say:'帶頭的那盞燈靠近了。'}
+   ],
+   win:'擊倒所有敵人（含後來出現的）。',lose:'第 12 回合結束還有敵人，或我方全滅。'}
  }
 };
 if(typeof module!=='undefined'&&module.exports)module.exports=DATA;else root.TACTICS_DATA=DATA;
