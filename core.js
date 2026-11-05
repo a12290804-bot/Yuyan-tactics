@@ -1,8 +1,8 @@
-// 《語嫣・永生戰棋》戰鬥核心（P1-A：兵隊、七職業技能、軍陣）
+// 《永生戰棋》戰鬥核心（v0.3：兵隊、七職業技能、軍陣、隨機勢力、污染）
 // 規則：純函式、不碰畫面、不呼叫 Math.random 或系統時間；所有隨機都來自 seed + rngIndex。
 (function(root){
 'use strict';
-const SCHEMA=2;
+const SCHEMA=3;
 
 // ---------- 小工具 ----------
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -13,20 +13,21 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function rngAt(seed,idx){let z=(seed>>>0)^Math.imul(idx+1,0x9E3779B1);z=Math.imul(z^(z>>>16),0x85EBCA6B);z=Math.imul(z^(z>>>13),0xC2B2AE35);z^=z>>>16;return (z>>>0)/4294967296;}
 function roll(st){const v=rngAt(st.seed,st.rngIndex);st.rngIndex++;return v;}
-function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.form,u.st,u.cd]),st.zones,st.tiles.join(''),st.result]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
+function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.form,u.st,u.cd]),st.zones,st.warn,st.corr,st.faction,st.tiles.join(''),st.result]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
 
 // ---------- 建立戰鬥 ----------
-function makeUnit(D,def,id,faction,x,y){const b=D.units[def];if(!b)throw new Error('unknown unit '+def);const n=b.soldiers||0,hp1=b.hpPer||10;
- return {id,def,name:b.name,glyph:b.glyph,troop:b.troop,faction,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,
+function makeUnit(D,def,id,faction,x,y,ov){const b={...D.units[def],...(ov||{})};if(!b)throw new Error('unknown unit '+def);const n=b.soldiers||0,hp1=b.hpPer||10;
+ return {id,def,name:b.name,glyph:b.glyph,troop:b.troop,faction,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,fly:!!b.fly,art:b.art||null,por:b.por||null,hero:b.hero||null,cls:b.cls||null,
   sol:n*hp1,solMax:n*hp1,hpPer:hp1,skill:b.skill||null,cd:{},form:'NONE',st:{root:0,mark:0,gs:0},usedAct:false,guard:false};}
 function createBattle(D,missionId,seed,opts){opts=opts||{};const M=D.missions[missionId];if(!M)throw new Error('unknown mission');
  const team=(opts.team&&opts.team.length?opts.team:D.defaultTeam).slice(0,D.deploySlots.length);for(const t of team)if(!D.units[t]||t[0]!=='P')throw new Error('bad team '+t);
  const tiles=[];for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)tiles.push(M.legend[M.map[y][x]]);
  const st={schemaVersion:SCHEMA,rulesetVersion:D.rulesetVersion,missionId,battleInstanceId:missionId+'_'+(seed>>>0).toString(16),seed:seed>>>0,rngIndex:0,round:1,phase:'PLAYER',w:M.w,h:M.h,tiles,team:team.slice(),
-  gate:{...M.gate,maxHp:M.gate.hp},units:[],zones:[],warn:[],pressure:false,result:null,eventLog:[],nextId:1};
- team.forEach((d,i)=>{const [x,y]=D.deploySlots[i];st.units.push(makeUnit(D,d,'P'+(i+1),'P',x,y));});
- M.enemy.forEach(([d,x,y],i)=>st.units.push(makeUnit(D,d,'E'+(i+1),'E',x,y)));
- st.nextId=M.enemy.length+1;
+  gate:{...M.gate,maxHp:M.gate.hp},units:[],zones:[],warn:[],corr:0,pressure:false,result:null,eventLog:[],nextId:1};
+ const fk=Object.keys(D.factions);st.faction=opts.faction&&D.factions[opts.faction]?opts.faction:fk[Math.floor(rngAt(st.seed,0x7ffff)*fk.length)];const F=D.factions[st.faction];
+ team.forEach((d,i)=>{const [x,y]=D.deploySlots[i];const h=D.units[d].hero;st.units.push(makeUnit(D,d,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));});
+ M.enemySlots.forEach(([x,y],i)=>{const [t,name,art]=F.slots[i];st.units.push(makeUnit(D,t,'E'+(i+1),'E',x,y,{name,glyph:name[0],art:'enemies/tok_'+art+'.webp',por:'enemies/por_'+art+'.webp'}));});
+ st.nextId=M.enemySlots.length+1;
  st.eventLog.push(...roundStart(D,st).map(e=>({...e,round:1})));return st;}
 
 // ---------- 地圖查詢 ----------
@@ -47,8 +48,8 @@ function reachable(D,st,u,opts){opts=opts||{};const start=key(u.x,u.y);const out
  const enemyAdj=(x,y)=>DIRS.some(([dx,dy])=>{const v=unitAt(st,x+dx,y+dy);return v&&v.faction!==u.faction;});
  while(q.length){q.sort((a,b)=>a[0]-b[0]||a[2]-b[2]||a[1]-b[1]);const [c,x,y]=q.shift();if(c>(dist.get(key(x,y))??Infinity))continue;
   if(!opts.ignoreZoc&&!(x===u.x&&y===u.y)&&enemyAdj(x,y))continue;
-  for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(!inside(st,nx,ny))continue;const t=T(D,st,nx,ny);if(!t.pass)continue;if(unitAt(st,nx,ny))continue;
-   const nc=c+t.cost;if(nc>mv)continue;const k=key(nx,ny);if(nc<(dist.get(k)??Infinity)){dist.set(k,nc);out.set(k,nc);q.push([nc,nx,ny]);}}}
+  for(const [dx,dy] of DIRS){const nx=x+dx,ny=y+dy;if(!inside(st,nx,ny))continue;const t=T(D,st,nx,ny);if(!t.pass&&!(u.fly&&t.flyPass))continue;if(unitAt(st,nx,ny))continue;
+   const nc=c+(u.fly?1:t.cost);if(nc>mv)continue;const k=key(nx,ny);if(nc<(dist.get(k)??Infinity)){dist.set(k,nc);out.set(k,nc);q.push([nc,nx,ny]);}}}
  return out;}
 
 function los(D,st,a,b){let x0=a.x,y0=a.y;const x1=b.x,y1=b.y;const dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1;let err=dx+dy;
@@ -74,6 +75,7 @@ function calc(D,st,att,from,tid,o){o=o||{};const tgt=tid==='GATE'?null:st.units.
  if(o.counter&&AF.counterVsCav&&tgt&&tgt.troop==='CAVALRY'){situ+=AF.counterVsCav;notes.push('長槍陣反擊騎兵 +20%');}
  if(!o.counter&&att.troop==='CAVALRY'&&(o.charge||0)>=D.charge.minCost&&tileAt(st,from.x,from.y)!=='SHALLOW_WATER'&&tgt&&!TF.noCharge){situ+=D.charge.bonus;notes.push('衝鋒 +20%');}
  if(tgt&&tgt.st.mark>0){situ+=D.skills.markShot.markAmp;notes.push('弱點標記 +20%');}
+ if(att.faction==='E'&&st.corr>=50&&tileAt(st,from.x,from.y)==='FLESH'){situ+=D.corruption.buffAt50;notes.push('污染加持 +10%');}
  if(o.flank&&tgt&&alive(st,att.faction).some(v=>v.id!==att.id&&manhattan(v,tgt)===1)){situ+=o.flank;notes.push('背襲 +20%');}
  const raw=Math.floor((isMag?att.mag:att.atk)*solBonus(D,att)*cm*(o.mult||1)*(1+situ));
  let guard;if(tgt){let db=terrainDef(D,st,tgt.x,tgt.y)+(tgt.guard?.3:0)+(inZone(st,tgt.x,tgt.y,tgt.faction)?.1:0)+(tgt.st.gs>0?D.skills.guardStance.defUp:0);db=clamp(db,-.5,.5);
@@ -154,7 +156,9 @@ function doAct(D,st,a,ev){const u=st.units.find(v=>v.id===a.actorId);const to=a.
   else if(u.skill==='bind'){ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」'});const r=strike(D,st,u,to,a.target,ev,{mult:S.mult,noCounter:true,label:'束縛'});const t=st.units.find(v=>v.id===a.target);
    if(r.hit&&t.hp>0){t.st.root=Math.max(t.st.root,S.root);ev.push({t:'status',d:t.id,txt:t.name+' 被束縛：下一個回合不能移動'});}}
   else if(u.skill==='mend'){const t=st.units.find(v=>v.id===a.target);const h=Math.min(t.maxHp-t.hp,Math.round(t.maxHp*S.heal));const s0=soldiers(t);t.hp+=h;t.sol=Math.min(t.solMax,t.sol+Math.round(t.solMax*S.solHeal));const cl=t.st.root>0||t.st.mark>0;t.st.root=0;t.st.mark=0;
-   ev.push({t:'heal',a:u.id,d:t.id,txt:u.name+'「'+S.name+'」：'+t.name+' 回復 '+h+'，士兵 '+s0+'→'+soldiers(t)+(cl?'，解除束縛與標記':'')});}
+   ev.push({t:'heal',a:u.id,d:t.id,txt:u.name+'「'+S.name+'」：'+t.name+' 回復 '+h+'，士兵 '+s0+'→'+soldiers(t)+(cl?'，解除束縛與標記':'')});
+   if(S.purify){let n=0;for(const [dx,dy] of [[0,0],...DIRS]){const x=t.x+dx,y=t.y+dy;if(!inside(st,x,y))continue;const w0=st.warn.length;st.warn=st.warn.filter(w=>!(w.x===x&&w.y===y));if(st.warn.length<w0)n++;if(tileAt(st,x,y)==='FLESH'){st.tiles[y*st.w+x]='PLAIN';n++;}}
+    if(n){updCorr(D,st);ev.push({t:'purify',a:u.id,txt:'光縫淨化了 '+n+' 格污染（濁度 '+st.corr+'）'});}}}
   else if(u.skill==='lampZone'){st.zones=st.zones.filter(z=>z.owner!==u.id);st.zones.push({x:a.at.x,y:a.at.y,faction:u.faction,owner:u.id,until:st.round+S.dur-1});ev.push({t:'zone',a:u.id,txt:u.name+'「'+S.name+'」：以 ('+a.at.x+','+a.at.y+') 為中心 3×3，持續 '+S.dur+' 回合'});}
   else if(u.skill==='shadowStep'){ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」'});if(a.target!=null)attackWithCounter(a.target,{flank:S.flank});}}
  else ev.push({t:'wait',a:u.id,txt:u.name+' 待機'});
@@ -164,11 +168,15 @@ function doAct(D,st,a,ev){const u=st.units.find(v=>v.id===a.actorId);const to=a.
 function M_(D,st){return D.missions[st.missionId];}
 function phaseStart(st,f){for(const u of alive(st,f)){u.usedAct=false;u.guard=false;for(const k in u.cd)if(u.cd[k]>0)u.cd[k]--;}}
 function phaseEnd(st,f){for(const u of alive(st,f))if(u.st.root>0)u.st.root--;}
-function roundStart(D,st,ev=[]){const M=M_(D,st);st.warn=[];
+function roundStart(D,st,ev=[]){const M=M_(D,st);
+ // 預告到期的格子生效（燈界裡的不會）
+ const due=st.warn.filter(w=>w.at===st.round);st.warn=st.warn.filter(w=>w.at!==st.round);let changed=0;
+ for(const w of due){if(inZone(st,w.x,w.y,'P')){ev.push({t:'stabilize',txt:'燈界穩住了 ('+w.x+','+w.y+')：這一格沒有被污染。'});continue;}if(T(D,st,w.x,w.y).pass&&tileAt(st,w.x,w.y)!=='FLESH'){st.tiles[w.y*st.w+w.x]=w.to;changed++;}}
+ if(changed){updCorr(D,st);ev.push({t:'corrupt',txt:changed+' 格變成了污染地（濁度 '+st.corr+'）'});}
  for(const e of M.events.filter(e=>e.round===st.round)){
   if(e.terrain)for(const [x,y,t] of e.terrain){if(inZone(st,x,y,'P')){ev.push({t:'stabilize',txt:'燈界穩住了 ('+x+','+y+')：這一格沒有被異變改寫。'});continue;}st.tiles[y*st.w+x]=t;}
-  if(e.spawn)for(const [d,x,y] of e.spawn){const p=freeNear(D,st,x,y);if(p){const u=makeUnit(D,d,'E'+(st.nextId++),'E',p.x,p.y);st.units.push(u);ev.push({t:'spawn',a:u.id,txt:u.name+' 進場'});}}
-  if(e.warn)st.warn=e.warn.map(([x,y])=>({x,y}));if(e.pressure)st.pressure=true;
+  if(e.spawnCommander){const F=D.factions[st.faction];const [t,name,art]=F.commander;const [cx,cy]=M.commanderAt;const p=freeNear(D,st,cx,cy);if(p){const u=makeUnit(D,t,'E'+(st.nextId++),'E',p.x,p.y,{name,glyph:name[0],art:'bosses/tok_'+art+'.webp',por:'bosses/por_'+art+'.webp',commander:true});st.units.push(u);ev.push({t:'spawn',a:u.id,txt:u.name+' 進場：'+F.line});}}
+  if(e.warn)for(const [x,y] of e.warn)st.warn.push({x,y,to:'FLESH',at:st.round+1});if(e.pressure)st.pressure=true;
   if(e.say)ev.push({t:'say',txt:'【第 '+st.round+' 回合】'+e.say});}
  phaseStart(st,'P');st.phase='PLAYER';return ev;}
 function freeNear(D,st,x,y){for(let r=0;r<6;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.abs(dx)+Math.abs(dy)!==r)continue;const nx=x+dx,ny=y+dy;if(inside(st,nx,ny)&&T(D,st,nx,ny).pass&&!unitAt(st,nx,ny))return {x:nx,y:ny};}return null;}
@@ -180,9 +188,21 @@ function runEnemyPhase(D,st,ev){st.phase='ENEMY';phaseStart(st,'E');
  phaseEnd(st,'E');if(!st.result)roundEnd(D,st,ev);}
 function roundEnd(D,st,ev){const M=M_(D,st);
  for(const u of st.units){if(u.st.mark>0)u.st.mark--;if(u.st.gs>0)u.st.gs--;}
+ pollute(D,st,ev);if(st.result)return;
  st.zones=st.zones.filter(z=>z.until>st.round);
  if(st.round>=M.roundLimit&&st.gate.hp>0&&alive(st,'P').length){st.result={win:true,reason:'守住城門到第 '+M.roundLimit+' 回合結束'};ev.push({t:'end',txt:'勝利：'+st.result.reason});st.phase='RESULT';return;}
  st.round++;roundStart(D,st,ev);checkEnd(D,st,ev);}
+function updCorr(D,st){const n=st.tiles.filter(t=>t==='FLESH').length;st.corr=Math.min(100,n*D.corruption.perTile);}
+// 污染：侵蝕站在上面的我方、到 100 時壓迫城門、往外擴散（先預告，隔一回合才生效）
+function pollute(D,st,ev){const K=D.corruption;updCorr(D,st);
+ for(const u of alive(st,'P'))if(tileAt(st,u.x,u.y)==='FLESH'&&u.sol>0){const n0=soldiers(u);u.sol=Math.max(0,u.sol-K.erodeSoldiers*u.hpPer);if(soldiers(u)<n0)ev.push({t:'soldier',d:u.id,txt:u.name+' 站在污染地上，士兵被侵蝕 '+(n0-soldiers(u))+' 名'});}
+ if(st.corr>=100&&st.gate.hp>0){st.gate.hp=Math.max(0,st.gate.hp-K.gateHitAt100);ev.push({t:'gate',txt:'濁度滿了：污染爬上城門，城門 −'+K.gateHitAt100});checkEnd(D,st,ev);if(st.result)return;}
+ const src=[];for(let y=0;y<st.h;y++)for(let x=0;x<st.w;x++)if(tileAt(st,x,y)==='FLESH'&&!inZone(st,x,y,'P'))src.push({x,y});
+ if(!src.length)return;let want=st.corr>=75?K.spreadAt75:K.spreadPerRound;const start=Math.floor(roll(st)*src.length);let made=0;
+ for(let i=0;i<src.length&&made<want&&st.warn.length<K.maxWarn;i++){const s=src[(start+i)%src.length];
+  const nb=DIRS.map(([dx,dy])=>({x:s.x+dx,y:s.y+dy})).filter(p=>inside(st,p.x,p.y)&&T(D,st,p.x,p.y).pass&&tileAt(st,p.x,p.y)!=='FLESH'&&!st.warn.some(w=>w.x===p.x&&w.y===p.y)&&!inZone(st,p.x,p.y,'P'));
+  if(!nb.length)continue;const p=nb[Math.floor(roll(st)*nb.length)];st.warn.push({x:p.x,y:p.y,to:'FLESH',at:st.round+2});made++;}
+ if(made)ev.push({t:'warn',txt:'污染正在擴散：'+made+' 格出現暗紅的微光，下下回合開始時會變成污染地（濁度 '+st.corr+'）'});}
 function checkEnd(D,st,ev){if(st.result)return;const lose=st.gate.hp<=0?'城門被打破':!alive(st,'P').length?'我方全滅':null;
  const cmdDown=st.units.some(u=>u.commander&&u.hp<=0);
  if(lose){st.result={win:false,reason:lose};}else if(cmdDown){st.result={win:true,reason:'擊倒敵軍指揮官，城門還在'};}
@@ -202,7 +222,7 @@ function plan(D,st,u,style){const opts=[];const add=(s,a)=>opts.push({s,a});
  const foes=alive(st).filter(v=>v.faction!==u.faction);const allies=alive(st,u.faction);
  const near=foes.length?Math.min(...foes.map(f=>manhattan(f,u))):99;
  const hold=style==='hold'&&u.faction==='P';
- const posPen=c=>hold&&c.y<6?-(6-c.y)*1.5:0;
+ const posPen=c=>(hold&&c.y<6?-(6-c.y)*1.5:0)-(u.faction==='P'&&tileAt(st,c.x,c.y)==='FLESH'?1.5:0);
  const S=u.skill&&!(u.cd[u.skill]>0)?D.skills[u.skill]:null;
  for(const c of cand){const pos={x:c.x,y:c.y};
   for(const tid of withPos(u,pos,()=>targetsFrom(D,st,u,pos))){const p=preview(D,st,u,pos,tid,{charge:c.c});add(scoreHit(D,st,u,pos,tid,p)+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'ATTACK',target:tid});}
@@ -213,7 +233,7 @@ function plan(D,st,u,style){const opts=[];const add=(s,a)=>opts.push({s,a});
      if(u.skill==='bind'&&!p.kill)extra+=(tgt.st.root>0?-3:(tgt.move>=4?6:3)+(manhattan(tgt,st.gate)<=4?3:0));
      add(scoreHit(D,st,u,pos,tid,p,extra)+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'SKILL',skill:u.skill,target:tid});}}
    if(S.kind==='self'&&near<=5){const adj=allies.filter(v=>v.id!==u.id&&manhattan(v,pos)===1).length;if(adj)add(adj*3+(near<=2?2:0)+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'SKILL',skill:u.skill});}
-   if(S.kind==='ally'){for(const tid of skillTargets(D,st,u,pos)){const t=st.units.find(v=>v.id===tid);const miss=(t.maxHp-t.hp)/t.maxHp,ms=(t.solMax-t.sol)/Math.max(1,t.solMax);const v=miss*14+ms*5+(t.st.root>0||t.st.mark>0?3:0);if(v>2.5)add(v+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'SKILL',skill:u.skill,target:tid});}}
+   if(S.kind==='ally'){for(const tid of skillTargets(D,st,u,pos)){const t=st.units.find(v=>v.id===tid);const miss=(t.maxHp-t.hp)/t.maxHp,ms=(t.solMax-t.sol)/Math.max(1,t.solMax);let pur=0;for(const [dx,dy] of [[0,0],...DIRS]){const x=t.x+dx,y=t.y+dy;if(inside(st,x,y)&&(tileAt(st,x,y)==='FLESH'||st.warn.some(w=>w.x===x&&w.y===y)))pur++;}const v=miss*14+ms*5+(t.st.root>0||t.st.mark>0?3:0)+pur*2.5;if(v>2.5)add(v+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'SKILL',skill:u.skill,target:tid});}}
    if(S.kind==='zone'&&near<=6&&c.x===u.x&&c.y===u.y){let best=null;for(const k of skillTargets(D,st,u,pos)){const [x,y]=k.split(',').map(Number);if(!inside(st,x,y))continue;const al=allies.filter(v=>Math.abs(v.x-x)<=1&&Math.abs(v.y-y)<=1).length;const wv=(st.warn||[]).filter(w=>Math.abs(w.x-x)<=1&&Math.abs(w.y-y)<=1).length;const v=al*2.2+wv*4;if(!best||v>best.v)best={v,x,y};}
     if(best&&best.v>=4)add(best.v,{type:'ACT',actorId:u.id,to:pos,act:'SKILL',skill:u.skill,at:{x:best.x,y:best.y}});}}
  }
@@ -234,6 +254,6 @@ function plan(D,st,u,style){const opts=[];const add=(s,a)=>opts.push({s,a});
 // ---------- 重播 ----------
 function replay(D,missionId,seed,actions,opts){let st=createBattle(D,missionId,seed,opts);for(const a of actions){const r=apply(D,st,a);if(!r.ok)throw new Error('replay failed at '+JSON.stringify(a)+': '+r.error);st=r.state;}return st;}
 
-const API={SCHEMA,createBattle,apply,validate,reachable,targetsFrom,skillTargets,preview,calc,plan,replay,hash,rngAt,los,key,manhattan,unitAt,tileAt,alive,rangeOf,counterMult,clone,soldiers,solMaxN,splitPreview,inZone,moveOpts,withPos};
+const API={updCorr,SCHEMA,createBattle,apply,validate,reachable,targetsFrom,skillTargets,preview,calc,plan,replay,hash,rngAt,los,key,manhattan,unitAt,tileAt,alive,rangeOf,counterMult,clone,soldiers,solMaxN,splitPreview,inZone,moveOpts,withPos};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.TACTICS=API;
 })(this);

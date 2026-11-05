@@ -1,6 +1,6 @@
 // 語嫣・永生戰棋 App 程式：只管 tactics/ 資料夾。
 // 遊戲檔案每次先抓網路上的最新版，抓不到（沒網路）才用手機裡存的那份。
-const CACHE = 'yyt-1';
+const CACHE = 'yyt-3';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
@@ -15,11 +15,14 @@ self.addEventListener('fetch', e => {
   if (url.origin !== self.location.origin) return;
   const scope = new URL(self.registration.scope);
   const inScope = url.pathname.startsWith(scope.pathname);
-  const isIcon = false;
-  if (!inScope && !isIcon) return;
+  // 也幫忙存渡鴉公會網站上的角色圖（同一個網站）
+  const isRG = /\/raven-guild\/(images|art)\//.test(url.pathname);
+  if (!inScope && !isRG) return;
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const k = url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname;
+    // 圖片：手機裡有就直接用（換圖時檔名會不同）
+    if (/\/(assets|inbox|images|art)\//.test(url.pathname)) { const hit = await cache.match(k); if (hit) return hit; }
     try {
       const res = await fetch(req, { cache: 'no-store' });
       if (res && res.ok) cache.put(k, res.clone()).catch(() => {});
