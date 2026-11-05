@@ -59,6 +59,18 @@ function talCan(D,c,id,nid){const r=c.roster[id],T=talNode(D,nid);if(!T)return '
 function talLearn(D,c,id,nid){const e=talCan(D,c,id,nid);if(e)return {ok:false,error:e};const T=talNode(D,nid);if(T.n.relic)c.mats.relic-=T.n.relic;c.roster[id].tal.push(nid);return {ok:true};}
 function talReset(D,c,id){const r=c.roster[id];if(!r.tal.length)return {ok:false,error:'還沒有點天賦'};if(c.supply<D.talentResetCost)return {ok:false,error:'補給不夠（要 '+D.talentResetCost+'）'};c.supply-=D.talentResetCost;let back=0;for(const n of r.tal){const T=talNode(D,n);if(T&&T.n.relic)back+=T.n.relic;}c.mats.relic+=back;r.tal=[];return {ok:true,relic:back};}
 function talFx(D,r){const o={atkP:0,defP:0,resP:0,hpP:0,crit:0,hit:0,eva:0,solP:0,sb:0,sold:0,flags:[]};for(const n of (r.tal||[])){const T=talNode(D,n);if(!T)continue;for(const [k,v] of Object.entries(T.n.fx)){if(k==='flag')o.flags.push(v);else o[k]+=v;}}return o;}
+// ---------- 委託板 ----------
+function questNew(D,c,rng){const Q=D.quests;const done=Object.keys(c.cleared||{}).filter(m=>D.missions[m]);if(!done.length)return null;const mid=done[Math.floor(rng()*done.length)%done.length];const M=D.missions[mid];const ks=Object.keys(Q.kinds);const k=ks[Math.floor(rng()*ks.length)%ks.length];
+ let n=0;if(k==='fast')n=Math.max(3,Math.ceil(M.roundLimit*.7));else if(k==='kills')n=6+Math.floor(rng()*3);else if(k==='soldiers')n=[50,60,70][Math.floor(rng()*3)%3];
+ const rw=JSON.parse(JSON.stringify(Q.rewards[Math.floor(rng()*Q.rewards.length)%Q.rewards.length]));return {id:'q'+(c.qn=(c.qn|0)+1),mission:mid,kind:k,n,from:Q.from[Math.floor(rng()*Q.from.length)%Q.from.length],rw};}
+function questFill(D,c,rng){rng=rng||Math.random;c.quests=Array.isArray(c.quests)?c.quests.filter(q=>q&&D.missions[q.mission]&&D.quests.kinds[q.kind]):[];let guard=0;while(c.quests.length<D.quests.max&&guard++<20){const q=questNew(D,c,rng);if(!q)break;if(c.quests.some(x=>x.mission===q.mission&&x.kind===q.kind))continue;c.quests.push(q);}return c.quests;}
+function questText(D,q){const M=D.missions[q.mission];return D.quests.kinds[q.kind].txt.replace('{place}',M.place||M.name).replace('{n}',q.n);}
+function questMet(D,q,st){if(!st.result||!st.result.win||st.missionId!==q.mission)return false;const P=st.units.filter(u=>u.faction==='P');
+ if(q.kind==='noloss')return P.every(u=>u.hp>0);if(q.kind==='fast')return st.round<=q.n;if(q.kind==='kills')return P.reduce((s,u)=>s+(u.kills||0),0)>=q.n;
+ if(q.kind==='soldiers'){const a=P.reduce((s,u)=>s+Math.round(u.sol/Math.max(1,u.hpPer)),0),b=P.reduce((s,u)=>s+Math.round(u.solMax/Math.max(1,u.hpPer)),0);return b>0&&a*100>=q.n*b;}return false;}
+function questGive(D,c,rw,st,rng){const out={mats:{},eq:[]};for(const [k,v] of Object.entries(rw)){if(k==='tickets')c.tickets+=v;else if(k==='supply')c.supply+=v;else if(k==='eq'){const team=st?st.units.filter(u=>u.faction==='P'&&u.rid).map(u=>u.def):[];const usable=Object.keys(D.equip).filter(b=>!D.equip[b].units||D.equip[b].units.some(x=>team.includes(x)));const pool=usable.length?usable:Object.keys(D.equip);for(let i=0;i<v;i++){const b=pool[Math.floor(rng()*pool.length)%pool.length];const r=rng()<.25?2:1;const e=addEq(D,c,b,r);out.eq.push(e.full?{b,r,full:true,ore:e.ore}:{u:e.u,b,r});}continue;}else c.mats[k]=(c.mats[k]||0)+v;out.mats[k]=v;}return out;}
+function questCheck(D,c,st,rng){rng=rng||Math.random;c.quests=Array.isArray(c.quests)?c.quests:[];const got=[];for(const q of c.quests.slice()){if(questMet(D,q,st)){const g=questGive(D,c,q.rw,st,rng);got.push({q,g});c.quests=c.quests.filter(x=>x.id!==q.id);c.qdone=(c.qdone|0)+1;}}questFill(D,c,rng);return got;}
+function questReroll(D,c,rng){if(c.supply<D.quests.rerollCost)return {ok:false,error:'補給不夠（要 '+D.quests.rerollCost+'）'};c.supply-=D.quests.rerollCost;c.quests=[];questFill(D,c,rng);return {ok:true};}
 // ---------- 招集 ----------
 function rollRarity(D,c,rng){const R=D.gacha.rates;const x=rng();let r=x<R[2]?2:x<R[2]+R[1]?1:0;if(c.sincePity+1>=D.gacha.pity)r=2;return r;}
 function pickHero(D,r,rng){const pool=D.heroes.filter(h=>h.r===r);return pool[Math.floor(rng()*pool.length)%pool.length];}
@@ -85,8 +97,8 @@ function afterBattle(D,c,st,rng){rng=rng||Math.random;if(c.lastBattle===st.battl
  c.battles++;c.tickets+=got.tickets;c.supply+=got.supply;
  got.xp={};got.lvUp={};const X=D.xp;
  for(const u of st.units)if(u.faction==='P'&&u.rid&&c.roster[u.rid]){const r=c.roster[u.rid];r.sol=u.hp>0?+(u.sol/Math.max(1,u.solMax)).toFixed(3):0;const k=u.kills||0;const xp=X.join+(win?X.win:0)+X.kill*k;const up=addXp(D,r,xp);got.xp[u.rid]=xp;if(up)got.lvUp[u.rid]=r.lv;got.supply+=(D.rewards.perKill||0)*k;c.supply+=(D.rewards.perKill||0)*k;}
- if(D.equip)got.drops=rollDrops(D,c,st,win,!!got.first,rng);
+ if(D.equip)got.drops=rollDrops(D,c,st,win,!!got.first,rng);if(D.quests)got.quests=questCheck(D,c,st,rng);
  c.log.unshift({t:'battle',win,fac:st.faction,got:{tickets:got.tickets,supply:got.supply}});c.log=c.log.slice(0,30);return got;}
-const API={talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
+const API={questNew,questFill,questText,questMet,questGive,questCheck,questReroll,talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.CAMP=API;
 })(this);

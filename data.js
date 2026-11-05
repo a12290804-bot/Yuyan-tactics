@@ -19,11 +19,11 @@ const DATA={
   {id:'mine',scene:'lv_mine',name:'礦坑入口',x:.17,y:.15,mission:'MISSION_MINE',needs:['MISSION_BC_001'],desc:'白鐵礦坑往地面的出口，機器的聲音沒有停過。'},
   {id:'post',scene:'lv_post',name:'廢棄驛站',x:.47,y:.12,mission:'MISSION_POST',needs:['MISSION_MINE'],desc:'以前的驛站，門口還掛著退件的牌子。'},
   {id:'wood',scene:'lv_wood',name:'枯樹林',x:.78,y:.16,mission:'MISSION_WOOD',needs:['MISSION_POST'],desc:'樹全死了，但林子裡有燈在走。'},
-  {id:'fog',scene:'lv_fog',name:'霧裡的村落',x:.15,y:.41,desc:'看得到屋頂，走不到門口。'},
-  {id:'marsh',scene:'lv_marsh',name:'沼澤',x:.8,y:.43,desc:'水底下有東西在呼吸。'},
-  {id:'bridge',scene:'lv_bridge',name:'石橋',x:.8,y:.62,desc:'通往東邊唯一的路。'},
-  {id:'bell',scene:'lv_bell',name:'鐘樓廢墟',x:.2,y:.68,desc:'山丘上的鐘樓，鐘早就不見了，聲音還在。'},
-  {id:'church',scene:'lv_church',name:'半塌的教堂',x:.72,y:.8,desc:'祭壇上的香還沒燒完。'}
+  {id:'fog',scene:'lv_fog',name:'霧裡的村落',x:.15,y:.41,mission:'MISSION_FOG',needs:['MISSION_WOOD'],desc:'看得到屋頂，走不到門口。'},
+  {id:'marsh',scene:'lv_marsh',name:'沼澤',x:.8,y:.43,mission:'MISSION_MARSH',needs:['MISSION_WOOD'],desc:'水底下有東西在呼吸。'},
+  {id:'bridge',scene:'lv_bridge',name:'石橋',x:.8,y:.62,mission:'MISSION_BRIDGE',needs:['MISSION_MARSH'],desc:'通往東邊唯一的路。'},
+  {id:'bell',scene:'lv_bell',name:'鐘樓廢墟',x:.2,y:.68,mission:'MISSION_BELL',needs:['MISSION_FOG'],desc:'山丘上的鐘樓，鐘早就不見了，聲音還在。'},
+  {id:'church',scene:'lv_church',name:'半塌的教堂',x:.72,y:.8,mission:'MISSION_CHURCH',needs:['MISSION_BRIDGE','MISSION_BELL'],desc:'祭壇上的香還沒燒完。'}
  ],
  artRoot:'assets/art/',
  // 輕量版：直接用 inbox 原圖與渡鴉公會網站上的圖（之後有整理好的 assets 再拿掉這張表）
@@ -39,6 +39,9 @@ const DATA={
   FLESH:{name:'污染地',cost:2,def:-.10,pass:true,glyph:'肉',art:'terrain/t_flesh.webp'},
   RUBBLE:{name:'瓦礫',cost:2,def:.05,pass:true,glyph:'礫',art:'terrain/t_rubble.webp'},
   STATION:{name:'驛站據點',cost:1,def:.1,pass:true,glyph:'驛',art:'terrain/t_plain.webp'},
+  HOUSE:{name:'民房',cost:1,def:.1,pass:true,glyph:'屋',art:'terrain/t_rubble.webp'},
+  BRIDGE:{name:'石橋',cost:1,def:0,pass:true,glyph:'橋',art:'terrain/t_rubble.webp'},
+  LAMP:{name:'燈座',cost:1,def:.05,pass:true,glyph:'燈',art:'terrain/t_plain.webp'},
   GATE:{name:'城門',cost:99,def:0,pass:false,blockLos:true,glyph:'門',art:'terrain/t_gate.webp'}
  },
  // 兵種克制：攻方 → 被克方
@@ -161,6 +164,17 @@ const DATA={
  },
  // 技能演出用的大圖（渡鴉公會的技能插畫）
  skillArt:{guardStance:'inbox/grok_1793244871174.jpg',shieldBash:'inbox/grok_1793244871174.jpg',pierce:'inbox/grok_1793244860209.jpg',sweep:'inbox/grok_1793244860209.jpg',lampZone:'inbox/grok_1793244867247.jpg',searLamp:'inbox/grok_1793244867247.jpg',markShot:'inbox/grok_1793244856306.jpg',skyArrow:'inbox/grok_1793244865508.jpg',mend:'inbox/grok_1793244863725.jpg',massMend:'inbox/grok_1793244863725.jpg',bind:'inbox/grok_1793244862046.jpg',pull:'inbox/grok_1793244869057.jpg',shadowStep:'inbox/grok_1793244858240.jpg',backstab:'inbox/grok_1793244858240.jpg'},
+ // ---------- 委託板（支線，v1.0）：打下來的地點會出現委託，同時最多 3 張 ----------
+ quests:{max:3,rerollCost:20,
+  from:['南門的守衛','礦工的家人','驛站的老郵差','提燈的孩子','白鐵礦城的鐵匠','城裡的藥師','守夜人','路過的商隊'],
+  kinds:{
+   noloss:{name:'一個都不能少',txt:'打贏{place}，而且沒有任何一隊倒下。',ic:['inbox/grok_1793244689811.jpg',0]},
+   fast:{name:'趕在天亮前',txt:'在第 {n} 回合以內打贏{place}。',ic:['inbox/grok_1793245149933.jpg',8]},
+   kills:{name:'清掉它們',txt:'打贏{place}，而且全隊擊倒 {n} 隊以上。',ic:['inbox/grok_1793244686557.jpg',2]},
+   soldiers:{name:'帶他們回來',txt:'打贏{place}，而且士兵剩下 {n}% 以上。',ic:['inbox/grok_1793244766873.jpg',3]}
+  },
+  rewards:[{ore:8,supply:30},{record:2,supply:20},{tickets:3},{eq:1},{relic:1,ore:4},{ore:12}]
+ },
  // 時裝：讀渡鴉公會網站上的時裝目錄，再加上這三件（渡鴉公會程式裡寫死的）
  costumeCatalog:'../raven-guild/art/costumes/catalog.json',costumeRoot:'../raven-guild/',
  costumeExtra:[
@@ -168,6 +182,8 @@ const DATA={
   {id:'moli_360',hero:'moli',name:'萬目窺真',theme:'卷宗與窺視',line:'看得越多，就越難假裝沒看見。',images:{normal:'art/costumes/moli_costume360.webp'}},
   {id:'sihuang_360',hero:'sihuang',name:'封印巫女',theme:'六芒與烈火',line:'封印亮起來的時候，別看我的眼睛。',images:{normal:'art/costumes/sihuang_costume360.webp'}}],
  levelStep:.05,levelMax:25,
+ // 第一章：敵人隨勝場變強，最多算到 8 勝（之後練功不會越練越難）
+ chapterWinCap:8,
  // 敵方勢力：每一場隨機抽一個（同一個種子一定抽到同一個）
  factions:{
   RETURN:{name:'退件局',desc:'地窖郵政的殘骸：退件、死信與巡廊的獵犬。',
@@ -335,7 +351,64 @@ const DATA={
     {round:4,wave:[[2,0,0]],say:'霧的深處又亮起一盞燈。'},
     {round:5,spawnCommander:true,say:'帶頭的那盞燈靠近了。'}
    ],
-   win:'擊倒所有敵人（含後來出現的）。',lose:'第 12 回合結束還有敵人，或我方全滅。'}
+   win:'擊倒所有敵人（含後來出現的）。',lose:'第 12 回合結束還有敵人，或我方全滅。'},
+  MISSION_FOG:{name:'霧裡的村落・把人帶出來',place:'霧裡的村落',chapter:1,threat:2,
+   intro:'村子被霧吞了一半。屋裡還有人。走進金框的屋子，就能把人帶出來——四間裡救出三間就夠了。',
+   w:12,h:12,roundLimit:12,fog:{vision:3,scout:5,lantern:4},
+   map:['F...R..R...F','.A..F...F.A.','..F......F..','....R..R....','F....FF....F','..A......A..','.F...ww...F.','....F..F....','..R......R..','............','............','............'],
+   legend:{'.':'PLAIN','F':'FOREST','R':'RUBBLE','w':'SHALLOW_WATER','A':'HOUSE'},
+   obj:{type:'rescue',tiles:[[1,1],[10,1],[2,5],[9,5]],need:3,timeout:'時間到了，霧把村子整個吞掉了'},
+   deploy:[[5,10],[6,10],[4,11],[7,11],[3,10],[8,10]],
+   enemySlots:[[1,0],[10,0],[5,2],[6,2],[3,4],[8,4]],commanderAt:[6,0],
+   events:[{round:1,say:'霧很濃。我方行動結束時站在金框的屋子上，就會把屋裡的人帶出來。救出 3 間就獲勝。'},
+    {round:4,wave:[[2,0,3]],say:'霧裡又有燈在動。'},{round:5,spawnCommander:true,say:'帶頭的那盞燈過來了。'},{round:8,wave:[[4,11,3]],pressure:true,say:'它們開始往屋子圍過去。'}],
+   win:'救出 3 間屋子裡的人（或擊倒敵方指揮官）。',lose:'第 12 回合結束還沒救出 3 間，或我方全滅。'},
+  MISSION_MARSH:{name:'沼澤・穿過去',place:'沼澤',chapter:1,threat:2,
+   intro:'往北的路只剩這片沼澤。水底下有東西在呼吸。讓三隊走到北岸（金框）就算成功。',
+   w:12,h:12,roundLimit:12,
+   map:['FF........FF','F.SS.ww.SS.F','..SwwDDwwS..','.SS.wDDw.SS.','S..XS..SX..S','.wS..SS..Sw.','DDw.S..S.wDD','.S..w..w..S.','..S.SS.S.S..','.F........F.','............','............'],
+   legend:{'.':'PLAIN','F':'FOREST','S':'SWAMP','w':'SHALLOW_WATER','D':'DEEP_WATER','X':'FLESH'},
+   obj:{type:'reach',tiles:[[2,0],[3,0],[4,0],[5,0],[6,0],[7,0],[8,0],[9,0]],need:3,timeout:'時間到了，沼澤把路吞回去了'},
+   deploy:[[5,10],[6,10],[4,11],[7,11],[3,10],[8,10]],
+   enemySlots:[[1,2],[10,2],[5,4],[6,4],[2,5],[9,5]],commanderAt:[5,0],
+   events:[{round:1,say:'回合結束時，北岸金框裡有 3 隊我方就獲勝。沼澤很難走，污染地會侵蝕士兵。'},
+    {round:3,wave:[[3,4,1],[0,7,1]],say:'北岸的霧裡又下來兩隊。'},{round:4,spawnCommander:true,say:'敵方指揮守在北岸路口。'},{round:7,wave:[[5,4,7]],pressure:true,say:'水底下的東西浮上來了。'}],
+   win:'回合結束時，北岸有 3 隊我方（或擊倒敵方指揮官）。',lose:'第 12 回合結束還沒過去，或我方全滅。'},
+  MISSION_BRIDGE:{name:'石橋・守住橋頭',place:'石橋',chapter:1,threat:2,
+   intro:'往東唯一的石橋。對岸的隊伍要過來，橋這頭的南岸（最下面三排）是我們的。守到第 10 回合結束。',
+   w:12,h:12,roundLimit:10,
+   map:['..F..H...F..','.F........F.','....R..R....','..F......F..','R....bb....R','DDDDDbbDDDwD','DDDDDbbDDDwD','R....bb....R','..H......H..','....F..F....','............','............'],
+   legend:{'.':'PLAIN','F':'FOREST','H':'HILL','R':'RUBBLE','D':'DEEP_WATER','w':'SHALLOW_WATER','b':'BRIDGE'},
+   obj:{type:'defend',tiles:[].concat(...[9,10,11].map(y=>Array.from({length:12},(_,x)=>[x,y]))),max:3},
+   deploy:[[5,8],[6,8],[4,8],[7,8],[3,9],[8,9]],
+   enemySlots:[[2,0],[9,0],[5,1],[6,1],[3,2],[8,2]],commanderAt:[6,0],
+   events:[{round:1,say:'回合結束時，每有一隊敵人站在南岸最下面三排，就算過橋一次；累積 3 次就失敗。飛的會直接越過河，右邊還有一條淺灘。'},
+    {round:3,wave:[[2,2,0],[5,9,0]],say:'對岸又來了兩隊。'},{round:5,wave:[[4,5,0],[1,6,0]],say:'第二批要過橋了。'},{round:6,spawnCommander:true,say:'敵方指揮在對岸督戰。擊倒它也能獲勝。'},{round:8,wave:[[2,3,0],[3,8,0]],pressure:true,say:'最後一批，它們不管傷亡了。'}],
+   win:'守到第 10 回合結束（或擊倒敵方指揮官）。',lose:'累積 3 次有敵人過橋，或我方全滅。'},
+  MISSION_BELL:{name:'鐘樓廢墟・讓鐘聲停下來',place:'鐘樓廢墟',chapter:1,threat:2,
+   intro:'鐘早就不見了，聲音還在。只要鐘聲還響，敵方指揮幾乎打不痛。把三個燈座（金框）點起來，鐘聲就會停。',
+   w:12,h:12,roundLimit:15,
+   map:['WWW..HH..WWW','W....HH....W','W.L......L.W','..R..RR..R..','...F....F...','R..........R','..F..L...F..','.....R......','..H......H..','............','............','............'],
+   legend:{'.':'PLAIN','F':'FOREST','H':'HILL','R':'RUBBLE','W':'WALL','L':'LAMP'},
+   obj:{type:'boss',seals:[[2,2],[9,2],[5,6]],timeout:'時間到了，鐘聲把我們趕下山丘'},
+   commanderStart:true,commanderAt:[5,1],commanderLeash:2,
+   deploy:[[5,10],[6,10],[4,11],[7,11],[3,10],[8,10]],
+   enemySlots:[[1,3],[10,3],[3,5],[8,5],[6,4],[4,7]],
+   events:[{round:1,say:'回合結束時，燈座上有我方、沒有敵人，那盞燈就點起來。三盞都點起來之前，打指揮官的傷害 −60%。'},
+    {round:3,wave:[[0,3,1],[1,8,1]],say:'鐘樓兩側又走出兩隊。'},{round:6,warn:[[3,3],[8,3]],say:'鐘聲震得地面發紅。'},{round:8,wave:[[4,5,0]],pressure:true,say:'鐘聲越來越急。'}],
+   win:'擊倒敵方指揮官（先點亮三盞燈座）。',lose:'第 15 回合結束還沒擊倒，或我方全滅。'},
+  MISSION_CHURCH:{name:'半塌的教堂・第一章最後一戰',place:'半塌的教堂',chapter:1,threat:3,
+   intro:'祭壇上的香還沒燒完。白鐵礦城周圍的東西，好像都是從這裡被叫出來的。擊倒守在祭壇前的那個。',
+   w:12,h:12,roundLimit:14,
+   map:['WWWW.HH.WWWW','W..R....R..W','W.X......X.W','W...R..R...W','....F..F....','.R........R.','..X..SS..X..','....R..R....','.F........F.','............','............','............'],
+   legend:{'.':'PLAIN','F':'FOREST','H':'HILL','R':'RUBBLE','W':'WALL','S':'SWAMP','X':'FLESH'},
+   obj:{type:'boss',timeout:'時間到了，香燒完了'},
+   commanderStart:true,commanderAt:[5,1],commanderLeash:3,cmdMult:{hp:1.5,atk:1.05},
+   deploy:[[5,10],[6,10],[4,11],[7,11],[3,10],[8,10]],
+   enemySlots:[[2,3],[9,3],[4,4],[7,4],[1,5],[10,5]],
+   events:[{round:1,say:'這一位比之前的都強，而且會一直叫人來。污染地會擴散，記得用治療師淨化。'},
+    {round:3,wave:[[0,3,1],[1,8,1]],say:'祭壇的香煙裡走出兩隊。'},{round:7,warn:[[4,7],[7,7]],say:'教堂的地板開始發紅。'},{round:8,wave:[[4,1,4],[5,10,4]],pressure:true,say:'它開始催促所有東西往前壓。'}],
+   win:'擊倒敵方指揮官。',lose:'第 14 回合結束還沒擊倒，或我方全滅。'}
  }
 };
 if(typeof module!=='undefined'&&module.exports)module.exports=DATA;else root.TACTICS_DATA=DATA;
