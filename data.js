@@ -135,8 +135,38 @@ const DATA={
  dismantle:{base:1,perR:2,perPlus:1},
  recordXp:100,
  // 掉落：勝利一定有素材；裝備看機率；第一次通關一定給一件精良以上
- drops:{winEqChance:.6,loseEqChance:.15,rarity:[.72,.24,.04],winOre:[3,6],loseOre:[1,2],recordChance:.4,relicChance:.1,relicThreat:1,firstClearR:1},
+ drops:{winEqChance:.6,loseEqChance:.15,rarity:[.72,.24,.04],winOre:[3,6],loseOre:[1,2],recordChance:.4,relicChance:.15,relicThreat:0,relicSkip:['MISSION_BC_001'],firstClearR:1},
  invMax:60,
+ // ---------- 天賦（v0.9）：每 2 級 1 點；三條路各 5 格，要照順序點；第 5 格要 1 個發光的舊物 ----------
+ talentEvery:2,talentResetCost:50,
+ talents:{
+  atk:{name:'鋒',desc:'打得更痛',nodes:[
+   {id:'a1',name:'磨利',ic:['inbox/grok_1793244686557.jpg',1],fx:{atkP:.04},desc:'攻擊與法力 +4%'},
+   {id:'a2',name:'找縫',ic:['inbox/grok_1793375954414.jpg',7],fx:{crit:4},desc:'暴擊 +4%'},
+   {id:'a3',name:'壓上',ic:['inbox/grok_1793375954414.jpg',4],fx:{atkP:.04},desc:'攻擊與法力 +4%'},
+   {id:'a4',name:'看準',ic:['inbox/grok_1793244686557.jpg',5],fx:{hit:6},desc:'命中 +6%'},
+   {id:'a5',name:'斬首',ic:['inbox/grok_1793244784046.jpg',8],fx:{flag:'behead'},relic:1,desc:'對敵方指揮官的傷害 +15%'}]},
+  def:{name:'盾',desc:'站得更久',nodes:[
+   {id:'d1',name:'站穩',ic:['inbox/grok_1793244689811.jpg',0],fx:{defP:.05},desc:'防禦 +5%'},
+   {id:'d2',name:'厚甲',ic:['inbox/grok_1793244663768.jpg',3],fx:{hpP:.05},desc:'隊長生命 +5%'},
+   {id:'d3',name:'燈下',ic:['inbox/grok_1793244689811.jpg',4],fx:{resP:.05},desc:'抗性 +5%'},
+   {id:'d4',name:'輕身',ic:['inbox/grok_1793244689811.jpg',3],fx:{eva:4},desc:'迴避 +4%'},
+   {id:'d5',name:'鐵壁',ic:['inbox/grok_1793375954414.jpg',0],fx:{flag:'nocrit'},relic:1,desc:'不會被暴擊'}]},
+  sq:{name:'隊',desc:'帶兵更穩',nodes:[
+   {id:'s1',name:'包紮',ic:['inbox/grok_1793244766873.jpg',3],fx:{solP:.05},desc:'士兵生命 +5%'},
+   {id:'s2',name:'燈號',ic:['inbox/grok_1793244779109.jpg',1],fx:{sb:.02},desc:'士兵加成 +2%'},
+   {id:'s3',name:'輪替',ic:['inbox/grok_1793244766873.jpg',5],fx:{solP:.05},desc:'士兵生命 +5%'},
+   {id:'s4',name:'添員',ic:['inbox/grok_1793244779109.jpg',2],fx:{sold:1},desc:'多帶 1 名士兵'},
+   {id:'s5',name:'號令',ic:['inbox/grok_1793245149933.jpg',8],fx:{flag:'quick'},relic:1,desc:'技能冷卻 -1（最少 2）'}]}
+ },
+ // 技能演出用的大圖（渡鴉公會的技能插畫）
+ skillArt:{guardStance:'inbox/grok_1793244871174.jpg',shieldBash:'inbox/grok_1793244871174.jpg',pierce:'inbox/grok_1793244860209.jpg',sweep:'inbox/grok_1793244860209.jpg',lampZone:'inbox/grok_1793244867247.jpg',searLamp:'inbox/grok_1793244867247.jpg',markShot:'inbox/grok_1793244856306.jpg',skyArrow:'inbox/grok_1793244865508.jpg',mend:'inbox/grok_1793244863725.jpg',massMend:'inbox/grok_1793244863725.jpg',bind:'inbox/grok_1793244862046.jpg',pull:'inbox/grok_1793244869057.jpg',shadowStep:'inbox/grok_1793244858240.jpg',backstab:'inbox/grok_1793244858240.jpg'},
+ // 時裝：讀渡鴉公會網站上的時裝目錄，再加上這三件（渡鴉公會程式裡寫死的）
+ costumeCatalog:'../raven-guild/art/costumes/catalog.json',costumeRoot:'../raven-guild/',
+ costumeExtra:[
+  {id:'archerh_360',hero:'archerH',name:'黑羽刺客',theme:'黑羽與鐘樓',line:'衣服換了，影子還是同一個。',images:{normal:'art/costumes/archerH_costume360.webp'}},
+  {id:'moli_360',hero:'moli',name:'萬目窺真',theme:'卷宗與窺視',line:'看得越多，就越難假裝沒看見。',images:{normal:'art/costumes/moli_costume360.webp'}},
+  {id:'sihuang_360',hero:'sihuang',name:'封印巫女',theme:'六芒與烈火',line:'封印亮起來的時候，別看我的眼睛。',images:{normal:'art/costumes/sihuang_costume360.webp'}}],
  levelStep:.05,levelMax:25,
  // 敵方勢力：每一場隨機抽一個（同一個種子一定抽到同一個）
  factions:{

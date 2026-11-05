@@ -19,6 +19,9 @@ function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,
 function makeUnit(D,def,id,faction,x,y,ov){const b={...D.units[def],...(ov||{})};if(!b)throw new Error('unknown unit '+def);const n=b.soldiers||0,hp1=b.hpPer||10;
  return {id,def,name:b.name,glyph:b.glyph,troop:b.troop,faction,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,fly:!!b.fly,art:b.art||null,por:b.por||null,hero:b.hero||null,cls:b.cls||null,
   sol:n*hp1,solMax:n*hp1,hpPer:hp1,skills:b.skills||(b.skill?[b.skill]:[]),pas:b.pas||[],sb:b.sb!=null?b.sb:null,cd:{},st:{root:0,mark:0,gs:0},usedAct:false,guard:false,stay:false,kills:0,lv:b.lv||1};}
+// 天賦：百分比先算，再加裝備
+function applyTal(u,T){const r=Math.round;if(T.atkP){u.atk=r(u.atk*(1+T.atkP));u.mag=r(u.mag*(1+T.atkP));}if(T.defP)u.def=r(u.def*(1+T.defP));if(T.resP)u.res=r(u.res*(1+T.resP));if(T.hpP){u.hp=u.maxHp=r(u.maxHp*(1+T.hpP));}for(const s of ['crit','hit','eva'])if(T[s])u[s]=(u[s]||0)+r(T[s]);if(T.flags)u.tf=T.flags.slice();}
+const hasT=(u,k)=>!!(u&&u.tf&&u.tf.includes(k));
 // 裝備加成（平的數值，加在等級、星級之後）
 function applyEq(u,e){const r=Math.round;if(e.hp){const k=r(e.hp);u.hp+=k;u.maxHp+=k;}for(const s of ['atk','def','mag','res'])if(e[s])u[s]=Math.max(0,u[s]+r(e[s]));for(const s of ['hit','eva','crit'])if(e[s])u[s]=(u[s]||0)+r(e[s]);u.eq=1;}
 const hasP=(u,k)=>!!(u&&u.pas&&u.pas.includes(k));
@@ -31,7 +34,7 @@ function createBattle(D,missionId,seed,opts){opts=opts||{};const M=D.missions[mi
  const DEP=M.deploy||D.deploySlots;team.forEach((t,i)=>{const [x,y]=DEP[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
   const b=D.units[t.def],k=t.mult||1;const ov={name:t.name||b.name,cls:t.title||b.cls,hero:t.hero||null,art:t.art||null,por:t.por||t.art||null,hp:Math.round(b.hp*k),atk:Math.round(b.atk*k),def:Math.round(b.def*k),mag:Math.round(b.mag*k),res:Math.round(b.res*k),lv:t.lv||1};
   if(t.skills)ov.skills=t.skills.filter(x=>D.skills[x]);if(t.pas)ov.pas=t.pas.filter(x=>D.passives[x]);if(t.soldiers)ov.soldiers=t.soldiers;if(t.hpPer)ov.hpPer=Math.round(b.hpPer*t.hpPer);if(t.sb!=null)ov.sb=t.sb;
-  const u=makeUnit(D,t.def,'P'+(i+1),'P',x,y,ov);if(t.sol!=null)u.sol=Math.round(u.solMax*Math.max(0,Math.min(1,t.sol)));if(t.rid)u.rid=t.rid;if(t.eq)applyEq(u,t.eq);st.units.push(u);});
+  const u=makeUnit(D,t.def,'P'+(i+1),'P',x,y,ov);if(t.sol!=null)u.sol=Math.round(u.solMax*Math.max(0,Math.min(1,t.sol)));if(t.rid)u.rid=t.rid;if(t.por)u.por=t.por;if(t.tal)applyTal(u,t.tal);if(t.eq)applyEq(u,t.eq);st.units.push(u);});
  M.enemySlots.forEach(([x,y],i)=>{const [t,name,art]=F.slots[i];st.units.push(makeUnit(D,t,'E'+(i+1),'E',x,y,{name,glyph:name[0],art:'enemies/tok_'+art+'.webp',por:'enemies/por_'+art+'.webp'}));});
  st.nextId=M.enemySlots.length+1;st.level=Math.max(0,(opts.level|0)+(M.threat||0));
  if(M.commanderStart)spawnCmd(D,st,M,[]);const em=1+(D.levelStep||0)*Math.min(st.level,D.levelMax||0);if(em!==1)for(const u of st.units)if(u.faction==='E'){u.hp=u.maxHp=Math.round(u.hp*em);u.atk=Math.round(u.atk*em);u.mag=Math.round(u.mag*em);}
@@ -83,6 +86,7 @@ function calc(D,st,att,from,tid,o){o=o||{};const tgt=tid==='GATE'?null:st.units.
  if(!o.counter&&att.troop==='CAVALRY'&&(o.charge||0)>=D.charge.minCost&&tileAt(st,from.x,from.y)!=='SHALLOW_WATER'&&tgt){situ+=D.charge.bonus;notes.push('衝鋒 +20%');}
  if(tgt&&tgt.st.mark>0){situ+=D.skills.markShot.markAmp;notes.push('弱點標記 +20%');}
  if(att.faction==='E'&&st.corr>=50&&tileAt(st,from.x,from.y)==='FLESH'){situ+=D.corruption.buffAt50;notes.push('污染加持 +10%');}
+ if(tgt&&tgt.commander&&hasT(att,'behead')){situ+=.15;notes.push('斬首 +15%');}
  if(o.flank&&tgt&&alive(st,att.faction).some(v=>v.id!==att.id&&manhattan(v,tgt)===1)){situ+=o.flank;notes.push('背襲 +'+Math.round(o.flank*100)+'%');}
  const raw=Math.floor((isMag?att.mag:att.atk)*solBonus(D,att)*cm*(o.mult||1)*(1+situ));
  let guard;if(tgt){let db=terrainDef(D,st,tgt.x,tgt.y,tgt)+(tgt.guard?.3:0)+(inZone(st,tgt.x,tgt.y,tgt.faction)?.1:0)+(tgt.st.gs>0?D.skills.guardStance.defUp:0)+(hasP(tgt,'wall')?.1:0);db=clamp(db,-.5,.5);
@@ -91,7 +95,7 @@ function calc(D,st,att,from,tid,o){o=o||{};const tgt=tid==='GATE'?null:st.units.
  if(tgt&&hasP(tgt,'hold')&&tgt.stay)inMod-=.1;
  if(inMod)dmg=Math.max(1,Math.floor(dmg*(1+inMod)));
  const hit=tgt?clamp(.9+(att.hit+(hasP(att,'night')?10:0)-tgt.eva)/100,.2,1):1;
- return {dmg,hit,crit:clamp((att.crit==null?5:att.crit)/100,0,.5),cm,notes,tgt};}
+ return {dmg,hit,crit:tgt&&hasT(tgt,'nocrit')?0:clamp((att.crit==null?5:att.crit)/100,0,.5),cm,notes,tgt};}
 // 攻擊預估（含反擊）
 function preview(D,st,att,from,tid,o){o=o||{};const p=withPos(att,from,()=>calc(D,st,att,from,tid,o));const tgt=p.tgt;let counter=null;
  if(tgt&&!o.noCounter){const [a,b]=rangeOf(D,st,tgt,tgt);const d=manhattan(from,tgt);if(d>=a&&d<=b&&(d===1||los(D,st,tgt,from))){const c=withPos(att,from,()=>calc(D,st,tgt,{x:tgt.x,y:tgt.y},att.id,{counter:true}));counter={possible:true,dmg:c.dmg,hit:c.hit,notes:c.notes};}}
@@ -152,7 +156,7 @@ function doAct(D,st,a,ev){const u=st.units.find(v=>v.id===a.actorId);const to=a.
   if(!o.noCounter&&tgt&&tgt.hp>0&&u.hp>0){const [ra,rb]=rangeOf(D,st,tgt,tgt);const d=manhattan(to,tgt);if(d>=ra&&d<=rb&&(d===1||los(D,st,tgt,to))&&!(tgt.st&&tgt.st.stun))strike(D,st,tgt,{x:tgt.x,y:tgt.y},u.id,ev,{counter:true});}return r;};
  if(a.act==='ATTACK'){attackWithCounter(a.target,{charge:cost});}
  else if(a.act==='GUARD'){u.guard=true;ev.push({t:'guard',a:u.id,txt:u.name+' 守備（防禦 +30%，到下次行動前）'});}
- else if(a.act==='SKILL'){const sk=a.skill,S=D.skills[sk];u.cd[sk]=S.cd;
+ else if(a.act==='SKILL'){const sk=a.skill,S=D.skills[sk];u.cd[sk]=hasT(u,'quick')?Math.max(2,S.cd-1):S.cd;
   if(sk==='guardStance'){u.st.gs=S.dur;ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」：相鄰隊友的傷害 40% 由它承受，持續 '+S.dur+' 回合'});}
   else if(sk==='pierce'){const t=st.units.find(v=>v.id===a.target);const dx=t.x-to.x,dy=t.y-to.y;const behind=unitAt(st,t.x+dx,t.y+dy);
    ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」'});strike(D,st,u,to,t.id,ev,{mult:S.mult,noCounter:true,area:true,label:'突刺'});

@@ -3,7 +3,7 @@
 (function(root){
 'use strict';
 const RG='../raven-guild/';
-const blankHero=()=>({star:0,sol:1,lv:1,xp:0,sq:{lv:1,tier:0,pas:[]},eq:{w:null,a:null,t:null}});
+const blankHero=()=>({star:0,sol:1,lv:1,xp:0,sq:{lv:1,tier:0,pas:[]},eq:{w:null,a:null,t:null},tal:[],cos:null});
 const TS=D=>D.teamSize||4;
 function heroOf(D,id){return D.heroes.find(h=>h.id===id);}
 function newCamp(D){const c={v:1,tickets:D.gacha.startTickets,supply:0,pulls:0,sincePity:0,firstTenUsed:false,roster:{},team:[],battles:0,wins:0,log:[],inv:[],nextEq:1,mats:{ore:0,record:0,relic:0}};
@@ -14,15 +14,16 @@ function fix(D,c){if(!c||c.v!==1)return newCamp(D);c.roster=c.roster||{};for(con
  c.team=(c.team||[]).filter(id=>c.roster[id]).slice(0,TS(D));for(const id of Object.keys(c.roster))if(c.team.length<TS(D)&&!c.team.includes(id))c.team.push(id);
  for(const k of ['tickets','supply','pulls','sincePity','battles','wins'])c[k]=Math.max(0,c[k]|0);c.cleared=c.cleared&&typeof c.cleared==='object'?c.cleared:{};if(c.wins>0&&!Object.keys(c.cleared).length)c.cleared.MISSION_BC_001=true;
  c.inv=Array.isArray(c.inv)?c.inv.filter(e=>e&&D.equip&&D.equip[e.b]):[];c.nextEq=Math.max(c.nextEq|0,1,...c.inv.map(e=>(e.u|0)+1));c.mats=c.mats||{};for(const k of Object.keys(D.mats||{}))c.mats[k]=Math.max(0,c.mats[k]|0);
- const ids=new Set(c.inv.map(e=>e.u)),seen=new Set();for(const id of Object.keys(c.roster)){const r=c.roster[id];r.eq=r.eq||{w:null,a:null,t:null};for(const sl of ['w','a','t']){const u=r.eq[sl];if(u==null||!ids.has(u)||seen.has(u)||!fits(D,id,c.inv.find(e=>e.u===u),sl))r.eq[sl]=null;else seen.add(u);}}
+ const ids=new Set(c.inv.map(e=>e.u)),seen=new Set();for(const id of Object.keys(c.roster)){const r=c.roster[id];r.eq=r.eq||{w:null,a:null,t:null};r.tal=Array.isArray(r.tal)?r.tal.filter(n=>talNode(D,n)):[];while(r.tal.length>talPts(D,r))r.tal.pop();if(typeof r.cos!=='string')r.cos=null;for(const sl of ['w','a','t']){const u=r.eq[sl];if(u==null||!ids.has(u)||seen.has(u)||!fits(D,id,c.inv.find(e=>e.u===u),sl))r.eq[sl]=null;else seen.add(u);}}
  return c;}
 function mult(D,id,c){const h=heroOf(D,id),r=c.roster[id];return D.rarityMult[h.r]*(1+D.starStep*(r?r.star:0))*(1+D.xp.statStep*((r?r.lv:1)-1));}
 function skillsOf(D,id,c){const h=heroOf(D,id),u=D.units[h.unit],r=c.roster[id];const out=[u.skill];if(r&&r.lv>=D.secondAt&&D.secondSkill[h.unit])out.push(D.secondSkill[h.unit]);return out;}
-function soldiersOf(D,id,c){const h=heroOf(D,id);return (D.units[h.unit].soldiers||5)+((c.roster[id].sq||{}).tier||0);}
+function soldiersOf(D,id,c){const h=heroOf(D,id),r=c.roster[id];return (D.units[h.unit].soldiers||5)+((r.sq||{}).tier||0)+(D.talents?talFx(D,r).sold:0);}
 function slotsOf(D,r){return D.squad.slotsAt.filter(l=>r.sq.lv>=l).length;}
 function art(h){return RG+h.src;}
 // 出戰隊伍 → 戰鬥核心要的格式（士兵比例延續）
-function teamFor(D,c){return c.team.map(id=>{const h=heroOf(D,id),r=c.roster[id],Q=D.squad;return {def:h.unit,rid:id,hero:id,name:h.name,title:h.title,lv:r.lv,mult:+mult(D,id,c).toFixed(3),sol:+(r.sol).toFixed(3),art:art(h),skills:skillsOf(D,id,c),soldiers:soldiersOf(D,id,c),hpPer:+(1+Q.hpStep*(r.sq.lv-1)).toFixed(3),sb:+(Q.baseBonus+Q.bonusStep*(r.sq.lv-1)).toFixed(3),pas:r.sq.pas.slice(),eq:heroEq(D,c,id)};});}
+function teamFor(D,c,cosArt){return c.team.map(id=>{const h=heroOf(D,id),r=c.roster[id],Q=D.squad,T=talFx(D,r);const o={def:h.unit,rid:id,hero:id,name:h.name,title:h.title,lv:r.lv,mult:+mult(D,id,c).toFixed(3),sol:+(r.sol).toFixed(3),art:art(h),skills:skillsOf(D,id,c),soldiers:soldiersOf(D,id,c),hpPer:+((1+Q.hpStep*(r.sq.lv-1))*(1+T.solP)).toFixed(3),sb:+(Q.baseBonus+Q.bonusStep*(r.sq.lv-1)+T.sb).toFixed(3),pas:r.sq.pas.slice(),eq:heroEq(D,c,id)};
+  const tal={};for(const k of ['atkP','defP','resP','hpP','crit','hit','eva'])if(T[k])tal[k]=T[k];if(T.flags.length)tal.flags=T.flags.slice();if(Object.keys(tal).length)o.tal=tal;const cp=r.cos&&cosArt&&cosArt(r.cos,id);if(cp)o.por=cp;return o;});}
 // ---------- 裝備 ----------
 function fits(D,id,e,sl){if(!e)return false;const B=D.equip[e.b],h=heroOf(D,id);if(!B||!h)return false;if(sl&&B.slot!==sl)return false;return !B.units||B.units.includes(h.unit);}
 function eqStats(D,e){const B=D.equip[e.b],k=D.eqRarity.mult[e.r]*(1+D.eqPlusStep*(e.p||0));const o={};for(const s of Object.keys(B.st))o[s]=+(B.st[s]*k).toFixed(1);return o;}
@@ -47,8 +48,17 @@ function rollDrops(D,c,st,win,first,rng){const R=D.drops,out={eq:[],mats:{}};con
  if(rng()<(win?R.winEqChance:R.loseEqChance)){const pool=rng()<.6?usable:all;give(pool[Math.floor(rng()*pool.length)%pool.length],rollR());}
  const ore=win?ri(...R.winOre):ri(...R.loseOre);c.mats.ore+=ore;out.mats.ore=ore;
  if(win&&rng()<R.recordChance){c.mats.record++;out.mats.record=1;}
- const M=D.missions[st.missionId]||{};if(win&&(M.threat||0)>=R.relicThreat&&rng()<R.relicChance){c.mats.relic++;out.mats.relic=1;}
+ const M=D.missions[st.missionId]||{};if(win&&!(R.relicSkip||[]).includes(st.missionId)&&(M.threat||0)>=R.relicThreat){const rr=rng();if(first||rr<R.relicChance){c.mats.relic++;out.mats.relic=1;}}
  return out;}
+// ---------- 天賦 ----------
+function talNode(D,nid){if(!D.talents)return null;for(const p of Object.keys(D.talents)){const i=D.talents[p].nodes.findIndex(n=>n.id===nid);if(i>=0)return {p,i,n:D.talents[p].nodes[i]};}return null;}
+function talPts(D,r){return Math.floor((r.lv||1)/(D.talentEvery||2));}
+function talFree(D,r){return talPts(D,r)-(r.tal||[]).length;}
+function talCan(D,c,id,nid){const r=c.roster[id],T=talNode(D,nid);if(!T)return '沒有這個天賦';if(r.tal.includes(nid))return '已經點了';if(talFree(D,r)<1)return '天賦點不夠（每 '+D.talentEvery+' 級 1 點）';
+ const prev=D.talents[T.p].nodes[T.i-1];if(prev&&!r.tal.includes(prev.id))return '要先點「'+prev.name+'」';if(T.n.relic&&(c.mats.relic||0)<T.n.relic)return '要 '+T.n.relic+' 個發光的舊物';return null;}
+function talLearn(D,c,id,nid){const e=talCan(D,c,id,nid);if(e)return {ok:false,error:e};const T=talNode(D,nid);if(T.n.relic)c.mats.relic-=T.n.relic;c.roster[id].tal.push(nid);return {ok:true};}
+function talReset(D,c,id){const r=c.roster[id];if(!r.tal.length)return {ok:false,error:'還沒有點天賦'};if(c.supply<D.talentResetCost)return {ok:false,error:'補給不夠（要 '+D.talentResetCost+'）'};c.supply-=D.talentResetCost;let back=0;for(const n of r.tal){const T=talNode(D,n);if(T&&T.n.relic)back+=T.n.relic;}c.mats.relic+=back;r.tal=[];return {ok:true,relic:back};}
+function talFx(D,r){const o={atkP:0,defP:0,resP:0,hpP:0,crit:0,hit:0,eva:0,solP:0,sb:0,sold:0,flags:[]};for(const n of (r.tal||[])){const T=talNode(D,n);if(!T)continue;for(const [k,v] of Object.entries(T.n.fx)){if(k==='flag')o.flags.push(v);else o[k]+=v;}}return o;}
 // ---------- 招集 ----------
 function rollRarity(D,c,rng){const R=D.gacha.rates;const x=rng();let r=x<R[2]?2:x<R[2]+R[1]?1:0;if(c.sincePity+1>=D.gacha.pity)r=2;return r;}
 function pickHero(D,r,rng){const pool=D.heroes.filter(h=>h.r===r);return pool[Math.floor(rng()*pool.length)%pool.length];}
@@ -77,6 +87,6 @@ function afterBattle(D,c,st,rng){rng=rng||Math.random;if(c.lastBattle===st.battl
  for(const u of st.units)if(u.faction==='P'&&u.rid&&c.roster[u.rid]){const r=c.roster[u.rid];r.sol=u.hp>0?+(u.sol/Math.max(1,u.solMax)).toFixed(3):0;const k=u.kills||0;const xp=X.join+(win?X.win:0)+X.kill*k;const up=addXp(D,r,xp);got.xp[u.rid]=xp;if(up)got.lvUp[u.rid]=r.lv;got.supply+=(D.rewards.perKill||0)*k;c.supply+=(D.rewards.perKill||0)*k;}
  if(D.equip)got.drops=rollDrops(D,c,st,win,!!got.first,rng);
  c.log.unshift({t:'battle',win,fac:st.faction,got:{tickets:got.tickets,supply:got.supply}});c.log=c.log.slice(0,30);return got;}
-const API={fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
+const API={talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.CAMP=API;
 })(this);

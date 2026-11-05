@@ -1,10 +1,9 @@
-永生戰棋 v0.8 上傳清單（Yuyan-tactics 倉庫最外層，直接覆蓋）
+永生戰棋 v0.9 上傳清單（Yuyan-tactics 倉庫最外層，直接覆蓋）
 1. index.html
 2. core.js
 3. data.js
 4. camp.js
 5. sw.js
 （選擇性）docs/CHANGELOG.md → 放進 docs 資料夾
-sfx.js 這次沒改，不用傳。圖片都已經在 inbox，不用再傳。
-舊存檔可以直接讀，裝備欄會是空的。
+sfx.js 沒改。圖片都已經在 inbox，時裝直接讀渡鴉公會網站，不用再傳。
 上傳後手機開網站，下拉重新整理一兩次就會換新版。
