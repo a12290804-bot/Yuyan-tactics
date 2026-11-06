@@ -13,7 +13,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function rngAt(seed,idx){let z=(seed>>>0)^Math.imul(idx+1,0x9E3779B1);z=Math.imul(z^(z>>>16),0x85EBCA6B);z=Math.imul(z^(z>>>13),0xC2B2AE35);z^=z>>>16;return (z>>>0)/4294967296;}
 function roll(st){const v=rngAt(st.seed,st.rngIndex);st.rngIndex++;return v;}
-function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.hold,st.tiles.join(''),st.result,st.done||0,st.lit||0,st.breach||0]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
+function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.hold,st.tiles.join(''),st.result,st.done||0,st.lit||0,st.breach||0,st.escort||null]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
 
 // ---------- 建立戰鬥 ----------
 function makeUnit(D,def,id,faction,x,y,ov){const b={...D.units[def],...(ov||{})};if(!b)throw new Error('unknown unit '+def);const n=b.soldiers||0,hp1=b.hpPer||10;
@@ -31,6 +31,7 @@ function createBattle(D,missionId,seed,opts){opts=opts||{};const M=D.missions[mi
  const tiles=[];for(let y=0;y<M.h;y++)for(let x=0;x<M.w;x++)tiles.push(M.legend[M.map[y][x]]);
  const st={schemaVersion:SCHEMA,rulesetVersion:D.rulesetVersion,missionId,battleInstanceId:missionId+'_'+(seed>>>0).toString(16),seed:seed>>>0,rngIndex:0,round:1,phase:'PLAYER',w:M.w,h:M.h,tiles,team:team.slice(),
   gate:M.gate?{...M.gate,maxHp:M.gate.hp}:{none:true,x:-99,y:-99,hp:0,maxHp:0,def:0,res:0},obj:M.obj||{type:'gate'},hold:0,done:[],lit:[],breach:0,units:[],zones:[],warn:[],corr:0,pressure:false,result:null,eventLog:[],nextId:1};
+ if(M.obj&&M.obj.type==='escort')st.escort={status:'trapped',x:M.obj.person[0],y:M.obj.person[1],carrier:null};
  const fk=Object.keys(D.factions);st.faction=opts.faction&&D.factions[opts.faction]?opts.faction:fk[Math.floor(rngAt(st.seed,0x7ffff)*fk.length)];const F=D.factions[st.faction];
  const DEP=M.deploy||D.deploySlots;team.forEach((t,i)=>{const [x,y]=DEP[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
   const b=D.units[t.def],k=t.mult||1;const ov={name:t.name||b.name,cls:t.title||b.cls,hero:t.hero||null,art:t.art||null,por:t.por||t.art||null,hp:Math.round(b.hp*k),atk:Math.round(b.atk*k),def:Math.round(b.def*k),mag:Math.round(b.mag*k),res:Math.round(b.res*k),lv:t.lv||1};
@@ -54,7 +55,7 @@ function heightAt(D,st,x,y){return T(D,st,x,y).height||0;}
 function inZone(st,x,y,faction){return st.zones.some(z=>z.faction===faction&&Math.abs(z.x-x)<=1&&Math.abs(z.y-y)<=1);}
 
 // 可到達的格子（Dijkstra；不能穿過任何單位；進入敵方相鄰格就停下＝控制區）
-function moveOf(D,u,opts){let m=u.move+((opts&&opts.extra)||0)+(hasP(u,'march')?1:0)-(sv(u,'slow')>0?1:0)-(u.slumber>0?1:0);return Math.max(0,m);}
+function moveOf(D,u,opts){let m=u.move+((opts&&opts.extra)||0)+(hasP(u,'march')?1:0)-(sv(u,'slow')>0?1:0)-(u.slumber>0?1:0)-(u.escorting?1:0);return Math.max(0,m);}
 function reachable(D,st,u,opts){opts=opts||{};const start=key(u.x,u.y);const out=new Map([[start,0]]);if(u.st&&u.st.root>0)return out;
  const mv=moveOf(D,u,opts);const dist=new Map([[start,0]]);const q=[[0,u.x,u.y]];
  const enemyAdj=(x,y)=>DIRS.some(([dx,dy])=>{const v=unitAt(st,x+dx,y+dy);return v&&v.faction!==u.faction;});
@@ -277,7 +278,7 @@ function aiGen(D,st,u,pos,c,sk,S,add,posPen,near,allies){const base={type:'ACT',
  if(v>2)add(v+pp,base);}
 
 // ---------- 行動驗證 ----------
-const ACTS=['ATTACK','WAIT','GUARD','SKILL'];
+const ACTS=['ATTACK','WAIT','GUARD','SKILL','RESCUE'];
 function moveOpts(D,u,a){if(a.act==='SKILL'&&a.skill==='shadowStep'){const S=D.skills.shadowStep;return {extra:S.extraMove,ignoreZoc:true};}return {};}
 function skillTargets(D,st,u,to,sk){sk=sk||u.skills[0];const S=D.skills[sk];if(!S)return [];
  return withPos(u,to,()=>{
@@ -295,6 +296,7 @@ function validate(D,st,a){if(st.result)return 'battle_over';
  const want=st.phase==='PLAYER'?'P':'E';if(u.faction!==want)return 'not_your_unit';if(u.usedAct)return 'already_acted';
  if(!ACTS.includes(a.act))return 'bad_act';
  const to=a.to||{x:u.x,y:u.y};if(!inside(st,to.x,to.y))return 'out_of_map';const R=reachable(D,st,u,moveOpts(D,u,a));if(!R.has(key(to.x,to.y)))return 'unreachable';
+ if(a.act==='RESCUE'&&!(u.faction==='P'&&st.escort&&st.escort.status==='trapped'&&manhattan(to,st.escort)<=1))return 'not_rescuable';
  if(a.act==='ATTACK'){const ts=withPos(u,to,()=>targetsFrom(D,st,u,to));if(!ts.includes(a.target))return 'bad_target';}
  if(a.act==='SKILL'){if(!a.skill||!u.skills.includes(a.skill))return 'no_skill';if((u.cd[a.skill]||0)>0)return 'cooldown';if(sv(u,'seal')>0)return 'sealed';const S=D.skills[a.skill];const ts=skillTargets(D,st,u,to,a.skill);
   if(S.kind==='gen'){if(S.tg==='enemy'||S.tg==='ally'){if(!ts.includes(a.target))return 'bad_target';}if(S.tg==='tile'){if(!a.at||!ts.includes(key(a.at.x,a.at.y)))return 'bad_target';}}
@@ -315,7 +317,8 @@ function doAct(D,st,a,ev){const u=st.units.find(v=>v.id===a.actorId);const to=a.
  u.stay=!(to.x!==u.x||to.y!==u.y);if(to.x!==u.x||to.y!==u.y){ev.push({t:'move',a:u.id,from:{x:u.x,y:u.y},to:{...to},txt:u.name+' 移動到 ('+to.x+','+to.y+')'+(a.act==='SKILL'&&a.skill==='shadowStep'?'〔影徑〕':'')});u.x=to.x;u.y=to.y;}
  const attackWithCounter=(tid,o)=>{const r=strike(D,st,u,to,tid,ev,o);const tgt=tid==='GATE'?null:st.units.find(v=>v.id===tid);
   if(!o.noCounter&&tgt&&tgt.hp>0&&u.hp>0&&canCounter(tgt)){const [ra,rb]=rangeOf(D,st,tgt,tgt);const d=manhattan(to,tgt);if(d>=ra&&d<=rb&&(d===1||los(D,st,tgt,to))&&!(tgt.st&&tgt.st.stun))strike(D,st,tgt,{x:tgt.x,y:tgt.y},u.id,ev,{counter:true});}return r;};
- if(a.act==='ATTACK'){attackWithCounter(a.target,{charge:cost,normal:true});}
+ if(a.act==='RESCUE'){st.escort.status='escorting';st.escort.carrier=u.id;u.escorting=true;ev.push({t:'rescue',a:u.id,txt:u.name+' 解開了繩索，開始護送推車人。移動 −1，其他隊伍請掩護回程。'});}
+ else if(a.act==='ATTACK'){attackWithCounter(a.target,{charge:cost,normal:true});}
  else if(a.act==='GUARD'){u.guard=true;ev.push({t:'guard',a:u.id,txt:u.name+' 守備（防禦 +30%，到下次行動前）'});}
  else if(a.act==='SKILL'){const sk=a.skill,S=D.skills[sk];u.cd[sk]=hasT(u,'quick')?Math.max(2,S.cd-1):S.cd;if(tm(u,'freeSkillOnce')&&!u.freeUsed){u.freeUsed=1;u.cd[sk]=0;ev.push({t:'say',txt:u.name+' 這一招不進入冷卻'});}
   if(tm(u,'castCost')){const c0=Math.round(u.maxHp*tm(u,'castCost'));u.hp=Math.max(1,u.hp-c0);}
@@ -397,9 +400,11 @@ function pollute(D,st,ev){const K=D.corruption;updCorr(D,st);
   const nb=DIRS.map(([dx,dy])=>({x:s.x+dx,y:s.y+dy})).filter(p=>inside(st,p.x,p.y)&&T(D,st,p.x,p.y).pass&&tileAt(st,p.x,p.y)!=='FLESH'&&!st.warn.some(w=>w.x===p.x&&w.y===p.y)&&!inZone(st,p.x,p.y,'P'));
   if(!nb.length)continue;const p=nb[Math.floor(roll(st)*nb.length)];st.warn.push({x:p.x,y:p.y,to:'FLESH',at:st.round+2});made++;}
  if(made)ev.push({t:'warn',txt:'污染正在擴散：'+made+' 格出現暗紅的微光，下下回合開始時會變成污染地（濁度 '+st.corr+'）'});}
-function checkEnd(D,st,ev){if(st.result)return;const O=st.obj||{type:'gate'};const lose=(!st.gate.none&&st.gate.hp<=0)?'城門被打破':!alive(st,'P').length?'我方全滅':null;
+function checkEnd(D,st,ev){if(st.result)return;
+ if(st.escort&&st.escort.status==='escorting'){const u=st.units.find(u=>u.id===st.escort.carrier);if(!u||u.hp<=0){st.escort.status='failed';st.result={win:false,reason:'護送隊倒下，救援未能完成'};}else{st.escort.x=u.x;st.escort.y=u.y;if(st.obj.exit.some(([x,y])=>u.x===x&&u.y===y)){st.escort.status='safe';st.result={win:true,reason:'推車人已平安撤回南門'};}}if(st.result){st.phase='RESULT';ev.push({t:'end',txt:(st.result.win?'勝利：':'失敗：')+st.result.reason});return;}}
+ const O=st.obj||{type:'gate'};const lose=(!st.gate.none&&st.gate.hp<=0)?'城門被打破':!alive(st,'P').length?'我方全滅':null;
  const cmdDown=st.units.some(u=>u.commander&&u.hp<=0);const routed=O.type==='rout'&&!alive(st,'E').length&&!pendingSpawns(D,st);const saved=O.type==='rescue'&&st.done&&st.done.length>=O.need;
- if(lose){st.result={win:false,reason:lose};}else if(cmdDown&&O.type!=='rout'){st.result={win:true,reason:O.type==='gate'?'擊倒敵軍指揮官，城門還在':'擊倒敵方指揮官'};}else if(routed){st.result={win:true,reason:'霧裡的敵人全部清掉了'};}else if(saved){st.result={win:true,reason:'村裡的人都救出來了'};}
+ if(lose){st.result={win:false,reason:lose};}else if(cmdDown&&O.type!=='rout'&&O.type!=='escort'){st.result={win:true,reason:O.type==='gate'?'擊倒敵軍指揮官，城門還在':'擊倒敵方指揮官'};}else if(routed){st.result={win:true,reason:'霧裡的敵人全部清掉了'};}else if(saved){st.result={win:true,reason:'村裡的人都救出來了'};}
  if(st.result){st.phase='RESULT';ev.push({t:'end',txt:(st.result.win?'勝利：':'失敗：')+st.result.reason});}}
 
 // ---------- AI（敵我共用；只送出合法行動） ----------
@@ -412,14 +417,15 @@ function scoreHit(D,st,u,c,tid,p,extra){const tgt=tid==='GATE'?null:st.units.fin
  const terr=terrainDef(D,st,c.x,c.y)*10;const cnt=(p.cm-1)*10;const risk=p.counter&&!p.kill?(p.counter.dmg*p.counter.hit/Math.max(1,effHp(u)))*10:0;
  const taunt=tgt&&sv(tgt,'taunt')>0&&u.faction!==tgt.faction?8:0;
  return killV*4+objV*3+terr*2+cnt*2-risk*3+taunt+(extra||0);}
-function plan(D,st,u,style){const opts=[];const add=(s,a)=>opts.push({s,a});
+function plan(D,st,u,style){if(st.escort&&st.escort.status==='trapped'&&u.faction==='P'&&manhattan(u,st.escort)<=1)return {type:'ACT',actorId:u.id,to:{x:u.x,y:u.y},act:'RESCUE'};const opts=[];const add=(s,a)=>opts.push({s,a});
  const R=reachable(D,st,u);let cand=[...R.keys()].map(k=>{const [x,y]=k.split(',').map(Number);return {x,y,c:R.get(k)};}).sort((a,b)=>a.y-b.y||a.x-b.x);
+ if(u.escorting&&st.obj.type==='escort'){const dm=distMap(D,st,st.obj.exit.map(([x,y])=>({x,y})));cand.sort((a,b)=>(dm.get(key(a.x,a.y))??999)-(dm.get(key(b.x,b.y))??999));const p=cand[0];return {type:'ACT',actorId:u.id,to:{x:p.x,y:p.y},act:'GUARD'};}
  if(u.anchor&&u.leash){const c2=cand.filter(c=>manhattan(c,u.anchor)<=u.leash);if(c2.length)cand=c2;}
  const O=st.obj||{type:'gate'};
  const foes=alive(st).filter(v=>v.faction!==u.faction);const allies=alive(st,u.faction);
  const near=foes.length?Math.min(...foes.map(f=>manhattan(f,u))):99;
  const hold=style==='hold'&&u.faction==='P';
- const objTiles=O.type==='hold'?O.tiles.map(([x,y])=>({x,y})):(O.type==='rescue'&&u.faction==='P')?O.tiles.filter(([x,y])=>!st.done.includes(key(x,y))).map(([x,y])=>({x,y})):(O.type==='reach'&&u.faction==='P')?O.tiles.map(([x,y])=>({x,y})):(O.type==='defend'&&u.faction==='E')?O.tiles.map(([x,y])=>({x,y})):(O.seals&&u.faction==='P')?O.seals.filter(([x,y])=>!st.lit.includes(key(x,y))).map(([x,y])=>({x,y})):null;
+ const objTiles=O.type==='escort'&&u.faction==='P'?(st.escort.status==='trapped'?[st.escort]:st.escort.carrier===u.id?O.exit.map(([x,y])=>({x,y})):null):O.type==='hold'?O.tiles.map(([x,y])=>({x,y})):(O.type==='rescue'&&u.faction==='P')?O.tiles.filter(([x,y])=>!st.done.includes(key(x,y))).map(([x,y])=>({x,y})):(O.type==='reach'&&u.faction==='P')?O.tiles.map(([x,y])=>({x,y})):(O.type==='defend'&&u.faction==='E')?O.tiles.map(([x,y])=>({x,y})):(O.seals&&u.faction==='P')?O.seals.filter(([x,y])=>!st.lit.includes(key(x,y))).map(([x,y])=>({x,y})):null;
  const posPen=c=>(hold&&O.type==='gate'&&c.y<6?-(6-c.y)*1.5:0)+(objTiles&&objTiles.some(t=>t.x===c.x&&t.y===c.y)?(u.faction==='P'?2.5:2):0)-(u.faction==='P'&&tileAt(st,c.x,c.y)==='FLESH'&&!hasP(u,'clean')?1.5:0);
  const ready=sv(u,'seal')>0?[]:u.skills.filter(k=>!(u.cd[k]>0)&&D.skills[k]);
  for(const c of cand){const pos={x:c.x,y:c.y};

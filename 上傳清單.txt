@@ -1,5 +1,22 @@
-永生戰棋 v1.3.1 上傳清單（Yuyan-tactics 倉庫最外層，覆蓋）
-1. index.html
-2. sw.js
-3. inbox/sk_mf_calm.jpg（還沒傳的話）
-4. inbox/sk_m0_eye.jpg（還沒傳的話）
+永生戰棋 v1.4.0 試玩更新包
+
+上傳到 a12290804-bot/Yuyan-tactics 最外層，覆蓋以下六個檔案：
+index.html
+data.js
+core.js
+camp.js
+talk.js
+sw.js
+
+六個檔案請一起更新，全部上傳完成後再開遊戲。
+不要刪除或覆蓋原有 inbox、根目錄 grok 圖片與其他素材。
+共用角色、怪物與時裝仍從渡鴉公會網站讀取。
+
+docs/ 與 tests/ 可上傳到同名資料夾，供後續開發；並非啟動遊戲的必要檔案。
+更新前先打完目前戰鬥，並從據點的存檔選單匯出備份。
+舊據點資料會保留；尚未結算的舊規則戰鬥將返回整備。
+
+詳細更新與試行數值：docs/UPDATE_v1.4.0.md
+驗證紀錄：docs/QA_RESULTS.txt
+
+此包尚未代為部署或推送到 GitHub。

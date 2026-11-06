@@ -1,7 +1,7 @@
 // 《永生戰棋》資料（世界觀＝渡鴉公會；數值都是測試提案，不是正史）
 (function(root){
 const DATA={
- rulesetVersion:'v0.5',
+ rulesetVersion:'v0.6',
  bgm:{title:'hall',base:'hall',map:'explore',battle:'battle',boss:'boss',win:'hall'},bgmRoot:'../raven-guild/audio/',
  prologue:[
   {img:'battle/bt_plain.webp',future:'pr_1',txt:'天闕大陸的北邊，白鐵礦城的礦坑從來沒有停過。'},
@@ -191,7 +191,7 @@ const DATA={
  innateTxt:{wangdeng:['未熄的歸途','隊友的生命第一次掉到三成以下時，月燈自動給生命 20% 的護盾（每 3 回合一次）。'],feie:['不肯斷裂的線','隊友受到致命傷時，緋厄用自己的生命替他擋下（隊友留兩成生命；每 3 回合一次），之後振奮 2 回合。']},
  cmdSkill:{"RETURN": "cm_return", "PAPER": "cm_fire", "MINE": "cm_drill"},
  // ---------- v1.1：渡鴉幣、好感、禮物 ----------
- version:'v1.3',
+ version:'v1.4.0',
  coins:{win:5,lose:1,first:15,name:'渡鴉幣'},costumePrice:100,
  aff:{tiers:[0,15,40,80,130],names:['普通','熟識','信賴','摯友','羈絆'],chat:8,gift:6,giftLike:15},
  giftDrop:{chance:.35,list:['soup','bread','fish','honey','wick','feather','iron']},
@@ -433,6 +433,40 @@ const DATA={
    win:'擊倒敵方指揮官。',lose:'第 14 回合結束還沒擊倒，或我方全滅。'}
  }
 };
+
+// v1.4 位階本能：直接作用於戰鬥，與可分配的天賦點分開。
+DATA.rarityTraits={
+ P_SHIELD:[{name:'守線',desc:'生命 +3%。',fx:{hpP:.03}},{name:'穩盾',desc:'防禦 +4%。',fx:{defP:.04}},{name:'掩護',desc:'相鄰隊友受到傷害 −5%（同類取最高）。',fx:{coverAdj:.05}}],
+ P_SPEAR:[{name:'握槍',desc:'命中 +3%。',fx:{hit:3}},{name:'穿隙',desc:'攻擊 +4%。',fx:{atkP:.04}},{name:'槍陣',desc:'反擊傷害 +8%。',fx:{counterP:.08}}],
+ P_LANTERN:[{name:'定燈',desc:'魔防 +3%。',fx:{resP:.03}},{name:'續火',desc:'法術 +4%。',fx:{atkP:.04}},{name:'照痕',desc:'對被標記目標傷害 +8%。',fx:{vsMarkP:.08}}],
+ P_ARCHER:[{name:'定弦',desc:'命中 +3%。',fx:{hit:3}},{name:'覓隙',desc:'攻擊 +4%。',fx:{atkP:.04}},{name:'追痕',desc:'對被標記目標傷害 +8%。',fx:{vsMarkP:.08}}],
+ P_HEALER:[{name:'護息',desc:'生命 +3%。',fx:{hpP:.03}},{name:'辨傷',desc:'治療量 +6%。',fx:{healP:.06}},{name:'援手',desc:'隊友倒下後治療量再 +8%。',fx:{downHealP:.08}}],
+ P_WEAVER:[{name:'持線',desc:'魔防 +3%。',fx:{resP:.03}},{name:'緊弦',desc:'法術 +4%。',fx:{atkP:.04}},{name:'封結',desc:'對封印目標傷害 +8%。',fx:{vsSealP:.08}}],
+ P_SCOUT:[{name:'輕步',desc:'迴避 +3%。',fx:{eva:3}},{name:'利刃',desc:'攻擊 +4%。',fx:{atkP:.04}},{name:'先機',desc:'每場第一次出手傷害 +8%。',fx:{firstStrike:.08}}]
+};
+DATA.gacha.rates=[.795,.17,.03,.005];
+DATA.gacha.mythPity=200;
+DATA.gacha.mythExchange=200;
+// 先救出，再護送；戰後居民的狀態由這場戰鬥的結果決定。
+DATA.missions.MISSION_RESCUE={
+ name:'礦道旁・未歸的推車人',place:'礦道旁',chapter:1,threat:0,w:12,h:12,roundLimit:12,
+ intro:'一名推車人被壓在礦道旁。靠近後花一次行動解開繩索，再由同一隊護送回南側撤離點。其他成員要替他們留住回程的路。',
+ map:DATA.missions.MISSION_MINE.map.slice(),legend:{...DATA.missions.MISSION_MINE.legend},
+ obj:{type:'escort',person:[2,5],exit:[[2,10],[3,10],[4,10],[5,10],[6,10]],timeout:'夜霧封住礦道，救援隊被迫撤回'},
+ deploy:DATA.missions.MISSION_MINE.deploy.map(p=>p.slice()),enemySlots:[[5,3],[8,4],[9,5]],commanderAt:[5,1],
+ events:[{round:1,say:'求救聲在左側礦道 (2,5)。相鄰或站上該格後，選「解救」。護送隊移動 −1；回到南側金框撤離區 才算救援成功。'},
+ {round:3,wave:[[2,8,3]],say:'北面的腳步聲靠近了。別讓護送隊落單。'},
+ {round:5,wave:[[4,9,8]],say:'回程右側出現敵人。留一隊接應，或用束縛拖住追兵。'}],
+ win:'解救推車人，並護送到南側任一撤離點。',lose:'護送隊倒下、我方全滅，或第 12 回合結束仍未撤離。'};
+DATA.missions.MISSION_RESCUE.map[5]='..........R.';DATA.missions.MISSION_RESCUE.map[6]='.....S......';
+DATA.region.push({id:'rescue',scene:'lv_mine',name:'未歸的推車人',x:.24,y:.29,mission:'MISSION_RESCUE',needs:['MISSION_BC_001'],desc:'南門有人在等一名沒有回來的推車人。先到街巷接下請託。',side:true});
+// 開局更早接敵；仍維持三勢力隨機與原本的勝利條件。
+DATA.missions.MISSION_BC_001.enemySlots=[[5,1],[8,2],[5,5],[7,4],[3,3],[9,2]];
+DATA.missions.MISSION_BC_001.events[0].say='霧裡的快隊已逼近中路。先點敵人看兵種與威脅；用長槍攔騎兵，盾衛守住通往城門的缺口。';
+DATA.missions.MISSION_BC_001.events.push({round:4,say:'守衛在門後喊：「城裡還有人！別追散，留住門前那條路！」污染格會先預告；提燈的燈界能穩住它。'});
+DATA.missions.MISSION_MINE.events.push({round:2,say:'軌道兩側都有敵人。用前排吸住追兵，遠程借高地支援；被標記的目標更容易集火擊破。'});
+DATA.missions.MISSION_POST.events.push({round:2,say:'站內傳來敲桌聲：兩短，一長。有人還守著那張沒有寄出的單子。驛站只要有敵人就無法累積守住回合，先清出空間再留人駐守。'});
+
 Object.assign(DATA.skills,DATA.genSkills,DATA.mythSkills||{});for(const [k,v] of Object.entries(DATA.skillArtP||{}))if(DATA.skills[k])DATA.skills[k].art=v;
 if(typeof module!=='undefined'&&module.exports)module.exports=DATA;else root.TACTICS_DATA=DATA;
 })(this);

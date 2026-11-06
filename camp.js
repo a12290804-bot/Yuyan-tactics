@@ -16,7 +16,7 @@ function fix(D,c){if(!c||c.v!==1)return newCamp(D);c.roster=c.roster||{};for(con
  c.inv=Array.isArray(c.inv)?c.inv.filter(e=>e&&D.equip&&D.equip[e.b]):[];c.nextEq=Math.max(c.nextEq|0,1,...c.inv.map(e=>(e.u|0)+1));c.mats=c.mats||{};for(const k of Object.keys(D.mats||{}))c.mats[k]=Math.max(0,c.mats[k]|0);
  const ids=new Set(c.inv.map(e=>e.u)),seen=new Set();for(const id of Object.keys(c.roster)){const r=c.roster[id];r.eq=r.eq||{w:null,a:null,t:null};r.tal=Array.isArray(r.tal)?r.tal.filter(n=>talNode(D,n)):[];while(r.tal.length>talPts(D,r))r.tal.pop();if(typeof r.cos!=='string')r.cos=null;r.aff=Math.max(0,r.aff|0);if(typeof r.chatDay!=='string')r.chatDay='';r.bond=Array.isArray(r.bond)?r.bond.filter(x=>typeof x==='number'):[];for(const sl of ['w','a','t']){const u=r.eq[sl];if(u==null||!ids.has(u)||seen.has(u)||!fits(D,id,c.inv.find(e=>e.u===u),sl))r.eq[sl]=null;else seen.add(u);}}
  c.coins=Math.max(0,c.coins|0);c.cosOwned=Array.isArray(c.cosOwned)?c.cosOwned.filter(x=>typeof x==='string'):[];for(const id of Object.keys(c.roster)){const q=c.roster[id].cos;if(q&&!c.cosOwned.includes(q))c.cosOwned.push(q);}
- c.gifts=c.gifts&&typeof c.gifts==='object'?c.gifts:{};for(const k of Object.keys(c.gifts))c.gifts[k]=Math.max(0,c.gifts[k]|0);if(typeof c.pcName!=='string')c.pcName='';c.pcName=c.pcName.slice(0,12);if(c.pcLook!=='b')c.pcLook='a';c.flags=c.flags&&typeof c.flags==='object'?c.flags:{};
+ c.gifts=c.gifts&&typeof c.gifts==='object'?c.gifts:{};for(const k of Object.keys(c.gifts))c.gifts[k]=Math.max(0,c.gifts[k]|0);if(typeof c.pcName!=='string')c.pcName='';c.pcName=c.pcName.slice(0,12);if(c.pcLook!=='b')c.pcLook='a';c.flags=c.flags&&typeof c.flags==='object'?c.flags:{};c.mythSince=Math.max(0,c.mythSince|0);c.mythMarks=Math.max(0,c.mythMarks|0);
  return c;}
 function mult(D,id,c){const h=heroOf(D,id),r=c.roster[id];return D.rarityMult[h.r]*(1+D.starStep*(r?r.star:0))*(1+D.xp.statStep*((r?r.lv:1)-1));}
 function skillsOf(D,id,c){const h=heroOf(D,id),u=D.units[h.unit],r=c.roster[id];const lv=r?r.lv:1;return allSkillsOf(D,id).filter(x=>lv>=x[1]).map(x=>x[0]);}
@@ -24,12 +24,14 @@ function skillsOf(D,id,c){const h=heroOf(D,id),u=D.units[h.unit],r=c.roster[id];
 function allSkillsOf(D,id){const h=heroOf(D,id),u=D.units[h.unit];const P=(D.personal||{})[id]||[];const A=D.personalAt||{skill:1,ult:10};const L=(D.personalLv||{})[id];
  if(L)return [[u.skill,1,'職業技'],...P.map((k,i)=>[k,L[i],i===P.length-1?'專屬奧義':'專屬技']),D.secondSkill[h.unit]?[D.secondSkill[h.unit],D.secondAt,'職業進階']:null].filter(Boolean).sort((a,b)=>a[1]-b[1]);
  return [[u.skill,1,'職業技'],P[0]?[P[0],A.skill,'專屬技']:null,D.secondSkill[h.unit]?[D.secondSkill[h.unit],D.secondAt,'職業進階']:null,P[1]?[P[1],A.ult,'專屬奧義']:null].filter(Boolean);}
+function traitsOf(D,id){const h=heroOf(D,id);if(!h)return [];const L=((D.rarityTraits||{})[h.unit]||[]).slice(0,Math.min(3,h.r+1)).map(t=>({...t}));const t=(D.innateTxt||{})[id];if(h.r===3&&t)L.push({name:t[0],desc:t[1],fx:(D.innate||{})[id]||{}});return L;}
+function traitFx(D,id){const o={};for(const t of traitsOf(D,id))for(const [k,v] of Object.entries(t.fx||{}))o[k]=(o[k]||0)+v;return o;}
 function soldiersOf(D,id,c){const h=heroOf(D,id),r=c.roster[id];return (D.units[h.unit].soldiers||5)+((r.sq||{}).tier||0)+(D.talents?talFx(D,r,h.unit).sold:0);}
 function slotsOf(D,r){return D.squad.slotsAt.filter(l=>r.sq.lv>=l).length;}
 function art(h){return h.src&&h.src.startsWith('inbox/')?h.src:RG+h.src;}
 // 出戰隊伍 → 戰鬥核心要的格式（士兵比例延續）
-function teamFor(D,c,cosArt){return c.team.map(id=>{const h=heroOf(D,id),r=c.roster[id],Q=D.squad,T=talFx(D,r,h.unit);const o={def:h.unit,rid:id,hero:id,name:h.name,title:h.title,lv:r.lv,mult:+mult(D,id,c).toFixed(3),sol:+(r.sol).toFixed(3),art:art(h),skills:skillsOf(D,id,c),soldiers:soldiersOf(D,id,c),hpPer:+((1+Q.hpStep*(r.sq.lv-1))*(1+T.solP)).toFixed(3),sb:+(Q.baseBonus+Q.bonusStep*(r.sq.lv-1)+T.sb).toFixed(3),pas:r.sq.pas.slice(),eq:heroEq(D,c,id)};
-  const tal={};for(const k of ['atkP','defP','resP','hpP','crit','hit','eva','move'])if(T[k])tal[k]=T[k];const inn=(D.innate||{})[id];if(inn)Object.assign(T.tm,inn);if(Object.keys(T.tm).length)o.tm=T.tm;if(T.flags.length)tal.flags=T.flags.slice();if(Object.keys(tal).length)o.tal=tal;const cp=r.cos&&cosArt&&cosArt(r.cos,id);if(cp)o.por=cp;return o;});}
+function teamFor(D,c,cosArt){return c.team.map(id=>{const h=heroOf(D,id),r=c.roster[id],Q=D.squad,T=talFx(D,r,h.unit);for(const [k,v] of Object.entries(traitFx(D,id))){if(k in T&&k!=='tm'&&k!=='flags')T[k]+=v;else T.tm[k]=(T.tm[k]||0)+v;}const o={def:h.unit,rid:id,hero:id,name:h.name,title:h.title,lv:r.lv,mult:+mult(D,id,c).toFixed(3),sol:+(r.sol).toFixed(3),art:art(h),skills:skillsOf(D,id,c),soldiers:soldiersOf(D,id,c),hpPer:+((1+Q.hpStep*(r.sq.lv-1))*(1+T.solP)).toFixed(3),sb:+(Q.baseBonus+Q.bonusStep*(r.sq.lv-1)+T.sb).toFixed(3),pas:r.sq.pas.slice(),eq:heroEq(D,c,id)};
+  const tal={};for(const k of ['atkP','defP','resP','hpP','crit','hit','eva','move'])if(T[k])tal[k]=T[k];if(Object.keys(T.tm).length)o.tm=T.tm;if(T.flags.length)tal.flags=T.flags.slice();if(Object.keys(tal).length)o.tal=tal;const cp=r.cos&&cosArt&&cosArt(r.cos,id);if(cp)o.por=cp;return o;});}
 // ---------- 裝備 ----------
 function fits(D,id,e,sl){if(!e)return false;const B=D.equip[e.b],h=heroOf(D,id);if(!B||!h)return false;if(sl&&B.slot!==sl)return false;return !B.units||B.units.includes(h.unit);}
 function eqStats(D,e){const B=D.equip[e.b],k=D.eqRarity.mult[e.r]*(1+D.eqPlusStep*(e.p||0));const o={};for(const s of Object.keys(B.st))o[s]=+(B.st[s]*k).toFixed(1);return o;}
@@ -89,15 +91,17 @@ function questGive(D,c,rw,st,rng){const out={mats:{},eq:[]};for(const [k,v] of O
 function questCheck(D,c,st,rng){rng=rng||Math.random;c.quests=Array.isArray(c.quests)?c.quests:[];const got=[];for(const q of c.quests.slice()){if(questMet(D,q,st)){const g=questGive(D,c,q.rw,st,rng);got.push({q,g});c.quests=c.quests.filter(x=>x.id!==q.id);c.qdone=(c.qdone|0)+1;}}questFill(D,c,rng);return got;}
 function questReroll(D,c,rng){if(c.supply<D.quests.rerollCost)return {ok:false,error:'補給不夠（要 '+D.quests.rerollCost+'）'};c.supply-=D.quests.rerollCost;c.quests=[];questFill(D,c,rng);return {ok:true};}
 // ---------- 招集 ----------
-function rollRarity(D,c,rng){const R=D.gacha.rates;const x=rng();let r=x<R[2]?2:x<R[2]+R[1]?1:0;if(c.sincePity+1>=D.gacha.pity)r=2;return r;}
+function rollRarity(D,c,rng){const R=D.gacha.rates,x=rng();let r=x<(R[3]||0)?3:x<(R[3]||0)+R[2]?2:x<(R[3]||0)+R[2]+R[1]?1:0;if((c.mythSince||0)+1>=D.gacha.mythPity)r=3;else if(c.sincePity+1>=D.gacha.pity&&r<2)r=2;return r;}
 function pickHero(D,r,rng){const pool=D.heroes.filter(h=>h.r===r);return pool[Math.floor(rng()*pool.length)%pool.length];}
-function pull(D,c,n,rng){rng=rng||Math.random;if(c.tickets<n)return {ok:false,error:'招集券不夠'};c.tickets-=n;const res=[];
- for(let i=0;i<n;i++){let r=rollRarity(D,c,rng);res.push(r);c.pulls++;c.sincePity=r===2?0:c.sincePity+1;}
- if(n===10){if(!res.some(r=>r>=1)){res[9]=1;}if(!c.firstTenUsed&&D.gacha.firstTen&&!res.some(r=>r===2)){res[9]=2;c.sincePity=0;}c.firstTenUsed=true;}
- const out=res.map(r=>{const h=pickHero(D,r,rng);const had=!!c.roster[h.id];let note;
-  if(!had){c.roster[h.id]=blankHero();note='新成員';if(c.team.length<TS(D))c.team.push(h.id);}else if(c.roster[h.id].star<D.maxStar){c.roster[h.id].star++;note='重複：星級 +1（能力 +'+Math.round(D.starStep*100)+'%）';}else{c.supply+=20;note='重複（星級已滿）：補給 +20';}
-  return {id:h.id,name:h.name,title:h.title,r:h.r,isNew:!had,note};});
- c.log.unshift({t:'pull',n,ids:out.map(o=>o.id)});c.log=c.log.slice(0,30);return {ok:true,results:out};}
+function grantHero(D,c,h){const had=!!c.roster[h.id];let note;if(!had){c.roster[h.id]=blankHero();note='新成員';if(c.team.length<TS(D))c.team.push(h.id);}else if(c.roster[h.id].star<D.maxStar){c.roster[h.id].star++;note='重複：星級 +1（能力 +'+Math.round(D.starStep*100)+'%）';}else{c.supply+=20;note='重複（星級已滿）：補給 +20';}return {id:h.id,name:h.name,title:h.title,r:h.r,isNew:!had,note};}
+function exchangeMythic(D,c,id){const h=heroOf(D,id);if(!h||h.r!==3)return {ok:false,error:'沒有這位神秘成員'};if((c.mythMarks||0)<D.gacha.mythExchange)return {ok:false,error:'燈印不足'};c.mythMarks-=D.gacha.mythExchange;return {ok:true,results:[grantHero(D,c,h)]};}
+function pull(D,c,n,rng){rng=rng||Math.random;if(!Number.isInteger(n)||![1,10].includes(n))return {ok:false,error:'招集次數不正確'};if(c.tickets<n)return {ok:false,error:'招集券不夠'};c.tickets-=n;const out=[];let hasElite=false,hasLegend=false;
+ for(let i=0;i<n;i++){let r=rollRarity(D,c,rng);if(n===10&&i===9){if(!hasElite&&r<1)r=1;if(!c.firstTenUsed&&D.gacha.firstTen&&!hasLegend&&r<2)r=2;}hasElite=hasElite||r>=1;hasLegend=hasLegend||r>=2;c.pulls++;c.sincePity=r>=2?0:c.sincePity+1;c.mythSince=r===3?0:(c.mythSince||0)+1;c.mythMarks=(c.mythMarks||0)+1;out.push(grantHero(D,c,pickHero(D,r,rng)));}
+ if(n===10)c.firstTenUsed=true;c.log.unshift({t:'pull',n,ids:out.map(o=>o.id)});c.log=c.log.slice(0,30);return {ok:true,results:out};}
+// 救援支線：領獎與解鎖均持久保存，重打不會重複給一次性獎勵。
+function acceptRescue(D,c){if(c.flags.rescueAccepted)return {ok:false,error:'已經接下請託'};if(!(c.cleared||{}).MISSION_BC_001)return {ok:false,error:'先守住南門'};c.flags.rescueAccepted=true;return {ok:true};}
+function rescueOutcome(c,st){if(st.missionId!=='MISSION_RESCUE')return null;if(st.result&&st.result.win&&st.escort&&st.escort.status==='safe'){if(c.flags.rescueSafe)return null;c.flags.rescueSafe=true;return 'safe';}c.flags.rescueAttempted=true;return 'retry';}
+function claimRescue(D,c){if(!c.flags.rescueSafe||c.flags.rescueReward)return {ok:false,error:'還沒有可領取的謝禮'};c.flags.rescueReward=true;c.supply+=40;c.tickets+=2;return {ok:true};}
 // ---------- 兵營 ----------
 function refillCost(D,c,id){const n=soldiersOf(D,id,c);const have=Math.round((c.roster[id].sol||0)*n);return (n-have)*D.barracks.costPerSoldier;}
 function refill(D,c,id){const cost=refillCost(D,c,id);if(cost<=0)return {ok:false,error:'已經滿編'};if(c.supply<cost)return {ok:false,error:'補給不夠（要 '+cost+'）'};c.supply-=cost;c.roster[id].sol=1;return {ok:true,cost};}
@@ -116,8 +120,8 @@ function afterBattle(D,c,st,rng){rng=rng||Math.random;if(c.lastBattle===st.battl
  for(const u of st.units)if(u.faction==='P'&&u.rid&&c.roster[u.rid]){const r=c.roster[u.rid];r.sol=u.hp>0?+(u.sol/Math.max(1,u.solMax)).toFixed(3):0;const k=u.kills||0;const xp=X.join+(win?X.win:0)+X.kill*k;const up=addXp(D,r,xp);got.xp[u.rid]=xp;if(up)got.lvUp[u.rid]=r.lv;got.supply+=(D.rewards.perKill||0)*k;c.supply+=(D.rewards.perKill||0)*k;}
  if(D.equip)got.drops=rollDrops(D,c,st,win,!!got.first,rng);if(D.coins){const k=win?D.coins.win+(got.first?D.coins.first:0):D.coins.lose;c.coins+=k;got.coins=k;}
  if(D.giftDrop&&win&&rng()<D.giftDrop.chance){const g=D.giftDrop.list[Math.floor(rng()*D.giftDrop.list.length)%D.giftDrop.list.length];addGift(c,g);got.gift=g;}
- if(D.quests)got.quests=questCheck(D,c,st,rng);
+ if(D.quests)got.quests=questCheck(D,c,st,rng);got.rescue=rescueOutcome(c,st);
  c.log.unshift({t:'battle',win,fac:st.faction,got:{tickets:got.tickets,supply:got.supply}});c.log=c.log.slice(0,30);return got;}
-const API={chooseMythic,allSkillsOf,buyCostume,affTier,chat,giveGift,addGift,questNew,questFill,questText,questMet,questGive,questCheck,questReroll,talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
+const API={traitsOf,traitFx,rollRarity,exchangeMythic,acceptRescue,rescueOutcome,claimRescue,chooseMythic,allSkillsOf,buyCostume,affTier,chat,giveGift,addGift,questNew,questFill,questText,questMet,questGive,questCheck,questReroll,talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.CAMP=API;
 })(this);
