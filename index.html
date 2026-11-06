@@ -262,7 +262,9 @@ table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px
 <script src="talk.js"></script>
 <script>
 'use strict';
-const D=window.TACTICS_DATA,C=window.TACTICS,SAVE_KEY='yyt_save_v3';let mid='MISSION_BC_001';const MM=()=>D.missions[(st&&st.missionId)||mid];
+const D=window.TACTICS_DATA,C=window.TACTICS,SAVE_KEY='yyt_save_v3';
+// 網頁和資料版本不一致（網站還在換新檔）→ 自動重新抓一次
+const PAGE_VER='v1.3';(function(){try{if(D.version!==PAGE_VER){const k='yyt_vfix_'+D.version+'_'+PAGE_VER;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');const u=new URL(location.href);u.searchParams.set('r',Date.now());location.replace(u.href);}}}catch(e){}})();let mid='MISSION_BC_001';const MM=()=>D.missions[(st&&st.missionId)||mid];
 const ART=p=>p.startsWith('../')?p:((D.artMap&&D.artMap[p])||D.artRoot+p);const SICO=S=>S&&S.ic?`<i class="sico" style="background-image:url(${S.ic[0]});background-position:${(S.ic[1]%3)*50}% ${Math.floor(S.ic[1]/3)*50}%"></i>`:ICO(S&&S.icon);
 const ICO=n=>n?`<img class="ico" src="${ART((n.startsWith('st_')?'status/':'icons/')+n+'.webp')}" alt="">`:'';
 (function(){let css='';for(const [k,t] of Object.entries(D.terrain))if(t.art)css+=`.c.${k}{background-image:url(${ART(t.art)})}`;const e=document.createElement('style');e.id='tcss';e.textContent=css;document.head.appendChild(e);})();
