@@ -13,11 +13,11 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function rngAt(seed,idx){let z=(seed>>>0)^Math.imul(idx+1,0x9E3779B1);z=Math.imul(z^(z>>>16),0x85EBCA6B);z=Math.imul(z^(z>>>13),0xC2B2AE35);z^=z>>>16;return (z>>>0)/4294967296;}
 function roll(st){const v=rngAt(st.seed,st.rngIndex);st.rngIndex++;return v;}
-function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.hold,st.tiles.join(''),st.result,st.done||0,st.lit||0,st.breach||0,st.escort||null]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
+function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.hold,st.tiles.join(''),st.result,st.done||0,st.lit||0,st.breach||0,st.escort||null,st.units.map(u=>[u.mastery||{},u.practiceGain||{},u.practiceLast||{}])]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
 
 // ---------- 建立戰鬥 ----------
 function makeUnit(D,def,id,faction,x,y,ov){const b={...D.units[def],...(ov||{})};if(!b)throw new Error('unknown unit '+def);const n=b.soldiers||0,hp1=b.hpPer||10;
- return {id,def,name:b.name,glyph:b.glyph,troop:b.troop,faction,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,fly:!!b.fly,art:b.art||null,por:b.por||null,hero:b.hero||null,cls:b.cls||null,
+ return {id,unitType:def,name:b.name,glyph:b.glyph,troop:b.troop,faction,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,fly:!!b.fly,art:b.art||null,por:b.por||null,hero:b.hero||null,cls:b.cls||null,
   sol:n*hp1,solMax:n*hp1,hpPer:hp1,skills:b.skills||(b.skill?[b.skill]:[]),pas:b.pas||[],sb:b.sb!=null?b.sb:null,cd:{},st:{root:0,mark:0,gs:0},tm:b.tm?JSON.parse(JSON.stringify(b.tm)):{},usedAct:false,guard:false,stay:false,kills:0,lv:b.lv||1};}
 // 天賦：百分比先算，再加裝備
 function applyTal(u,T){const r=Math.round;if(T.atkP){u.atk=r(u.atk*(1+T.atkP));u.mag=r(u.mag*(1+T.atkP));}if(T.defP)u.def=r(u.def*(1+T.defP));if(T.resP)u.res=r(u.res*(1+T.resP));if(T.hpP){u.hp=u.maxHp=r(u.maxHp*(1+T.hpP));}for(const s of ['crit','hit','eva'])if(T[s])u[s]=(u[s]||0)+r(T[s]);if(T.move)u.move=Math.max(1,u.move+T.move);if(T.flags)u.tf=T.flags.slice();}
@@ -36,7 +36,7 @@ function createBattle(D,missionId,seed,opts){opts=opts||{};const M=D.missions[mi
  const DEP=M.deploy||D.deploySlots;team.forEach((t,i)=>{const [x,y]=DEP[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
   const b=D.units[t.def],k=t.mult||1;const ov={name:t.name||b.name,cls:t.title||b.cls,hero:t.hero||null,art:t.art||null,por:t.por||t.art||null,hp:Math.round(b.hp*k),atk:Math.round(b.atk*k),def:Math.round(b.def*k),mag:Math.round(b.mag*k),res:Math.round(b.res*k),lv:t.lv||1};
   if(t.skills)ov.skills=t.skills.filter(x=>D.skills[x]);if(t.pas)ov.pas=t.pas.filter(x=>D.passives[x]);if(t.soldiers)ov.soldiers=t.soldiers;if(t.hpPer)ov.hpPer=Math.round(b.hpPer*t.hpPer);if(t.sb!=null)ov.sb=t.sb;
-  const u=makeUnit(D,t.def,'P'+(i+1),'P',x,y,ov);if(t.sol!=null)u.sol=Math.round(u.solMax*Math.max(0,Math.min(1,t.sol)));if(t.rid)u.rid=t.rid;if(t.por)u.por=t.por;if(t.tm)u.tm=JSON.parse(JSON.stringify(t.tm));if(t.tal)applyTal(u,t.tal);if(t.eq)applyEq(u,t.eq);st.units.push(u);});
+  const u=makeUnit(D,t.def,'P'+(i+1),'P',x,y,ov);if(t.sol!=null)u.sol=Math.round(u.solMax*Math.max(0,Math.min(1,t.sol)));if(t.rid)u.rid=t.rid;if(t.por)u.por=t.por;if(t.tm)u.tm=JSON.parse(JSON.stringify(t.tm));if(t.mastery)u.mastery=clone(t.mastery);if(t.tal)applyTal(u,t.tal);if(t.eq)applyEq(u,t.eq);st.units.push(u);});
  M.enemySlots.forEach(([x,y],i)=>{const [t,name,art]=F.slots[i];st.units.push(makeUnit(D,t,'E'+(i+1),'E',x,y,{name,glyph:name[0],art:'enemies/tok_'+art+'.webp',por:'enemies/por_'+art+'.webp'}));});
  st.nextId=M.enemySlots.length+1;st.level=Math.max(0,(opts.level|0)+(M.threat||0));
  if(M.commanderStart)spawnCmd(D,st,M,[]);const em=1+(D.levelStep||0)*Math.min(st.level,D.levelMax||0);for(const u of st.units)if(u.faction==='E'&&!u.scaled){u.scaled=1;u.hp=u.maxHp=Math.round(u.hp*em*EMH(D));u.atk=Math.round(u.atk*em*EMA(D));u.mag=Math.round(u.mag*em*EMA(D));}
@@ -92,7 +92,7 @@ function calc(D,st,att,from,tid,o){o=o||{};const tgt=tid==='GATE'?null:st.units.
  if(tgt&&tgt.commander&&hasT(att,'behead')){situ+=.15;notes.push('斬首 +15%');}
  if(tgt&&tgt.commander&&st.obj&&st.obj.seals&&(st.lit||[]).length<st.obj.seals.length){situ-=.6;notes.push('鐘聲守護 −60%');}
  if(o.flank&&tgt&&alive(st,att.faction).some(v=>v.id!==att.id&&manhattan(v,tgt)===1)){situ+=o.flank;notes.push('背襲 +'+Math.round(o.flank*100)+'%');}
- situ+=calcMods(D,st,att,tgt,o,notes);
+ situ+=calcMods(D,st,att,tgt,o,notes);const practiced=o.skillKey||(!o.counter&&att.activeSkill);if(practiced&&masteryBoost(D,att,practiced)){situ+=masteryBoost(D,att,practiced);notes.push('熟練 +'+Math.round(masteryBoost(D,att,practiced)*100)+'%');}
  const raw=Math.floor((o.useDef?att.def:isMag?att.mag:att.atk)*solBonus(D,att)*cm*(o.mult||1)*(1+situ));
  let guard;if(tgt){let db=terrainDef(D,st,tgt.x,tgt.y,tgt)+(tgt.guard?.3:0)+(inZone(st,tgt.x,tgt.y,tgt.faction)?.1:0)+(tgt.st.gs>0?D.skills.guardStance.defUp:0)+(hasP(tgt,'wall')?.1:0);db=clamp(db,-.5,.5);
   guard=Math.floor((isMag?tgt.res:tgt.def)*(sv(tgt,'brk')>0&&!isMag?.7:1)*solBonus(D,tgt)*(1+db)*.5);}else guard=Math.floor((isMag?st.gate.res:st.gate.def)*.5);
@@ -131,10 +131,10 @@ function strike(D,st,att,from,tid,ev,o){o=o||{};const p=withPos(att,from,()=>cal
  return {hit:true,dmg:d};}
 
 // ---------- v1.2：狀態、通用技能（專屬技／奧義）、個人天賦 ----------
-const STN={burn:'燃燒',bleed:'流血',poison:'中毒',slow:'減速',freeze:'凍住',charm:'魅惑',blind:'致盲',fear:'恐懼',seal:'封印',taunt:'嘲諷',regen:'再生',stealth:'隱身',vuln:'破綻',brk:'破甲',link:'連線',evade:'閃身',might:'振奮',ward:'護衛',shell:'縮殼',undying:'不倒',proxy:'替身線',echo:'狐火',lit:'照明',mark:'標記',root:'束縛',oath:'誓約',pact:'厄契',resist:'抵抗'};
+const STN={burn:'燃燒',bleed:'流血',poison:'中毒',slow:'減速',freeze:'凍住',charm:'魅惑',blind:'致盲',fear:'恐懼',seal:'封印',taunt:'嘲諷',regen:'再生',stealth:'隱身',vuln:'破綻',brk:'破甲',link:'連線',evade:'閃身',might:'振奮',ward:'護衛',shell:'縮殼',undying:'不倒',proxy:'替身線',echo:'狐火',lit:'照明',mark:'標記',root:'束縛',oath:'誓約',pact:'厄契',resist:'抵抗',doom:'延爆詛咒'};
 const DOTS=['burn','bleed','poison'];
 const TIMED=['slow','blind','fear','seal','taunt','regen','stealth','vuln','brk','link','evade','might','ward','shell','undying','proxy','echo','lit','oath','pact','resist'];
-const BAD=['burn','bleed','poison','freeze','charm','slow','blind','fear','seal','vuln','brk','root','mark','lit'];
+const BAD=['burn','bleed','poison','freeze','charm','slow','blind','fear','seal','vuln','brk','root','mark','lit','doom','link','pact'];
 function sv(u,k){return (u&&u.st&&u.st[k])||0;}
 function tm(u,k){const v=u&&u.tm&&u.tm[k];return v||0;}
 function addSt(D,st,u,k,dur,ev,src){if(!u||u.hp<=0||!dur)return false;if(tm(u,'imm_'+k))return false;
@@ -142,15 +142,14 @@ function addSt(D,st,u,k,dur,ev,src){if(!u||u.hp<=0||!dur)return false;if(tm(u,'i
  if(src&&src.faction!==u.faction&&BAD.concat(['pact']).includes(k)&&sv(u,'resist')>0&&roll(st)<.5){ev.push({t:'status',d:u.id,txt:u.name+' 在月光裡抵抗了'+(STN[k]||k)});return false;}
  if(src&&src.faction!==u.faction)dur+=tm(src,'stDur');
  if(k==='pact'){u.st.pactN=Math.min(5,(u.st.pactN||0)+1);u.st.pact=Math.max(sv(u,'pact'),dur);ev.push({t:'status',d:u.id,txt:u.name+'：厄契 ×'+u.st.pactN+'（'+dur+' 回合）'});return true;}
- if(DOTS.includes(k)){const cap=3+(src?tm(src,'dotCap'):0);u.st[k+'N']=Math.min(cap,(u.st[k+'N']||0)+1);u.st[k]=Math.max(sv(u,k),dur);if(src&&tm(src,'dotP'))u.st[k+'P']=Math.max(u.st[k+'P']||0,tm(src,'dotP'));}
- else u.st[k]=Math.max(sv(u,k),dur);
+ if(DOTS.includes(k)){const cap=3+(src?tm(src,'dotCap'):0);u.st[k+'N']=Math.min(cap,(u.st[k+'N']||0)+1);u.st[k]=Math.max(sv(u,k),dur);if(src){const power=tm(src,'dotP')+(src.activeSkill?masteryBoost(D,src,src.activeSkill):0);if(power)u.st[k+'P']=Math.max(u.st[k+'P']||0,power);}}
+ else {if(k==='regen')u.st.regenP=Math.max(sv(u,'regen')>0?(u.st.regenP||0):0,src&&src.activeSkill?masteryBoost(D,src,src.activeSkill):0);u.st[k]=Math.max(sv(u,k),dur);}
  if(k==='link'&&src&&tm(src,'linkSlow'))u.st.slow=Math.max(sv(u,'slow'),dur);
  ev.push({t:'status',d:u.id,txt:u.name+'：'+(STN[k]||k)+(DOTS.includes(k)?' ×'+u.st[k+'N']:'')+'（'+dur+' 回合）'});return true;}
-function clearBad(u,n){let c=0;for(const k of BAD){if(c>=n)break;if(sv(u,k)>0){u.st[k]=0;if(DOTS.includes(k))u.st[k+'N']=0;c++;}}return c;}
-function healU(D,st,src,t,pct,solPct,ev,label,low){let m=1+tm(src,'healP')+((st.downN&&st.downN[src.faction])?tm(src,'downHealP'):0);
- if(low&&t.hp<t.maxHp*.6)m*=low;
- if(tm(src,'firstHeal2')&&!src.firstHealUsed){m*=2;src.firstHealUsed=1;}
- if(tm(src,'healDouble')&&roll(st)<tm(src,'healDouble'))m*=2;
+function clearBad(u,n,removed){let c=0;for(const k of BAD){if(c>=n)break;if(sv(u,k)>0){u.st[k]=0;if(removed)removed.push(k);if(k==='doom'){u.st.doomV=0;delete u.st.doomBy;}if(k==='pact')u.st.pactN=0;if(DOTS.includes(k))u.st[k+'N']=0;c++;}}return c;}
+function healScale(D,st,src,t,low,sk){let m=1+tm(src,'healP')+((st.downN&&st.downN[src.faction])?tm(src,'downHealP'):0);if(sk)m*=1+masteryBoost(D,src,sk);if(low&&t.hp<t.maxHp*.6)m*=low;if(tm(src,'firstHeal2')&&!src.firstHealUsed)m*=2;return m;}
+function healingForecast(D,st,src,t,k){const S=skillOf(D,src,k),al=S.ally||{};let pct=S.heal||al.heal||((S.self||{}).heal)||0,sol=S.solHeal||al.sol||0;if(S.perPoison)pct+=S.perPoison*alive(st).filter(v=>v.faction!==src.faction&&sv(v,'poison')>0).length;const m=healScale(D,st,src,t,al.low,k);return {hp:Math.max(0,Math.min(t.maxHp-t.hp,Math.round(t.maxHp*pct*m))),sol:Math.max(0,Math.min(t.solMax-t.sol,Math.round(t.solMax*sol*m))),mayDouble:!!tm(src,'healDouble'),shield:Math.round(t.maxHp*(al.shield||0))};}
+function healU(D,st,src,t,pct,solPct,ev,label,low){let m=healScale(D,st,src,t,low,src.activeSkill);if(tm(src,'firstHeal2')&&!src.firstHealUsed)src.firstHealUsed=1;if(tm(src,'healDouble')&&roll(st)<tm(src,'healDouble'))m*=2;
  const want=Math.round(t.maxHp*pct*m);const h=Math.max(0,Math.min(t.maxHp-t.hp,want));const s0=soldiers(t);t.hp+=h;if(solPct)t.sol=Math.min(t.solMax,t.sol+Math.round(t.solMax*solPct*m));
  if(tm(src,'healCleanse'))for(const k of DOTS){t.st[k]=0;t.st[k+'N']=0;}
  if(tm(src,'healRegen')&&src.id!==t.id)addSt(D,st,t,'regen',2,ev,src);
@@ -212,12 +211,12 @@ function tickSt(D,st,ev){for(const u of alive(st)){
   if(u.sol>0)u.sol=Math.max(0,u.sol-Math.round(n*u.hpPer));else u.hp=Math.max(1,u.hp-Math.round(u.maxHp*.04*n));
   ev.push({t:'dot',d:u.id,txt:u.name+' '+STN[k]+'：'+(s0!==soldiers(u)?'士兵 '+s0+'→'+soldiers(u):'生命 '+h0+'→'+u.hp)});
   u.st[k]--;if(u.st[k]<=0){u.st[k+'N']=0;u.st[k+'P']=0;}}
- if(sv(u,'regen')>0||tm(u,'regenSelf')){const p=(sv(u,'regen')>0?.06:0)+tm(u,'regenSelf');const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*p));const s0=soldiers(u);u.hp+=h;if(sv(u,'regen')>0)u.sol=Math.min(u.solMax,u.sol+u.hpPer);if(h>0||soldiers(u)>s0)ev.push({t:'heal',d:u.id,txt:u.name+' 再生：回復 '+h});}
+ if(sv(u,'regen')>0||tm(u,'regenSelf')){const p=(sv(u,'regen')>0?.06*(1+(u.st.regenP||0)):0)+tm(u,'regenSelf');const h=Math.min(u.maxHp-u.hp,Math.round(u.maxHp*p));const s0=soldiers(u);u.hp+=h;if(sv(u,'regen')>0)u.sol=Math.min(u.solMax,u.sol+u.hpPer);if(h>0||soldiers(u)>s0)ev.push({t:'heal',d:u.id,txt:u.name+' 再生：回復 '+h});}
  if(tm(u,'auraRegen'))for(const a of alive(st,u.faction))if(manhattan(a,u)<=2&&a.hp<a.maxHp){a.hp+=Math.min(a.maxHp-a.hp,Math.round(a.maxHp*tm(u,'auraRegen')));}
  if(tm(u,'auraCleanse'))for(const a of alive(st,u.faction))if(manhattan(a,u)<=2){for(const k of DOTS)if(sv(a,k)>0){a.st[k]=0;a.st[k+'N']=0;break;}}
- if(tm(u,'selfCleanse3')&&st.round%3===0&&clearBad(u,9))ev.push({t:'say',txt:u.name+'〔蛻皮〕清掉了身上的壞狀態'});
+ if(tm(u,'selfCleanse3')&&st.round%3===0&&clearBad(u,99))ev.push({t:'say',txt:u.name+'〔蛻皮〕清掉了身上的壞狀態'});
  if(sv(u,'doom')>0){u.st.doom--;if(u.st.doom<=0&&u.st.doomV){const v=u.st.doomV;u.st.doomV=0;ev.push({t:'hit',a:u.st.doomBy||u.id,d:u.id,dmg:v,txt:u.name+' 身上的延爆詛咒爆開：'+v});dealTo(D,st,u,v,ev,{noShare:true});}}
- for(const k of TIMED)if(sv(u,k)>0){u.st[k]--;if(k==='pact'&&u.st.pact<=0)u.st.pactN=0;}
+ for(const k of TIMED)if(sv(u,k)>0){u.st[k]--;if(k==='pact'&&u.st.pact<=0)u.st.pactN=0;if(k==='regen'&&u.st.regen<=0)u.st.regenP=0;}
  if(u.slumber>0&&st.round>=3)wake(D,st,u,ev);}}
 // 通用技能：可以點的目標
 function genTargets(D,st,u,to,S){const [a,b]=S.range||[0,0];
@@ -247,13 +246,13 @@ function doGen(D,st,u,to,S,a,ev,cost){ev.push({t:'skill',a:u.id,sk:a.skill,at:a.
  if(S.shape==='rand'){const [ra,rb]=S.range||[1,3];for(let i=0;i<(S.hits||1);i++){const pool=alive(st).filter(v=>v.faction!==u.faction&&sv(v,'stealth')<=0&&manhattan(v,to)>=ra&&manhattan(v,to)<=rb);if(!pool.length)break;hitOne(pool[Math.floor(roll(st)*pool.length)%pool.length],S.mult);}}
  else if(S.mult>0){for(const f of A.foes)for(let h=0;h<(S.hits||1)&&f.hp>0;h++){const r=hitOne(f,S.mult);if(r&&r.hit&&tm(u,'bounce')&&roll(st)<tm(u,'bounce')){const o2=alive(st).find(v=>v.faction!==u.faction&&v.id!==f.id&&manhattan(v,f)<=2);if(o2){ev.push({t:'say',txt:'漣漪彈到 '+o2.name});strike(D,st,u,to,o2.id,ev,{...so,mult:S.mult*.5});}}}}
  else if(!S.doom){for(const f of A.foes)applyHitSt(D,st,u,f,S,ev);}
- if(S.doom){for(const f of A.foes){const p=withPos(u,to,()=>calc(D,st,u,to,f.id,{mult:S.doom*(1+tm(u,'doomP')),skill:true}));f.st.doom=3;f.st.doomV=Math.max(f.st.doomV||0,p.dmg);f.st.doomBy=u.id;ev.push({t:'status',d:f.id,txt:f.name+'：延爆詛咒（3 回合後爆開，約 '+p.dmg+'）'});}}
+ if(S.doom){for(const f of A.foes){const p=withPos(u,to,()=>calc(D,st,u,to,f.id,{mult:S.doom*(1+tm(u,'doomP')),skill:true}));if(!addSt(D,st,f,'doom',3,ev,u))continue;f.st.doomV=Math.max(f.st.doomV||0,p.dmg);f.st.doomBy=u.id;ev.push({t:'status',d:f.id,txt:f.name+'：延爆詛咒（3 回合後爆開，約 '+p.dmg+'）'});}}
  if(S.quench)for(const f of A.foes){f.st.burn=0;f.st.burnN=0;}
  if(S.blockWarn&&a.at&&st.warn){const w0=st.warn.length;st.warn=st.warn.filter(w=>!(Math.abs(w.x-a.at.x)<=1&&Math.abs(w.y-a.at.y)<=1));if(st.warn.length<w0)ev.push({t:'purify',txt:'封界擋下了 '+(w0-st.warn.length)+' 格正在擴散的污染'});}
  const al=S.ally;if(al){for(const t of A.allies){let pct=al.heal||0;if(S.perPoison)pct+=S.perPoison*alive(st).filter(v=>v.faction!==u.faction&&sv(v,'poison')>0).length;
    if(pct||al.sol)healU(D,st,u,t,pct,al.sol||0,ev,'',al.low);
    if(al.shield)t.st.shield=Math.max(sv(t,'shield'),Math.round(t.maxHp*al.shield));
-   if(al.cleanse){const hadDot=['burn','bleed','poison','doom'].some(k=>sv(t,k)>0);const n=clearBad(t,al.cleanse);if(n)ev.push({t:'say',txt:t.name+' 解除了 '+n+' 個壞狀態'});if(al.cleanseShield&&hadDot&&n){t.st.shield=Math.max(sv(t,'shield'),Math.round(t.maxHp*al.cleanseShield));ev.push({t:'shield',d:t.id,txt:t.name+' 得到月光護盾'});}}
+   if(al.cleanse){const removed=[];const n=clearBad(t,al.cleanse,removed);const hadDot=removed.some(k=>['burn','bleed','poison','doom'].includes(k));if(n)ev.push({t:'say',txt:t.name+' 解除了 '+n+' 個壞狀態'});if(al.cleanseShield&&hadDot&&n){t.st.shield=Math.max(sv(t,'shield'),Math.round(t.maxHp*al.cleanseShield));ev.push({t:'shield',d:t.id,txt:t.name+' 得到月光護盾'});}}
    for(const s of al.st||[]){if(s[2]!=null&&roll(st)>=s[2])continue;addSt(D,st,t,s[0],s[1],ev,u);}}
   if(al.shield&&A.allies.length)ev.push({t:'say',txt:'護盾：'+A.allies.map(v=>v.name).join('、')});}
  if(S.oath){const t=st.units.find(v=>v.id===a.target);if(t){t.st.oath=S.oath;t.oathBy=u.id;ev.push({t:'status',d:t.id,txt:u.name+' 和 '+t.name+' 立誓（'+S.oath+' 回合）'});}}
@@ -264,7 +263,7 @@ function doGen(D,st,u,to,S,a,ev,cost){ev.push({t:'skill',a:u.id,sk:a.skill,at:a.
 // AI：評估通用技能
 function aiGen(D,st,u,pos,c,sk,S,add,posPen,near,allies){const base={type:'ACT',actorId:u.id,to:pos,act:'SKILL',skill:sk};const pp=posPen(c);
  const stV=f=>(S.st||[]).reduce((s,x)=>s+((x[0]==='freeze'||x[0]==='charm')?6:x[0]==='seal'?(f.skills&&f.skills.length?3:1):2)*(x[2]==null?1:x[2])*(sv(f,x[0])>0?.3:1),0);
- const dmgV=(f,mult,hits)=>{const p=preview(D,st,u,pos,f.id,{mult:mult*(hits||1),noCounter:true,skill:true,area:S.shape!=='one',useDef:S.useDef});return scoreHit(D,st,u,pos,f.id,p);};
+ const dmgV=(f,mult,hits)=>{const p=preview(D,st,u,pos,f.id,{mult:mult*(hits||1),noCounter:true,skill:true,area:S.shape!=='one',useDef:S.useDef,skillKey:sk});return scoreHit(D,st,u,pos,f.id,p);};
  const foeVal=list=>list.reduce((s,f)=>s+(S.mult>0?dmgV(f,S.mult,S.hits):0)+stV(f)+(S.doom?4:0),0);
  if(S.tg==='enemy'){for(const tid of withPos(u,pos,()=>genTargets(D,st,u,pos,S))){const A=withPos(u,pos,()=>genArea(D,st,u,pos,S,{target:tid}));if(!A.foes.length)continue;add(foeVal(A.foes)+1+pp,{...base,target:tid});}return;}
  if(S.tg==='tile'&&S.shape==='areaAlly'){if(near>4)return;let best=null,bv=0;for(const t of allies.concat([u])){for(const [dx,dy] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]]){const x=(t.id===u.id?pos.x:t.x)+dx,y=(t.id===u.id?pos.y:t.y)+dy;const d=Math.abs(x-pos.x)+Math.abs(y-pos.y);if(d<S.range[0]||d>S.range[1]||!inside(st,x,y))continue;const A=withPos(u,pos,()=>genArea(D,st,u,pos,S,{at:{x,y}}));const v=A.allies.length*1.6;if(v>bv){bv=v;best={x,y};}}}if(best&&bv>=3)add(bv+pp,{...base,at:best});return;}
@@ -277,13 +276,40 @@ function aiGen(D,st,u,pos,c,sk,S,add,posPen,near,allies){const base={type:'ACT',
  else {v=near<=3?5:-3;if(S.self&&S.self.st&&S.self.st.some(x=>x[0]==='undying'||x[0]==='shell'))v+=u.hp<u.maxHp*.6?5:-2;if(S.self&&S.self.st&&S.self.st.some(x=>x[0]==='stealth'||x[0]==='echo'))v+=near<=4?1:-3;}
  if(v>2)add(v+pp,base);}
 
+
+// 熟練度固定於出戰時；本場有效使用的成果在結算後累積，下場生效。
+function masteryTier(D,u,k){const P=D.practice;if(!P)return 0;const n=Math.max(0,Math.min(P.max,Number((u.mastery||{})[k])||0));let i=0;for(let j=1;j<P.thresholds.length;j++)if(n>=P.thresholds[j])i=j;return i;}
+function masteryBoost(D,u,k){return D.practice?D.practice.boost[masteryTier(D,u,k)]||0:0;}
+function skillOf(D,u,k){const b=D.skills[k];if(!b)return null;const S=clone(b),m=masteryBoost(D,u,k);if(m){if(S.self&&S.self.shield)S.self.shield*=1+m;if(S.ally&&S.ally.shield)S.ally.shield*=1+m;if(S.ally&&S.ally.cleanseShield)S.ally.cleanseShield*=1+m;}return S;}
+function skillAffected(D,st,u,to,k,a){const S=skillOf(D,u,k);if(!S)return {foes:[],allies:[],tiles:[]};if(S.kind==='gen'){const A=withPos(u,to,()=>genArea(D,st,u,to,S,a||{}));if(S.shape==='rand')A.foes=alive(st).filter(v=>v.faction!==u.faction&&sv(v,'stealth')<=0&&manhattan(v,to)>=S.range[0]&&manhattan(v,to)<=S.range[1]);return {...A,tiles:[]};}
+ if(S.kind==='around')return {foes:skillTargets(D,st,u,to,k).map(id=>st.units.find(v=>v.id===id)),allies:[],tiles:[]};
+ if(k==='massMend')return {foes:[],allies:alive(st,u.faction).filter(v=>v.id===u.id||manhattan(v,to)<=S.radius),tiles:[]};
+ if(S.kind==='ally')return {foes:[],allies:alive(st,u.faction).filter(v=>v.id===(a||{}).target),tiles:[]};return {foes:[],allies:[],tiles:[]};}
+function finishSkill(D,st,u,k,S,before,ev,start){if(!ev.slice(start).some(e=>e.t==='skill'&&e.a===u.id))ev.splice(start,0,{t:'skill',a:u.id,sk:k,at:{x:u.x,y:u.y},txt:u.name+'「'+S.name+'」'});for(const e of ev.slice(start))if(e.t==='skill'&&e.a===u.id){e.sk=k;e.at=e.at||{x:u.x,y:u.y};}
+ if(!D.practice||u.faction!=='P'||!u.rid)return;
+ const nearby=alive(st).some(v=>v.faction!==u.faction&&manhattan(v,u)<=6);
+ let effective=false;
+ for(const old of before.units){const v=st.units.find(v=>v.id===old.id);if(!v)continue;
+  if(old.faction!==u.faction){if(v.hp+v.sol+sv(v,'shield')<old.hp+old.sol+sv(old,'shield'))effective=true;for(const q of BAD)if(sv(v,q)>sv(old,q)||(v.st[q+'N']||0)>(old.st[q+'N']||0))effective=true;}
+  else{if(v.hp>old.hp||v.sol>old.sol)effective=true;for(const q of BAD)if(sv(old,q)>sv(v,q))effective=true;if(nearby&&(sv(v,'shield')>sv(old,'shield')||sv(v,'gs')>sv(old,'gs')))effective=true;if(nearby)for(const q of TIMED.concat(['sure']))if(!BAD.includes(q)&&sv(v,q)>sv(old,q))effective=true;}}
+ if(k==='shadowStep'&&nearby&&manhattan(before.units.find(v=>v.id===u.id)||u,u)>0)effective=true;
+ if(k==='lampZone'&&(nearby||before.warn.some(w=>st.zones.some(z=>z.owner===u.id&&Math.abs(z.x-w.x)<=1&&Math.abs(z.y-w.y)<=1))))effective=true;
+ if(S.blockWarn&&st.warn.length<before.warn.length)effective=true;
+ if(!effective)return;
+ const tier=masteryTier(D,u,k);if(!(S.mult>0)&&!S.doom&&!['attack','around','dash'].includes(S.kind)&&tier){const amount=Math.round(u.maxHp*D.practice.supportShield[tier]);if(amount>sv(u,'shield')){u.st.shield=amount;ev.push({t:'shield',a:u.id,d:u.id,txt:u.name+'〔熟練施法〕得到 '+amount+' 護盾'});}}
+ u.practiceGain=u.practiceGain||{};u.practiceLast=u.practiceLast||{};
+ if(u.practiceLast[k]===st.round||(u.practiceGain[k]||0)>=D.practice.battleCap||((u.mastery||{})[k]||0)>=D.practice.max)return;
+ const n=Math.min(D.practice.gain,D.practice.battleCap-(u.practiceGain[k]||0),D.practice.max-(((u.mastery||{})[k]||0)+(u.practiceGain[k]||0)));if(n<=0)return;
+ u.practiceGain[k]=(u.practiceGain[k]||0)+n;u.practiceLast[k]=st.round;ev.push({t:'practice',a:u.id,sk:k,n,txt:u.name+'「'+S.name+'」熟練度 +'+n+'（結算後累積）'});
+}
+
 // ---------- 行動驗證 ----------
 const ACTS=['ATTACK','WAIT','GUARD','SKILL','RESCUE'];
 function moveOpts(D,u,a){if(a.act==='SKILL'&&a.skill==='shadowStep'){const S=D.skills.shadowStep;return {extra:S.extraMove,ignoreZoc:true};}return {};}
 function skillTargets(D,st,u,to,sk){sk=sk||u.skills[0];const S=D.skills[sk];if(!S)return [];
  return withPos(u,to,()=>{
   if(S.kind==='attack')return targetsFrom(D,st,u,to,S.range,true,!!S.noLos);
-  if(S.kind==='around')return targetsFrom(D,st,u,to,[1,1],true);
+  if(S.kind==='around')return alive(st).filter(v=>v.faction!==u.faction&&sv(v,'stealth')<=0&&Math.max(Math.abs(v.x-to.x),Math.abs(v.y-to.y))===1).map(v=>v.id);
   if(S.kind==='dash')return targetsFrom(D,st,u,to,null,true);
   if(S.kind==='ally')return alive(st,u.faction).filter(v=>{const d=v.id===u.id?0:manhattan(to,v);return d>=S.range[0]&&d<=S.range[1];}).map(v=>v.id);
   if(S.kind==='gen')return genTargets(D,st,u,to,S);
@@ -313,14 +339,15 @@ function apply(D,st0,a){const err=validate(D,st0,a);if(err)return {ok:false,erro
  return {ok:true,state:st,events:ev};}
 
 // ---------- 結算 ----------
-function doAct(D,st,a,ev){const u=st.units.find(v=>v.id===a.actorId);const to=a.to||{x:u.x,y:u.y};const cost=reachable(D,st,u,moveOpts(D,u,a)).get(key(to.x,to.y))||0;
+function doAct(D,st,a,ev){const actionBefore=a.act==='SKILL'?{units:clone(st.units),warn:clone(st.warn||[])}:null;const u=st.units.find(v=>v.id===a.actorId);const to=a.to||{x:u.x,y:u.y};const cost=reachable(D,st,u,moveOpts(D,u,a)).get(key(to.x,to.y))||0;
  u.stay=!(to.x!==u.x||to.y!==u.y);if(to.x!==u.x||to.y!==u.y){ev.push({t:'move',a:u.id,from:{x:u.x,y:u.y},to:{...to},txt:u.name+' 移動到 ('+to.x+','+to.y+')'+(a.act==='SKILL'&&a.skill==='shadowStep'?'〔影徑〕':'')});u.x=to.x;u.y=to.y;}
  const attackWithCounter=(tid,o)=>{const r=strike(D,st,u,to,tid,ev,o);const tgt=tid==='GATE'?null:st.units.find(v=>v.id===tid);
   if(!o.noCounter&&tgt&&tgt.hp>0&&u.hp>0&&canCounter(tgt)){const [ra,rb]=rangeOf(D,st,tgt,tgt);const d=manhattan(to,tgt);if(d>=ra&&d<=rb&&(d===1||los(D,st,tgt,to))&&!(tgt.st&&tgt.st.stun))strike(D,st,tgt,{x:tgt.x,y:tgt.y},u.id,ev,{counter:true});}return r;};
  if(a.act==='RESCUE'){st.escort.status='escorting';st.escort.carrier=u.id;u.escorting=true;ev.push({t:'rescue',a:u.id,txt:u.name+' 解開了繩索，開始護送推車人。移動 −1，其他隊伍請掩護回程。'});}
  else if(a.act==='ATTACK'){attackWithCounter(a.target,{charge:cost,normal:true});}
  else if(a.act==='GUARD'){u.guard=true;ev.push({t:'guard',a:u.id,txt:u.name+' 守備（防禦 +30%，到下次行動前）'});}
- else if(a.act==='SKILL'){const sk=a.skill,S=D.skills[sk];u.cd[sk]=hasT(u,'quick')?Math.max(2,S.cd-1):S.cd;if(tm(u,'freeSkillOnce')&&!u.freeUsed){u.freeUsed=1;u.cd[sk]=0;ev.push({t:'say',txt:u.name+' 這一招不進入冷卻'});}
+ else if(a.act==='SKILL'){const sk=a.skill,S=skillOf(D,u,sk);const skillBefore=actionBefore;const evStart=ev.length;u.cd[sk]=hasT(u,'quick')?Math.max(2,S.cd-1):S.cd;if(tm(u,'freeSkillOnce')&&!u.freeUsed){u.freeUsed=1;u.cd[sk]=0;ev.push({t:'say',txt:u.name+' 這一招不進入冷卻'});}
+  u.activeSkill=sk;
   if(tm(u,'castCost')){const c0=Math.round(u.maxHp*tm(u,'castCost'));u.hp=Math.max(1,u.hp-c0);}
   if(S.kind==='gen'){doGen(D,st,u,to,S,a,ev,cost);}else
   if(sk==='guardStance'){u.st.gs=S.dur;ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」：相鄰隊友的傷害 40% 由它承受，持續 '+S.dur+' 回合'});}
@@ -328,10 +355,10 @@ function doAct(D,st,a,ev){const u=st.units.find(v=>v.id===a.actorId);const to=a.
    ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」'});strike(D,st,u,to,t.id,ev,{mult:S.mult,noCounter:true,area:true,label:'突刺'});
    if(behind&&behind.faction!==u.faction&&behind.hp>0)strike(D,st,u,to,behind.id,ev,{mult:S.mult,noCounter:true,area:true,label:'貫穿'});}
   else if(sk==='markShot'){ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」'});const r=strike(D,st,u,to,a.target,ev,{mult:S.mult,label:'標記射擊'});const t=st.units.find(v=>v.id===a.target);
-   if(r.hit&&t.hp>0){t.st.mark=Math.max(t.st.mark,S.mark);ev.push({t:'status',d:t.id,txt:t.name+' 被標記 '+S.mark+' 回合（受到傷害 +20%）'});}
+   if(r.hit&&t.hp>0){addSt(D,st,t,'mark',S.mark,ev,u);}
    if(t.hp>0&&u.hp>0&&canCounter(t)){const [ra,rb]=rangeOf(D,st,t,t);const d=manhattan(to,t);if(d>=ra&&d<=rb&&(d===1||los(D,st,t,to)))strike(D,st,t,{x:t.x,y:t.y},u.id,ev,{counter:true});}}
   else if(sk==='bind'){ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」'});const r=strike(D,st,u,to,a.target,ev,{mult:S.mult,noCounter:true,label:'束縛'});const t=st.units.find(v=>v.id===a.target);
-   if(r.hit&&t.hp>0){t.st.root=Math.max(t.st.root,S.root);ev.push({t:'status',d:t.id,txt:t.name+' 被束縛：下一個回合不能移動'});}}
+   if(r.hit&&t.hp>0){addSt(D,st,t,'root',S.root,ev,u);}}
   else if(sk==='mend'){const t=st.units.find(v=>v.id===a.target);const cl=t.st.root>0||t.st.mark>0;t.st.root=0;t.st.mark=0;healU(D,st,u,t,S.heal,S.solHeal,ev,u.name+'「'+S.name+'」');if(cl)ev.push({t:'say',txt:t.name+' 解除了束縛與標記'});
    if(S.purify){let n=0;for(const [dx,dy] of [[0,0],...DIRS]){const x=t.x+dx,y=t.y+dy;if(!inside(st,x,y))continue;const w0=st.warn.length;st.warn=st.warn.filter(w=>!(w.x===x&&w.y===y));if(st.warn.length<w0)n++;if(tileAt(st,x,y)==='FLESH'){st.tiles[y*st.w+x]='PLAIN';n++;}}
     if(n){updCorr(D,st);ev.push({t:'purify',a:u.id,txt:'光縫淨化了 '+n+' 格污染（濁度 '+st.corr+'）'});}}}
@@ -342,7 +369,8 @@ function doAct(D,st,a,ev){const u=st.units.find(v=>v.id===a.actorId);const to=a.
   else if(S.kind==='attack'){ev.push({t:'skill',a:u.id,txt:u.name+'「'+S.name+'」'});const r=strike(D,st,u,to,a.target,ev,{mult:S.mult,noCounter:!!S.noCounter,flank:S.flank,label:S.name});const t=st.units.find(v=>v.id===a.target);
    if(r.hit&&t&&t.hp>0&&(S.push||S.pull)){const dx=Math.sign(t.x-to.x),dy=Math.sign(t.y-to.y);const dir=S.push?1:-1;let sx=dx,sy=dy;if(sx&&sy){if(Math.abs(t.x-to.x)>=Math.abs(t.y-to.y))sy=0;else sx=0;}
     const nx=t.x+sx*dir,ny=t.y+sy*dir;if(inside(st,nx,ny)&&T(D,st,nx,ny).pass&&!unitAt(st,nx,ny)&&!(nx===to.x&&ny===to.y)){t.x=nx;t.y=ny;ev.push({t:'push',d:t.id,txt:t.name+(S.push?' 被撞退':' 被拉近')+'到 ('+nx+','+ny+')'});}else ev.push({t:'push',d:t.id,txt:t.name+(S.push?' 後面被擋住，撞不動':' 拉不動')});}
-   if(!S.noCounter&&t&&t.hp>0&&u.hp>0&&canCounter(t)){const [ra,rb]=rangeOf(D,st,t,t);const d=manhattan(to,t);if(d>=ra&&d<=rb&&(d===1||los(D,st,t,to)))strike(D,st,t,{x:t.x,y:t.y},u.id,ev,{counter:true});}}}
+   if(!S.noCounter&&t&&t.hp>0&&u.hp>0&&canCounter(t)){const [ra,rb]=rangeOf(D,st,t,t);const d=manhattan(to,t);if(d>=ra&&d<=rb&&(d===1||los(D,st,t,to)))strike(D,st,t,{x:t.x,y:t.y},u.id,ev,{counter:true});}}
+  finishSkill(D,st,u,sk,S,skillBefore,ev,evStart);delete u.activeSkill;}
  else ev.push({t:'wait',a:u.id,txt:u.name+' 待機'});
  u.usedAct=true;objAfterAct(D,st,u,ev);checkEnd(D,st,ev);}
 // 救人：我方行動結束時站在還沒救的屋子上
@@ -350,7 +378,7 @@ function objAfterAct(D,st,u,ev){const O=st.obj||{};if(O.type!=='rescue'||u.facti
 
 // ---------- 回合流程 ----------
 function M_(D,st){return D.missions[st.missionId];}
-function phaseStart(st,f){for(const u of alive(st,f)){u.usedAct=false;u.guard=false;u.stay=false;for(const k in u.cd)if(u.cd[k]>0)u.cd[k]--;if(sv(u,'freeze')>0||sv(u,'charm')>0){u.usedAct=true;u.st.freeze=0;u.st.charm=0;u.skipped=1;}else u.skipped=0;}}
+function phaseStart(st,f){for(const u of alive(st,f)){u.usedAct=false;u.guard=false;u.stay=false;for(const k in u.cd)if(u.cd[k]>0)u.cd[k]--;if(sv(u,'freeze')>0||sv(u,'charm')>0){u.usedAct=true;if(sv(u,'freeze')>0)u.st.freeze--;if(sv(u,'charm')>0)u.st.charm--;u.skipped=1;}else u.skipped=0;}}
 function phaseEnd(st,f){for(const u of alive(st,f))if(u.st.root>0)u.st.root--;}
 function roundStart(D,st,ev=[]){const M=M_(D,st);
  // 預告到期的格子生效（燈界裡的不會）
@@ -432,7 +460,7 @@ function plan(D,st,u,style){if(st.escort&&st.escort.status==='trapped'&&u.factio
   for(const tid of withPos(u,pos,()=>targetsFrom(D,st,u,pos))){const p=preview(D,st,u,pos,tid,{charge:c.c});add(scoreHit(D,st,u,pos,tid,p)+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'ATTACK',target:tid});}
   for(const sk of ready){const S=D.skills[sk];
    if(S.kind==='around'){const ts=skillTargets(D,st,u,pos,sk);if(ts.length){let tot=0;for(const tid of ts){const p=preview(D,st,u,pos,tid,{mult:S.mult,noCounter:true,area:true});tot+=scoreHit(D,st,u,pos,tid,p);}add(tot+ (ts.length>1?3:-2)+posPen(c),{type:'ACT',actorId:u.id,to:pos,act:'SKILL',skill:sk});}}
-   if(S.kind==='attack'){for(const tid of skillTargets(D,st,u,pos,sk)){const tgt=st.units.find(v=>v.id===tid);const p=preview(D,st,u,pos,tid,{mult:S.mult,noCounter:!!S.noCounter,area:!!S.area,flank:S.flank});let extra=1;
+   if(S.kind==='attack'){for(const tid of skillTargets(D,st,u,pos,sk)){const tgt=st.units.find(v=>v.id===tid);const p=preview(D,st,u,pos,tid,{mult:S.mult,noCounter:!!S.noCounter,area:!!S.area,flank:S.flank,skillKey:sk});let extra=1;
      if(S.push&&manhattan(tgt,st.gate)<=2)extra+=3;if(S.pull&&tgt.rmax>=2)extra+=2;
      if(sk==='pierce'){const b=unitAt(st,tgt.x+(tgt.x-pos.x),tgt.y+(tgt.y-pos.y));if(b&&b.faction!==u.faction)extra+=6;}
      if(sk==='markShot'&&!p.kill)extra+=tgt.st.mark>0?-2:3;
@@ -465,6 +493,6 @@ function plan(D,st,u,style){if(st.escort&&st.escort.status==='trapped'&&u.factio
 // ---------- 重播 ----------
 function replay(D,missionId,seed,actions,opts){let st=createBattle(D,missionId,seed,opts);for(const a of actions){const r=apply(D,st,a);if(!r.ok)throw new Error('replay failed at '+JSON.stringify(a)+': '+r.error);st=r.state;}return st;}
 
-const API={sv,tm,STN,genTargets,genArea,hasP,updCorr,SCHEMA,createBattle,apply,validate,reachable,targetsFrom,skillTargets,preview,calc,plan,replay,hash,rngAt,los,key,manhattan,unitAt,tileAt,alive,rangeOf,counterMult,clone,soldiers,solMaxN,splitPreview,inZone,moveOpts,withPos};
+const API={healingForecast,masteryTier,masteryBoost,skillOf,skillAffected,sv,tm,STN,genTargets,genArea,hasP,updCorr,SCHEMA,createBattle,apply,validate,reachable,targetsFrom,skillTargets,preview,calc,plan,replay,hash,rngAt,los,key,manhattan,unitAt,tileAt,alive,rangeOf,counterMult,clone,soldiers,solMaxN,splitPreview,inZone,moveOpts,withPos};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.TACTICS=API;
 })(this);

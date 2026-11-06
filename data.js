@@ -1,7 +1,7 @@
 // 《永生戰棋》資料（世界觀＝渡鴉公會；數值都是測試提案，不是正史）
 (function(root){
 const DATA={
- rulesetVersion:'v0.6',
+ rulesetVersion:'v0.7',
  bgm:{title:'hall',base:'hall',map:'explore',battle:'battle',boss:'boss',win:'hall'},bgmRoot:'../raven-guild/audio/',
  prologue:[
   {img:'battle/bt_plain.webp',future:'pr_1',txt:'天闕大陸的北邊，白鐵礦城的礦坑從來沒有停過。'},
@@ -191,7 +191,7 @@ const DATA={
  innateTxt:{wangdeng:['未熄的歸途','隊友的生命第一次掉到三成以下時，月燈自動給生命 20% 的護盾（每 3 回合一次）。'],feie:['不肯斷裂的線','隊友受到致命傷時，緋厄用自己的生命替他擋下（隊友留兩成生命；每 3 回合一次），之後振奮 2 回合。']},
  cmdSkill:{"RETURN": "cm_return", "PAPER": "cm_fire", "MINE": "cm_drill"},
  // ---------- v1.1：渡鴉幣、好感、禮物 ----------
- version:'v1.4.0',
+ version:'v1.5.0',
  coins:{win:5,lose:1,first:15,name:'渡鴉幣'},costumePrice:100,
  aff:{tiers:[0,15,40,80,130],names:['普通','熟識','信賴','摯友','羈絆'],chat:8,gift:6,giftLike:15},
  giftDrop:{chance:.35,list:['soup','bread','fish','honey','wick','feather','iron']},
@@ -466,6 +466,32 @@ DATA.missions.MISSION_BC_001.events[0].say='霧裡的快隊已逼近中路。先
 DATA.missions.MISSION_BC_001.events.push({round:4,say:'守衛在門後喊：「城裡還有人！別追散，留住門前那條路！」污染格會先預告；提燈的燈界能穩住它。'});
 DATA.missions.MISSION_MINE.events.push({round:2,say:'軌道兩側都有敵人。用前排吸住追兵，遠程借高地支援；被標記的目標更容易集火擊破。'});
 DATA.missions.MISSION_POST.events.push({round:2,say:'站內傳來敲桌聲：兩短，一長。有人還守著那張沒有寄出的單子。驛站只要有敵人就無法累積守住回合，先清出空間再留人駐守。'});
+
+
+// v1.5：技能書與熟練度，數值採保守的試玩配置。
+DATA.practice={max:100,thresholds:[0,20,50,100],names:['初習','熟習','精通','圓熟'],boost:[0,.03,.06,.10],supportShield:[0,.01,.02,.03],gain:2,battleCap:6};
+DATA.bookRules={dropChance:.25,price:30,sellSupply:10,minLv:3};
+DATA.bookSkills={
+ bk_shield_line:{name:'盾列接應',kind:'gen',tg:'self',shape:'allyAround',r:1,cd:4,ally:{shield:.12,st:[['ward',1]]},icon:'sk_guard',fx:'fx_guard',desc:'自身與 1 格內隊友獲得生命 12% 護盾，並在本輪受到傷害 −30%。'},
+ bk_spear_pin:{name:'釘影槍',kind:'gen',tg:'enemy',shape:'one',range:[1,2],cd:3,mult:.85,st:[['root',1,1],['slow',2,1]],icon:'sk_pierce',fx:'fx_pierce',desc:'1–2 格內一名敵人受到 0.85 倍傷害，束縛 1 次行動階段、減速 2 回合。'},
+ bk_lantern_clear:{name:'照路',kind:'gen',tg:'tile',shape:'areaAlly',range:[0,3],cd:4,ally:{cleanse:1,st:[['resist',2]]},blockWarn:1,icon:'sk_lamp',fx:'fx_purify',desc:'3 格內選一格，3×3 內隊友解除一個壞狀態並獲得 2 回合抵抗；清除區內正在擴散的污染預告。'},
+ bk_archer_bind:{name:'縛足箭',kind:'gen',tg:'enemy',shape:'one',range:[2,4],cd:3,mult:.8,st:[['slow',2,1],['mark',2,1]],icon:'sk_mark',fx:'fx_arrow',desc:'2–4 格內一名敵人受到 0.8 倍傷害，減速並標記 2 回合。需要視線。'},
+ bk_healer_clean:{name:'安息藥',kind:'gen',tg:'ally',shape:'one',range:[0,3],cd:3,ally:{heal:.18,sol:.1,cleanse:3},icon:'sk_mend',fx:'fx_heal',desc:'3 格內一名隊友（含自己）回復 18% 生命、10% 士兵，解除最多三個壞狀態。'},
+ bk_weaver_knot:{name:'鎖名結',kind:'gen',tg:'tile',shape:'area',range:[1,3],cd:4,mult:.25,st:[['seal',1,1],['root',1,1]],icon:'sk_bind',fx:'fx_bind',desc:'3 格內選一格，3×3 內敵人受到 0.25 倍傷害，本輪封印，並束縛 1 次行動階段。'},
+ bk_scout_cut:{name:'斷步',kind:'gen',tg:'enemy',shape:'one',range:[1,1],cd:3,mult:1.05,st:[['blind',1,1]],self:{retreat:1},icon:'sk_shadow',fx:'fx_shadow',desc:'相鄰敵人受到 1.05 倍傷害並在本輪致盲；出手後往後退一格，退路被擋則留在原地。'}
+};
+DATA.skillBooks={P_SHIELD:{skill:'bk_shield_line',name:'《盾列接應》',lore:'南門盾衛留下的接應圖，盾後總畫著一個空位。'},P_SPEAR:{skill:'bk_spear_pin',name:'《釘影槍》',lore:'紙頁畫著霧裡的腳步，槍尖總先落在下一步。'},P_LANTERN:{skill:'bk_lantern_clear',name:'《照路》',lore:'守夜人抄下的燈芯手記，最後一頁留給回程。'},P_ARCHER:{skill:'bk_archer_bind',name:'《縛足箭》',lore:'驛道巡哨用的箭譜，寫的是留人，不是追人。'},P_HEALER:{skill:'bk_healer_clean',name:'《安息藥》',lore:'藥箱夾層的薄冊，先寫活人的姓名，再記藥量。'},P_WEAVER:{skill:'bk_weaver_knot',name:'《鎖名結》',lore:'打結的位置要留一線，不能把回家的路也鎖住。'},P_SCOUT:{skill:'bk_scout_cut',name:'《斷步》',lore:'沒有署名的腳步圖。每張圖都留了退路。'}};
+Object.assign(DATA.skills,DATA.bookSkills);
+DATA.skills.sweep.desc='自身周圍八格（含斜角）的所有可見敵人受到 0.8 倍傷害，不會被反擊。沒有敵人時不能施放。';
+DATA.skills.sweep.fx='fx_pierce';
+DATA.genSkills.sn_molt.ally.cleanse=99;
+DATA.genSkills.sp_back.self.st=[['evade',2]];
+DATA.genSkills.sp_back.desc='1.2 倍傷害並流血 2 回合；刺完後退一格，獲得閃身 2 回合（閃避 +30%）。';
+// 公開既有資料內有實際作用、但原描述省略的補兵效果。
+DATA.genSkills.hf_bath.desc='2 格內所有隊友回復 20% 生命、10% 士兵，之後再生 3 回合。';
+DATA.genSkills.h1_bitter.desc='回復 2 格內一名隊友 25% 生命、15% 士兵；離目標最近且在 3 格內的敵人中毒 3 回合。';
+DATA.genSkills.h1_same.desc='2 格內所有隊友回復 10% 生命、10% 士兵；場上每有一個中毒敵人，再多回 6% 生命。';
+DATA.mythSkills.wd_echo.desc='回復 2 格內一名隊友 25% 生命、15% 士兵，解除兩個壞狀態；若實際解除燃燒、流血、中毒或延爆詛咒，再給生命 15% 護盾。';
 
 Object.assign(DATA.skills,DATA.genSkills,DATA.mythSkills||{});for(const [k,v] of Object.entries(DATA.skillArtP||{}))if(DATA.skills[k])DATA.skills[k].art=v;
 if(typeof module!=='undefined'&&module.exports)module.exports=DATA;else root.TACTICS_DATA=DATA;
