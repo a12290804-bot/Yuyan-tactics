@@ -33,7 +33,7 @@ function createBattle(D,missionId,seed,opts){opts=opts||{};const M=D.missions[mi
   gate:M.gate?{...M.gate,maxHp:M.gate.hp}:{none:true,x:-99,y:-99,hp:0,maxHp:0,def:0,res:0},obj:M.obj||{type:'gate'},hold:0,done:[],lit:[],breach:0,units:[],zones:[],warn:[],corr:0,pressure:false,result:null,eventLog:[],nextId:1};
  st.pack=Object.fromEntries(Object.keys(D.fieldItems||{}).map(k=>[k,Math.max(0,team[0]?.pack?.[k]|0)]));
  if(M.obj&&M.obj.type==='escort')st.escort={status:'trapped',x:M.obj.person[0],y:M.obj.person[1],carrier:null};
- const fk=Object.keys(D.factions);st.faction=opts.faction&&D.factions[opts.faction]?opts.faction:fk[Math.floor(rngAt(st.seed,0x7ffff)*fk.length)];const F=D.factions[st.faction];
+ const fk=Object.keys(D.factions);st.faction=opts.faction&&D.factions[opts.faction]?opts.faction:M.faction||fk[Math.floor(rngAt(st.seed,0x7ffff)*fk.length)];const F=D.factions[st.faction];
  const DEP=M.deploy||D.deploySlots;team.forEach((t,i)=>{const [x,y]=DEP[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
   const b=D.units[t.def],k=t.mult||1;const ov={name:t.name||b.name,cls:t.title||b.cls,hero:t.hero||null,art:t.art||null,por:t.por||t.art||null,hp:Math.round(b.hp*k),atk:Math.round(b.atk*k),def:Math.round(b.def*k),mag:Math.round(b.mag*k),res:Math.round(b.res*k),lv:t.lv||1};
   if(t.skills)ov.skills=t.skills.filter(x=>D.skills[x]);if(t.pas)ov.pas=t.pas.filter(x=>D.passives[x]);if(t.soldiers)ov.soldiers=t.soldiers;if(t.hpPer)ov.hpPer=Math.round(b.hpPer*t.hpPer);if(t.sb!=null)ov.sb=t.sb;
@@ -372,7 +372,7 @@ function doAct(D,st,a,ev){const actionBefore=a.act==='SKILL'?{units:clone(st.uni
  u.stay=!(to.x!==u.x||to.y!==u.y);if(to.x!==u.x||to.y!==u.y){ev.push({t:'move',a:u.id,from:{x:u.x,y:u.y},to:{...to},txt:u.name+' 移動到 ('+to.x+','+to.y+')'+(a.act==='SKILL'&&a.skill==='shadowStep'?'〔影徑〕':'')});u.x=to.x;u.y=to.y;}
  const attackWithCounter=(tid,o)=>{const r=strike(D,st,u,to,tid,ev,o);const tgt=tid==='GATE'?null:st.units.find(v=>v.id===tid);
   if(!o.noCounter&&tgt&&tgt.hp>0&&u.hp>0&&canCounter(tgt)){const [ra,rb]=rangeOf(D,st,tgt,tgt);const d=manhattan(to,tgt);if(d>=ra&&d<=rb&&(d===1||los(D,st,tgt,to))&&!(tgt.st&&tgt.st.stun))strike(D,st,tgt,{x:tgt.x,y:tgt.y},u.id,ev,{counter:true});}return r;};
- if(a.act==='RESCUE'){st.escort.status='escorting';st.escort.carrier=u.id;u.escorting=true;ev.push({t:'rescue',a:u.id,txt:u.name+' 解開了繩索，開始護送推車人。移動 −1，其他隊伍請掩護回程。'});}
+ if(a.act==='RESCUE'){st.escort.status='escorting';st.escort.carrier=u.id;u.escorting=true;ev.push({t:'rescue',a:u.id,txt:u.name+' 解開了繩索，開始護送'+(st.obj.personName||'推車人')+'。移動 −1，其他隊伍請掩護回程。'});}
  else if(a.act==='ITEM'){useFieldItem(D,st,u,a.item,ev);}
  else if(a.act==='ATTACK'){attackWithCounter(a.target,{charge:cost,normal:true});}
  else if(a.act==='GUARD'){u.guard=true;ev.push({t:'guard',a:u.id,txt:u.name+' 守備（防禦 +30%，到下次行動前）'});}
@@ -440,7 +440,7 @@ function roundEnd(D,st,ev){const M=M_(D,st);
  pollute(D,st,ev);if(st.result)return;tickSt(D,st,ev);checkEnd(D,st,ev);if(st.result)return;
  st.zones=st.zones.filter(z=>z.until>st.round);
  const O=st.obj||{type:'gate'};
- if(O.type==='hold'){const on=f=>alive(st,f).some(u=>O.tiles.some(([x,y])=>u.x===x&&u.y===y));if(on('P')&&!on('E')){st.hold++;ev.push({t:'say',txt:'守住驛站一回合（'+st.hold+'／'+O.need+'）'});if(st.hold>=O.need){st.result={win:true,reason:'守住驛站 '+O.need+' 回合'};ev.push({t:'end',txt:'勝利：'+st.result.reason});st.phase='RESULT';return;}}}
+ if(O.type==='hold'){const on=f=>alive(st,f).some(u=>O.tiles.some(([x,y])=>u.x===x&&u.y===y));if(on('P')&&!on('E')){st.hold++;ev.push({t:'say',txt:'守住'+(O.label||'驛站')+'一回合（'+st.hold+'／'+O.need+'）'});if(st.hold>=O.need){st.result={win:true,reason:'守住'+(O.label||'驛站')+' '+O.need+' 回合'};ev.push({t:'end',txt:'勝利：'+st.result.reason});st.phase='RESULT';return;}}}
  if(O.type==='reach'){const n=alive(st,'P').filter(u=>O.tiles.some(([x,y])=>u.x===x&&u.y===y)).length;if(n>=O.need){st.result={win:true,reason:n+' 隊抵達對岸'};ev.push({t:'end',txt:'勝利：'+st.result.reason});st.phase='RESULT';return;}if(n)ev.push({t:'say',txt:'對岸已經有 '+n+'／'+O.need+' 隊'});}
  if(O.type==='defend'){const n=alive(st,'E').filter(u=>O.tiles.some(([x,y])=>u.x===x&&u.y===y)).length;if(n){st.breach+=n;ev.push({t:'say',txt:'有 '+n+' 隊敵人過了橋（'+st.breach+'／'+O.max+'）'});if(st.breach>=O.max){st.result={win:false,reason:'太多敵人過了橋'};ev.push({t:'end',txt:'失敗：'+st.result.reason});st.phase='RESULT';return;}}}
  if(O.seals){for(const [x,y] of O.seals){const k=key(x,y);if(st.lit.includes(k))continue;const p=alive(st,'P').some(u=>u.x===x&&u.y===y),e=alive(st,'E').some(u=>u.x===x&&u.y===y);if(p&&!e){st.lit.push(k);ev.push({t:'say',txt:'燈點起來了（'+st.lit.length+'／'+O.seals.length+'）'+(st.lit.length>=O.seals.length?'：鐘聲停了，指揮官不再被保護':'')});}}}
@@ -459,7 +459,7 @@ function pollute(D,st,ev){const K=D.corruption;updCorr(D,st);
   if(!nb.length)continue;const p=nb[Math.floor(roll(st)*nb.length)];st.warn.push({x:p.x,y:p.y,to:'FLESH',at:st.round+2});made++;}
  if(made)ev.push({t:'warn',txt:'污染正在擴散：'+made+' 格出現暗紅的微光，下下回合開始時會變成污染地（濁度 '+st.corr+'）'});}
 function checkEnd(D,st,ev){if(st.result)return;
- if(st.escort&&st.escort.status==='escorting'){const u=st.units.find(u=>u.id===st.escort.carrier);if(!u||u.hp<=0){st.escort.status='failed';st.result={win:false,reason:'護送隊倒下，救援未能完成'};}else{st.escort.x=u.x;st.escort.y=u.y;if(st.obj.exit.some(([x,y])=>u.x===x&&u.y===y)){st.escort.status='safe';st.result={win:true,reason:'推車人已平安撤回南門'};}}if(st.result){st.phase='RESULT';ev.push({t:'end',txt:(st.result.win?'勝利：':'失敗：')+st.result.reason});return;}}
+ if(st.escort&&st.escort.status==='escorting'){const u=st.units.find(u=>u.id===st.escort.carrier);if(!u||u.hp<=0){st.escort.status='failed';st.result={win:false,reason:'護送隊倒下，救援未能完成'};}else{st.escort.x=u.x;st.escort.y=u.y;if(st.obj.exit.some(([x,y])=>u.x===x&&u.y===y)){st.escort.status='safe';st.result={win:true,reason:st.obj.safe||'推車人已平安撤回南門'};}}if(st.result){st.phase='RESULT';ev.push({t:'end',txt:(st.result.win?'勝利：':'失敗：')+st.result.reason});return;}}
  const O=st.obj||{type:'gate'};const lose=(!st.gate.none&&st.gate.hp<=0)?'城門被打破':!alive(st,'P').length?'我方全滅':null;
  const cmdDown=st.units.some(u=>u.commander&&u.hp<=0);const routed=O.type==='rout'&&!alive(st,'E').length&&!pendingSpawns(D,st);const saved=O.type==='rescue'&&st.done&&st.done.length>=O.need;
  if(lose){st.result={win:false,reason:lose};}else if(cmdDown&&O.type!=='rout'&&O.type!=='escort'){st.result={win:true,reason:O.type==='gate'?'擊倒敵軍指揮官，城門還在':'擊倒敵方指揮官'};}else if(routed){st.result={win:true,reason:'霧裡的敵人全部清掉了'};}else if(saved){st.result={win:true,reason:'村裡的人都救出來了'};}

@@ -33,6 +33,9 @@ function fix(D,c){if(!c||c.v!==1)return newCamp(D);c.roster=c.roster||{};for(con
   if(r.passiveBook&&!r.passiveKnown.includes(r.passiveBook))delete r.passiveBook;
  }
  return c;}
+function regionOpen(D,c,r){
+ return !!(r?.mission&&D.missions[r.mission]&&(!r.flag||c.flags?.[r.flag])&&(r.needs||[]).every(m=>c.cleared?.[m]));
+}
 function mult(D,id,c){const h=heroOf(D,id),r=c.roster[id];return D.rarityMult[h.r]*(1+D.starStep*Math.min(5,r?.star||0)+D.highStarStep*Math.max(0,(r?.star||0)-5)+D.rankStep*(r?.rank||0))*(1+D.xp.statStep*((r?r.lv:1)-1));}
 function skillsOf(D,id,c){const h=heroOf(D,id),u=D.units[h.unit],r=c.roster[id];const lv=r?r.lv:1;return [...new Set(allSkillsOf(D,id).filter(x=>lv>=x[1]).map(x=>x[0]) .concat(activeBook(r||{})||[]))];}
 // 全部技能（含還沒學會的），給角色頁看
@@ -129,7 +132,7 @@ function forget(D,c,id,pk){const r=c.roster[id];r.sq.pas=r.sq.pas.filter(p=>p!==
 function addXp(D,r,n){const X=D.xp;let up=0;r.xp+=n;while(r.lv<X.maxLv&&r.xp>=X.perLevel*r.lv){r.xp-=X.perLevel*r.lv;r.lv++;up++;}if(r.lv>=X.maxLv)r.xp=0;return up;}
 // ---------- 戰後 ----------
 function afterBattle(D,c,st,rng){rng=rng||Math.random;if(c.lastBattle===st.battleInstanceId||(c.settledBattles||[]).includes(st.battleInstanceId))return {dup:true};c.settledBattles=c.settledBattles||[];c.settledBattles.push(st.battleInstanceId);c.lastBattle=st.battleInstanceId;const R=D.rewards;const win=st.result&&st.result.win;const got={tickets:0,supply:0};
- if(win){got.tickets+=R.win.tickets;got.supply+=R.win.supply;if(!st.gate.none&&st.gate.hp>=200)got.tickets+=R.winClean.tickets;c.wins++;c.cleared=c.cleared||{};if(!c.cleared[st.missionId]){c.cleared[st.missionId]=true;got.first=true;got.tickets+=2;got.supply+=(R.firstSupply||0);}}else{got.tickets+=R.lose.tickets;got.supply+=R.lose.supply;}
+ if(win){got.tickets+=R.win.tickets;got.supply+=R.win.supply;if(!st.gate.none&&st.gate.hp>=200)got.tickets+=R.winClean.tickets;if(!D.missions[st.missionId].optional)c.wins++;c.cleared=c.cleared||{};if(!c.cleared[st.missionId]){c.cleared[st.missionId]=true;got.first=true;got.tickets+=2;got.supply+=(R.firstSupply||0);}}else{got.tickets+=R.lose.tickets;got.supply+=R.lose.supply;}
  c.battles++;c.tickets+=got.tickets;c.supply+=got.supply;
  got.xp={};got.lvUp={};got.practice={};const X=D.xp;
  for(const u of st.units)if(u.faction==='P'&&u.rid&&c.roster[u.rid]){const r=c.roster[u.rid];for(const [sk,n]of Object.entries(u.practiceGain||{})){if(!D.skills[sk]||!(u.skills||[]).includes(sk))continue;r.mastery=r.mastery||{};const gain=Math.max(0,Math.min(D.practice.battleCap,Number(n)||0,D.practice.max-(r.mastery[sk]||0)));if(gain){r.mastery[sk]=(r.mastery[sk]||0)+gain;(got.practice[u.rid]=got.practice[u.rid]||{})[sk]=gain;}}r.sol=u.hp>0?+(u.sol/Math.max(1,u.solMax)).toFixed(3):0;const k=u.kills||0;const xp=X.join+(win?X.win:0)+X.kill*k;const up=addXp(D,r,xp);got.xp[u.rid]=xp;if(up)got.lvUp[u.rid]=r.lv;got.supply+=(D.rewards.perKill||0)*k;c.supply+=(D.rewards.perKill||0)*k;}
@@ -277,6 +280,6 @@ function finishRoadFavor(c){
  if(!spendItem(c,'bandage'))return {ok:false,error:'請先準備一份急救布包'};
  c.flags.roadFavor='done';giveBook(c,'bp_care');return {ok:true};
 }
-const API={finishRoadFavor,bookDesc,bookPrice,bookEligibility,activeBook,selectBook,buySupplies,buyFieldItem,packItem,packFor,spendItem,tradeLevel,craftItem,mapEventClaim,bookOf,bookLearn,bookBuy,bookSell,rollSkillBook,traitsOf,traitFx,rollRarity,exchangeMythic,acceptRescue,rescueOutcome,claimRescue,chooseMythic,allSkillsOf,buyCostume,affTier,chat,giveGift,addGift,questNew,questFill,questText,questMet,questGive,questCheck,questReroll,talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
+const API={regionOpen,finishRoadFavor,bookDesc,bookPrice,bookEligibility,activeBook,selectBook,buySupplies,buyFieldItem,packItem,packFor,spendItem,tradeLevel,craftItem,mapEventClaim,bookOf,bookLearn,bookBuy,bookSell,rollSkillBook,traitsOf,traitFx,rollRarity,exchangeMythic,acceptRescue,rescueOutcome,claimRescue,chooseMythic,allSkillsOf,buyCostume,affTier,chat,giveGift,addGift,questNew,questFill,questText,questMet,questGive,questCheck,questReroll,talNode,talPts,talFree,talCan,talLearn,talReset,talFx,fits,eqStats,eqName,heroEq,ownerOf,addEq,equip,unequip,enhanceCost,enhance,dismantleGain,dismantle,useRecord,rollDrops,newCamp,fix,teamFor,pull,refill,refillCost,afterBattle,heroOf,mult,art,skillsOf,soldiersOf,slotsOf,sqLvCost,sqUp,tierCost,sqTier,learn,forget,addXp};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.CAMP=API;
 })(this);

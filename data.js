@@ -191,7 +191,7 @@ const DATA={
  innateTxt:{wangdeng:['未熄的歸途','隊友的生命第一次掉到三成以下時，月燈自動給生命 20% 的護盾（每 3 回合一次）。'],feie:['不肯斷裂的線','隊友受到致命傷時，緋厄用自己的生命替他擋下（隊友留兩成生命；每 3 回合一次），之後振奮 2 回合。']},
  cmdSkill:{"RETURN": "cm_return", "PAPER": "cm_fire", "MINE": "cm_drill"},
  // ---------- v1.1：渡鴉幣、好感、禮物 ----------
- version:'v1.8.0',
+ version:'v1.9.0',
  coins:{win:5,lose:1,first:15,name:'渡鴉幣'},costumePrice:100,
  aff:{tiers:[0,15,40,80,130],names:['普通','熟識','信賴','摯友','羈絆'],chat:8,gift:6,giftLike:15},
  giftDrop:{chance:.35,list:['soup','bread','fish','honey','wick','feather','iron']},
@@ -459,7 +459,44 @@ DATA.missions.MISSION_RESCUE={
  {round:5,wave:[[4,9,8]],say:'回程右側出現敵人。留一隊接應，或用束縛拖住追兵。'}],
  win:'解救推車人，並護送到南側任一撤離點。',lose:'護送隊倒下、我方全滅，或第 12 回合結束仍未撤離。'};
 DATA.missions.MISSION_RESCUE.map[5]='..........R.';DATA.missions.MISSION_RESCUE.map[6]='.....S......';
-DATA.region.push({id:'rescue',scene:'lv_mine',name:'左輪還在響',x:.24,y:.29,mission:'MISSION_RESCUE',needs:['MISSION_BC_001'],desc:'南門有人在等一名沒有回來的推車人。先到街巷接下請託。',side:true});
+DATA.region.push({id:'rescue',scene:'lv_mine',name:'左輪還在響',x:.24,y:.29,mission:'MISSION_RESCUE',needs:['MISSION_BC_001'],desc:'南門有人在等一名沒有回來的推車人。先到街巷接下請託。',side:true,flag:'rescueAccepted'});
+// 獨立支線。主線入口與威脅等級不以這兩關的勝場計算。
+DATA.missions.MISSION_PALANQUIN_ROAD={
+ name:'還魂轎・霧棧道',place:'霧棧道',chapter:1,optional:true,faction:'PAPER',bgm:'palanquin',
+ w:12,h:12,roundLimit:10,threat:0,
+ intro:'舊棧道邊停著一頂無人迎的轎。渡口挑燈人受困，先救他，再從南側金框撤回。右路較短，左路有掩護。',
+ map:['WW..WW..WW..','W....H.....W','....R..R....','..F.....F...','..F..WW.F...','....RWW..R..','..FF......F.','......SS....','..R...SS.R..','............','............','............'],
+ legend:{'.':'PLAIN','W':'WALL','H':'HILL','R':'RUBBLE','F':'FOREST','S':'SWAMP'},
+ obj:{type:'escort',person:[4,5],personName:'挑燈人',exit:[[2,10],[3,10],[8,10],[9,10]],safe:'挑燈人已沿棧道安全撤離',timeout:'霧封住了棧道，救援隊撤回南門'},
+ deploy:[[4,9],[7,9],[3,9],[8,9],[2,10],[9,10]],
+ enemySlots:[[7,4],[9,3],[5,2]],
+ events:[
+  {round:1,say:'到「救」字旁解救挑燈人。護送隊移動 −1，左右兩側的南端金框都能撤離。'},
+  {round:2,warn:[[7,6],[7,7],[8,7]],say:'轎鈴響了兩聲。右路三格在下一回合受污染，可以改走左路，或用燈界及燈油護路。'},
+  {round:4,wave:[[1,9,6]],say:'紙影從右側追上來了。讓護送隊先走，其他人斷後。'}
+ ],
+ win:'解救挑燈人並護送到南側任一金框。',lose:'護送隊倒下、我方全滅，或第 10 回合結束仍未撤離。'
+};
+DATA.missions.MISSION_PALANQUIN_LAMP={
+ name:'還魂轎・無人迎親',place:'舊迎親台',chapter:1,optional:true,faction:'PAPER',bgm:'palanquin',
+ w:12,h:12,roundLimit:9,threat:1,
+ intro:'挑燈人指認了廢棄迎親台。守住台前的燈位，等他在城外辨完轎簿上的假名。可以封住正路，也能從兩側截住紙影。',
+ map:['WW..WW..WW..','W....HH....W','...R....R...','..F..WW..F..','..F......F..','....RLLR....','..R..LL..R..','...F....F...','....S..S....','............','............','............'],
+ legend:{'.':'PLAIN','W':'WALL','H':'HILL','R':'RUBBLE','F':'FOREST','S':'SWAMP','L':'LAMP'},
+ obj:{type:'hold',tiles:[[5,5],[6,5],[5,6],[6,6]],need:3,label:'迎親台',timeout:'轎簿尚未辨完，迎親台已被霧吞沒'},
+ deploy:[[5,8],[6,8],[4,9],[7,9],[3,9],[8,9]],
+ enemySlots:[[3,4],[8,4],[5,2],[6,2]],
+ events:[
+  {round:1,say:'回合結束時，燈位上有我方且沒有敵人，守住進度 +1。累積三次即可撤回。'},
+  {round:2,warn:[[5,6],[6,6],[6,7]],say:'轎簿在照著燈影寫字。下一回合三格受污染，提燈術士可先護住燈位。'},
+  {round:4,wave:[[0,2,3],[1,9,3]],say:'兩側都傳來踏紙聲。別讓紙影踏入燈位。'}
+ ],
+ win:'累計守住迎親台燈位 3 回合。',lose:'我方全滅，或第 9 回合結束仍未守足。'
+};
+DATA.region.push(
+ {id:'palanquin_road',scene:'lv_marsh',image:'assets/scenes/side_palanquin_road.webp',name:'霧棧道',x:.31,y:.64,mission:'MISSION_PALANQUIN_ROAD',needs:['MISSION_BC_001'],desc:'守住南門後，可赴棧道調查。',side:true},
+ {id:'palanquin_lamp',scene:'lv_post',image:'assets/scenes/side_palanquin_lamp.webp',name:'舊迎親台',x:.68,y:.48,mission:'MISSION_PALANQUIN_LAMP',needs:['MISSION_PALANQUIN_ROAD'],desc:'先從霧棧道救回挑燈人。',side:true}
+);
 // 開局更早接敵；仍維持三勢力隨機與原本的勝利條件。
 DATA.missions.MISSION_BC_001.enemySlots=[[5,1],[8,2],[5,5],[7,4],[3,3],[9,2]];
 
