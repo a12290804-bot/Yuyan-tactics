@@ -4,12 +4,12 @@ const DATA={
  rulesetVersion:'v0.7',
  bgm:{title:'hall',base:'hall',map:'explore',battle:'battle',boss:'boss',win:'hall'},bgmRoot:'../raven-guild/audio/',
  prologue:[
-  {img:'battle/bt_plain.webp',future:'pr_1',txt:'我第一次聽見白鐵礦城的名字，是在暮簡村地方站。送信的人把手在火盆上烘了半天，才解開郵袋。'},
-  {img:'backgrounds/fac_lighthouse.webp',future:'pr_1',txt:'站裡管退件的把信翻過來。寄件人的位置空著，封口卻印著燒焦的渡鴉。她認出了北境分站用的蠟。'},
-  {img:'backgrounds/fac_council.webp',future:'pr_2',txt:'她去翻名冊。最近一筆是礦城的燈油，領用人的名字還在，三個月沒人來畫押。'},
-  {img:'backgrounds/cover_wall.webp',future:'pr_3',txt:'出發那天，站員發給我們一罐燈油。背藥箱的人問有沒有多的。站員想了想，把自己桌上的半罐也遞了過來。'},
-  {img:'backgrounds/base_bg.webp',future:'pr_3',txt:'「到南門再點。」她把油罐塞進我懷裡，「那裡要是還有人值夜，他看得見。」'},
-  {img:'battle/bt_gate.webp',future:'pr_4',txt:'我們到時，南門只剩半扇。牆內有人叫我們蹲下。霧裡也有人喊蹲下，喊得跟他一模一樣。'}
+  {img:'battle/bt_plain.webp',future:'pr_1',txt:'天闕大陸的北邊，白鐵礦城的礦坑從來沒有停過。'},
+  {img:'backgrounds/fac_lighthouse.webp',future:'pr_1',txt:'渡鴉公會在城的北境有一座分站。這幾年，分站的燈一盞一盞熄了，只剩下礦坑底下的機器還在挖。'},
+  {img:'backgrounds/fac_council.webp',future:'pr_2',txt:'這個月，暮簡村地方站收到一封退回來的信。信封上沒有寄件人，只有一枚燒焦的渡鴉印。'},
+  {img:'backgrounds/cover_wall.webp',future:'pr_3',txt:'公會沒有派正式成員。去的是我們——名冊最後幾頁的外圍成員：還沒拿到徽章的盾衛、只會點燈的術士、背著藥箱的人。'},
+  {img:'backgrounds/base_bg.webp',future:'pr_3',txt:'任務只有一句：「到白鐵礦城南門，把燈重新點起來。」'},
+  {img:'battle/bt_gate.webp',future:'pr_4',txt:'我們到的那晚，南門已經破了一半。霧裡有提燈的隊伍，正慢慢往城門走過來。'}
  ],
  // 我方兵種對應的小兵圖（接戰演出）
  soldierArt:{P_SHIELD:'sd_shield',P_SPEAR:'sd_spear',P_LANTERN:'sd_lantern',P_ARCHER:'sd_archer',P_HEALER:'sd_healer',P_WEAVER:'sd_weaver',P_SCOUT:'sd_scout'},
@@ -102,7 +102,7 @@ const DATA={
  gacha:{rates:[.80,.17,.03],pity:50,tenGuarantee:1,firstTen:1,startTickets:10},
  rewards:{win:{tickets:3,supply:60},winClean:{tickets:1},lose:{tickets:1,supply:25},firstSupply:40,perKill:3},
  xp:{join:40,win:40,kill:15,perLevel:100,maxLv:20,statStep:.04},
- squad:{maxLv:5,lvCost:15,hpStep:.05,bonusStep:.015,maxTier:3,tierCost:50,passiveCost:40,slotsAt:[2,5,8],baseBonus:.2},
+ squad:{maxLv:5,lvCost:15,hpStep:.05,bonusStep:.015,maxTier:3,tierCost:50,passiveCost:40,slotsAt:[2,4,5],baseBonus:.2},
  barracks:{costPerSoldier:2},
  // ---------- 裝備與素材（v0.8，數值是測試提案） ----------
  // 每人三格：武器（依職業）、防具（依職業群）、飾品（大家都能戴）
@@ -191,7 +191,7 @@ const DATA={
  innateTxt:{wangdeng:['未熄的歸途','隊友的生命第一次掉到三成以下時，月燈自動給生命 20% 的護盾（每 3 回合一次）。'],feie:['不肯斷裂的線','隊友受到致命傷時，緋厄用自己的生命替他擋下（隊友留兩成生命；每 3 回合一次），之後振奮 2 回合。']},
  cmdSkill:{"RETURN": "cm_return", "PAPER": "cm_fire", "MINE": "cm_drill"},
  // ---------- v1.1：渡鴉幣、好感、禮物 ----------
- version:'v1.6.0',
+ version:'v1.7.0',
  coins:{win:5,lose:1,first:15,name:'渡鴉幣'},costumePrice:100,
  aff:{tiers:[0,15,40,80,130],names:['普通','熟識','信賴','摯友','羈絆'],chat:8,gift:6,giftLike:15},
  giftDrop:{chance:.35,list:['soup','bread','fish','honey','wick','feather','iron']},
@@ -462,9 +462,9 @@ DATA.missions.MISSION_RESCUE.map[5]='..........R.';DATA.missions.MISSION_RESCUE.
 DATA.region.push({id:'rescue',scene:'lv_mine',name:'左輪還在響',x:.24,y:.29,mission:'MISSION_RESCUE',needs:['MISSION_BC_001'],desc:'南門有人在等一名沒有回來的推車人。先到街巷接下請託。',side:true});
 // 開局更早接敵；仍維持三勢力隨機與原本的勝利條件。
 DATA.missions.MISSION_BC_001.enemySlots=[[5,1],[8,2],[5,5],[7,4],[3,3],[9,2]];
-DATA.missions.MISSION_BC_001.events[0].say='霧裡的快隊已逼近中路。先點敵人看兵種與威脅；用長槍攔騎兵，盾衛守住通往城門的缺口。';
-DATA.missions.MISSION_BC_001.events.push({round:4,say:'守衛在門後喊：「城裡還有人！別追散，留住門前那條路！」污染格會先預告；提燈的燈界能穩住它。'});
-DATA.missions.MISSION_MINE.events.push({round:2,say:'軌道兩側都有敵人。用前排吸住追兵，遠程借高地支援；被標記的目標更容易集火擊破。'});
+
+
+
 DATA.missions.MISSION_POST.events.push({round:2,say:'站內傳來敲桌聲：兩短，一長。有人還守著那張沒有寄出的單子。驛站只要有敵人就無法累積守住回合，先清出空間再留人駐守。'});
 
 
@@ -493,6 +493,17 @@ DATA.genSkills.h1_bitter.desc='回復 2 格內一名隊友 25% 生命、15% 士�
 DATA.genSkills.h1_same.desc='2 格內所有隊友回復 10% 生命、10% 士兵；場上每有一個中毒敵人，再多回 6% 生命。';
 DATA.mythSkills.wd_echo.desc='回復 2 格內一名隊友 25% 生命、15% 士兵，解除兩個壞狀態；若實際解除燃燒、流血、中毒或延爆詛咒，再給生命 15% 護盾。';
 
+DATA.pixel.spear_blue={src:'inbox/px_spear_blue_20514.png',cols:6,rows:4,down:true,skillRows:['sp_thou']};
+DATA.spriteLooks={spear:{spear_blue:'藍皮長槍手'}};
+
+Object.assign(DATA.skillArtP,{
+ fy_pact:'inbox/grok_1793973192765.jpg',
+ fy_bind:'inbox/grok_1793973195271.jpg',
+ fy_judge:'inbox/grok_1793973198302.jpg',
+ wd_watch:'inbox/grok_1793973201273.jpg',
+ wd_echo:'inbox/grok_1793973203496.jpg',
+ wd_gate:'inbox/grok_1793973205813.jpg'
+});
 Object.assign(DATA.skills,DATA.genSkills,DATA.mythSkills||{});for(const [k,v] of Object.entries(DATA.skillArtP||{}))if(DATA.skills[k])DATA.skills[k].art=v;
 if(typeof module!=='undefined'&&module.exports)module.exports=DATA;else root.TACTICS_DATA=DATA;
 })(this);
