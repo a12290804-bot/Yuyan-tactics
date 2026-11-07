@@ -271,6 +271,10 @@ table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px
 
 .exit-cell{outline:1px solid #f1c477;outline-offset:-2px}.exit-mark{position:absolute;top:0;left:2px;font-size:9px;color:#ffe5a7;text-shadow:0 1px 2px #000;z-index:3}
 .escort-brief,.landing-note{margin-top:5px;padding:4px 6px;border-left:2px solid #d6ae6c;background:#282014;font-size:12px}
+
+.market-banner{background-size:cover;background-position:center;padding:16px;margin:-8px -8px 8px;border-radius:8px}
+.market-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.market-row>div{flex:1;min-width:110px}
+.market-icon{width:52px;height:52px;object-fit:cover;object-position:center;border-radius:6px;border:1px solid #554632;flex:none}
 </style>
 </head>
 <body>
@@ -299,7 +303,7 @@ table{border-collapse:collapse;width:100%;font-size:13px}td,th{border-bottom:1px
 'use strict';
 const D=window.TACTICS_DATA,C=window.TACTICS,SAVE_KEY='yyt_save_v3';
 // 網頁和資料版本不一致（網站還在換新檔）→ 自動重新抓一次
-const PAGE_VER='v1.7.0';(function(){try{if(D.version!==PAGE_VER){const k='yyt_vfix_'+D.version+'_'+PAGE_VER;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');const u=new URL(location.href);u.searchParams.set('r',Date.now());location.replace(u.href);}}}catch(e){}})();let mid='MISSION_BC_001';const MM=()=>D.missions[(st&&st.missionId)||mid];
+const PAGE_VER='v1.8.0';(function(){try{if(D.version!==PAGE_VER){const k='yyt_vfix_'+D.version+'_'+PAGE_VER;if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,'1');const u=new URL(location.href);u.searchParams.set('r',Date.now());location.replace(u.href);}}}catch(e){}})();let mid='MISSION_BC_001';const MM=()=>D.missions[(st&&st.missionId)||mid];
 const ART=p=>{if(!p)return '';if(D.artMap&&D.artMap[p])return D.artMap[p];const q=p;return /^(?:https?:|data:|blob:|\.\.?\/|\/|inbox\/|assets\/)/.test(q)?q:D.artRoot+q;};const SICO=S=>S&&S.ic?`<i class="sico" style="background-image:url(${S.ic[0]});background-position:${(S.ic[1]%3)*50}% ${Math.floor(S.ic[1]/3)*50}%"></i>`:ICO(S&&S.icon);
 const ICO=n=>n?`<img class="ico" src="${ART((n.startsWith('st_')?'status/':'icons/')+n+'.webp')}" alt="">`:'';
 (function(){let css='';for(const [k,t] of Object.entries(D.terrain))if(t.art)css+=`.c.${k}{background-image:url(${ART(t.art)})}`;const e=document.createElement('style');e.id='tcss';e.textContent=css;document.head.appendChild(e);})();
@@ -333,7 +337,7 @@ function prologue(after){let i=0;const P=D.prologue;const t=$('title');t.classLi
  prologue.next=()=>{i++;SFX.play('click');show();};prologue.skip=()=>{i=P.length;show();};BGM.play('title');show();}
 // ---------- 背景音樂（沿用渡鴉公會網站上的曲子） ----------
 const BGM=(()=>{let el=null,cur=null,on=true;try{on=localStorage.getItem('yyt_bgm')!=='0';}catch(e){}
- function play(k){const name=D.bgm[k]||k;if(!on){cur=name;return;}if(cur===name&&el&&!el.paused)return;cur=name;const src=D.bgmRoot+name+'.mp3';const old=el;el=new Audio(src);el.loop=true;el.volume=0;el.play().then(()=>{let v=0;const iv=setInterval(()=>{v=Math.min(.45,v+.05);el&&(el.volume=v);if(v>=.45)clearInterval(iv);},80);}).catch(()=>{});
+ function play(k){const name=D.bgm[k]||k;if(!on){cur=name;return;}if(cur===name&&el&&!el.paused)return;cur=name;const src=D.localBgm?.[name]||D.bgmRoot+name+'.mp3';const old=el;const track=el=new Audio(src);track.loop=true;track.volume=0;track.play().then(()=>{let v=0;const iv=setInterval(()=>{if(el!==track){clearInterval(iv);return;}v=Math.min(.45,v+.05);track.volume=v;if(v>=.45)clearInterval(iv);},80);}).catch(()=>{});
   if(old){let v=old.volume;const iv=setInterval(()=>{v=Math.max(0,v-.06);old.volume=v;if(v<=0){old.pause();clearInterval(iv);}},80);}}
  function set(v){on=!!v;try{localStorage.setItem('yyt_bgm',on?'1':'0')}catch(e){}if(!on&&el){el.pause();}else if(on&&cur){const c=cur;cur=null;play(c);}}
  return {play,set,isOn:()=>on};})();
@@ -343,9 +347,9 @@ function showHub(){$('tut').classList.add('hide');BGM.play('base');document.body
 function hideHub(){document.body.classList.remove('inhub');$('hub').classList.add('hide');}
 function resBar(){return `<div class="res"><span class="chip">招集券 <b>${camp.tickets}</b></span><span class="chip">補給 <b>${camp.supply}</b></span><span class="chip">白鐵 <b>${camp.mats.ore}</b></span><span class="chip">渡鴉幣 <b>${camp.coins}</b></span><span class="chip">成員 <b>${Object.keys(camp.roster).length}</b>／${D.heroes.length}</span><span class="chip">戰績 ${camp.wins} 勝／${camp.battles} 戰</span></div>`;}
 function drawHub(){const H=$('hub');H.style.backgroundImage=`linear-gradient(#000a,#000c),url(${ART('backgrounds/base_bg.webp')})`;$('sub').textContent='白鐵礦城・南門據點';$('rd').textContent='據點';$('ph').textContent='整備中';$('cr').textContent='—';$('gl').textContent='';$('gh').textContent='';$('gb').parentElement.style.display='none';$('bar').innerHTML=`<button onclick="titleScreen(${LS.get(SAVE_KEY)&&!st.result?'true':'false'})">標題</button><button onclick="noticeShow()">公告${noticeSeen()?'':' ●'}</button><button onclick="missionJournal()">任務日誌</button><button onclick="saveMenu()">存檔</button><button onclick="hubMore()">設定</button>`;
- const F=[['fac_council','議事桌','選隊伍、出戰',"council()"],['fac_recruit','招集所','用招集券招人',"recruit()"],['fac_barracks','兵營','用補給補士兵',"barracks()"],['fac_roster','名冊','成員、聊天、裝備',"rosterList()"],['fac_storage','倉庫','裝備、素材、強化',"storage()"],['fac_wardrobe','衣櫃','時裝',"wardrobe()"],['fac_quest','委託板','城裡人的委託',"questBoard(true)"],['fac_workshop','南門街巷','居民、傳聞與救援',"citySquare()"],['fac_lighthouse','燈塔','即將開放','']];
+ const F=[['fac_council','議事桌','選隊伍、出戰',"council()"],['fac_recruit','招集所','用招集券招人',"recruit()"],['fac_barracks','兵營','用補給補士兵',"barracks()"],['fac_roster','名冊','成員、聊天、裝備',"rosterList()"],['fac_storage','倉庫','裝備、素材、強化',"storage()"],['fac_recruit','南門商鋪','書架、行囊、製作',"market()"],['fac_wardrobe','衣櫃','時裝',"wardrobe()"],['fac_quest','委託板','城裡人的委託',"questBoard(true)"],['fac_workshop','南門街巷','居民、傳聞與救援',"citySquare()"],['fac_lighthouse','燈塔','即將開放','']];
  const live=!!LS.get(SAVE_KEY)&&!st.result;
- H.innerHTML=resBar()+missionSummary()+(live?`<p><button class="pri" onclick="hideHub();render()">回到進行中的戰鬥（第 ${st.round} 回合）</button></p>`:'')+`<div class="facs">${F.map(([img,n,d,fn])=>`<div class="fac ${fn?'':'lock'}" style="background-image:url(${ART('backgrounds/'+img+'.webp')})" ${fn?`onclick="SFX.play('click');${fn}"`:''}><b>${n}<small>${d}</small></b></div>`).join('')}</div>`;}
+ H.innerHTML=resBar()+missionSummary()+(camp.mapEvent?'<p><button class="pri" onclick="mapEventMenu()">城外歸途 · 有新事件</button></p>':'')+(live?`<p><button class="pri" onclick="hideHub();render()">回到進行中的戰鬥（第 ${st.round} 回合）</button></p>`:'')+`<div class="facs">${F.map(([img,n,d,fn])=>`<div class="fac ${fn?'':'lock'}" style="background-image:url(${ART('backgrounds/'+img+'.webp')})" ${fn?`onclick="SFX.play('click');${fn}"`:''}><b>${n}<small>${d}</small></b></div>`).join('')}</div>`;}
 function toggleSfx(){SFX.setOn(!SFX.isOn());if($('hub').classList.contains('hide'))menu();else drawHub();}
 function heroCardImg(h){const r=camp&&camp.roster[h.id];if(r&&r.cos){const c=COS.find(x=>x.id===r.cos);if(c)return cosImg(c);}return CAMP.art(h);}
 // ---------- 時裝（讀渡鴉公會的時裝目錄與存檔，只讀不改） ----------
@@ -375,11 +379,12 @@ function missionJournal(inBattle=false){
  const f=camp.flags;
  const side=f.rescueReward?'已完成':f.rescueSafe?'回南門街巷回報':f.rescueAccepted?'護送阿渠至南側撤離點':camp.cleared.MISSION_BC_001?'南門街巷有人相求':'守住南門後開放';
  const live=inBattle&&!st.result?'<p><b>當前戰場</b> '+esc(MM().name)+'<br>'+esc(MM().win)+'</p>':'';
- modal(`<h2>任務日誌</h2><p>身分：渡鴉公會外圍成員${camp.pcName?' · '+esc(camp.pcName):''}</p>${live}
+ modal(`<h2>任務日誌</h2><p>身分：渡鴉公會外圍成員${camp.pcName?' · '+esc(camp.pcName):''}</p>${live}${!inBattle&&camp.mapEvent?'<p><button onclick="mapEventMenu()">查看歸途事件</button></p>':''}
  <h3>第一章主線</h3><p class="say">到白鐵礦城南門，把燈重新點起來。</p>
  <ol class="mission-list">${main.map(r=>{const done=camp.cleared[r.mission];return `<li><b>${esc(r.name)}</b> · ${done?'已完成':regionOpen(r)?'可出戰':'未開放'}</li>`;}).join('')}</ol>
  ${next?`<p><b>下一站 · ${esc(next.name)}</b><br>${esc(D.missions[next.mission].intro)}</p>${!inBattle?`<button class="pri" onclick="openMission('${next.mission}')">前往議事桌</button>`:''}`:''}
  <h3>支線 · 左輪還在響</h3><p>${side}</p>${!inBattle&&camp.cleared.MISSION_BC_001?'<button onclick="citySquare()">前往南門街巷</button>':''}
+ ${f.roadFavor?`<h3>支線 · 等在門邊的人</h3><p>${f.roadFavor==='done'?'已把布包交給阿綴。':'帶一份急救布包給阿綴。'}</p>${!inBattle&&f.roadFavor==='waiting'?'<button onclick="roadFavor()">去醫所</button>':''}`:''}
  <h3>委託板</h3><p>獨立委託，依各張委託指定的地點與條件完成。</p>
  ${!inBattle?'<button onclick="questBoard(true)">查看委託</button> ':''}<button onclick="closeModal()">關閉</button>`);
 }
@@ -423,9 +428,9 @@ function council(m){
  mid=m||next?.mission||mid;
  pickT=camp.team.slice();pickSlot=null;drawCouncil();
 }
-function drawCouncil(){BGM.play('map');const ids=Object.keys(camp.roster).sort((a,b)=>CAMP.heroOf(D,b).r-CAMP.heroOf(D,a).r||a.localeCompare(b));
+function drawCouncil(){BGM.play('map');const ids=Object.keys(camp.roster).sort((a,b)=>{const x=pickT.indexOf(a),y=pickT.indexOf(b);return x>=0||y>=0?x<0?1:y<0?-1:x-y:CAMP.heroOf(D,b).r-CAMP.heroOf(D,a).r||a.localeCompare(b);});
  CAMP.questFill(D,camp);saveCamp();modal(`<h2>議事桌 <button class="small" style="float:right" onclick="questBoard(false)">委託板（${(camp.quests||[]).length}）</button></h2><div class="mapw" style="background-image:url(${ART('backgrounds/mp_region.webp')})"><div class="pin" style="left:48%;top:50%;border-color:#6f9fd8;color:#cfe0ff">白鐵礦城</div>${D.region.map(R=>{const op=regionOpen(R),sel2=R.mission&&R.mission===mid,done=R.mission&&camp.cleared&&camp.cleared[R.mission];return `<div class="pin ${op?'open':''}" style="left:${R.x*100}%;top:${R.y*100}%;${sel2?'outline:2px solid #fff;':''}" onclick="event.stopPropagation();pickRegion('${R.id}')">${op?(done?'✓ ':'⚔ '):'🔒 '}${esc(R.name)}</div>`;}).join('')}</div>
- <div class="q" style="border:1px solid var(--gold);border-radius:8px;padding:8px;margin:6px 0">${(()=>{const R=D.region.find(r=>r.mission===mid);return R&&R.scene?`<div class="scene" style="background-image:url(${ART(sceneArt(R))})"></div>`:'';})()}<b>${missionLabel(D.region.find(r=>r.mission===mid))} · ${esc(D.missions[mid].name)}</b><br><span class="say">${esc(D.missions[mid].intro)}</span>${(camp.quests||[]).filter(q=>q.mission===mid).map(q=>`<br><span class="good">委託：${esc(CAMP.questText(D,q))}</span>`).join('')}<br><span class="note">勝利：${esc(D.missions[mid].win)}<br>失敗：${esc(D.missions[mid].lose)}<br>敵方勢力出發時才知道・威脅等級 ${threatLv()+(D.missions[mid].threat||0)+1}${camp.cleared&&camp.cleared[mid]?'・已經打過（可以再打來練功）':''}</span></div><p class="note">選 ${TS} 人。出發前可以換站位或到兵營補員。</p>${deploymentHtml()}`+
+ <div class="q" style="border:1px solid var(--gold);border-radius:8px;padding:8px;margin:6px 0">${(()=>{const R=D.region.find(r=>r.mission===mid);return R&&R.scene?`<div class="scene" style="background-image:url(${ART(sceneArt(R))})"></div>`:'';})()}<b>${missionLabel(D.region.find(r=>r.mission===mid))} · ${esc(D.missions[mid].name)}</b><br><span class="say">${esc(D.missions[mid].intro)}</span>${(camp.quests||[]).filter(q=>q.mission===mid).map(q=>`<br><span class="good">委託：${esc(CAMP.questText(D,q))}</span>`).join('')}<br><span class="note">勝利：${esc(D.missions[mid].win)}<br>失敗：${esc(D.missions[mid].lose)}<br>敵方勢力出發時才知道・威脅等級 ${threatLv()+(D.missions[mid].threat||0)+1}${camp.cleared&&camp.cleared[mid]?'・已經打過（可以再打來練功）':''}</span></div><p class="note">選 ${TS} 人。出發前可以換站位或到兵營補員。</p>${deploymentHtml()}${camp.mapEvent?'<p><button onclick="mapEventMenu()">查看地圖上的歸途事件</button></p>':''}<p><button onclick="packMenu('council')">整理行囊（${camp.pack?.length||0}/${D.packMax}）</button></p>`+
  ids.map(id=>{const h=CAMP.heroOf(D,id),r=camp.roster[id],u=D.units[h.unit],sks=CAMP.skillsOf(D,id,camp),i=pickT.indexOf(id);const N=CAMP.soldiersOf(D,id,camp),n=Math.round(r.sol*N);
   return `<div class="ros ${i>=0?'on':''}" onclick="togglePickT('${id}')"><span class="no" data-pick-index="${id}" style="min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:${i>=0?'var(--gold)':'#3e6aa0'};color:${i>=0?'#000':'#fff'};font-weight:700">${i>=0?i+1:''}</span><img src="${heroCardImg(h)}" alt=""><div><b class="rar${h.r}">${esc(h.name)}</b> <span class="note">Lv${r.lv}・${D.rarityName[h.r]}${starBadge(r.star)}・${esc(h.title)}・${ICO(D.troopIcon[u.troop])}${D.troopName[u.troop]}</span><br><span class="note">士兵 ${n}/${N}${n<N?' <span class="bad">（缺 '+(N-n)+'）</span>':''}・兵團 Lv${r.sq.lv}・能力 ×${CAMP.mult(D,id,camp).toFixed(2)}・${sks.map(k=>SICO(D.skills[k])+esc(D.skills[k].name)).join('、')}${r.sq.pas.length?'・'+r.sq.pas.map(k=>D.passives[k].name).join('、'):''}</span></div></div>`;}).join('')+
  `<p><button class="pri" ${pickT.length===Math.min(TS,Object.keys(camp.roster).length)?'':'disabled'} onclick="depart()">出發（${pickT.length}/${TS}）</button> <button onclick="closeModal()">返回</button></p>`);}
@@ -556,25 +561,26 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 function sceneArt(R){return R.scene.startsWith('lv_')?'scenes/'+R.scene+'.webp':'battle/'+R.scene+'.webp';}
 function eqIco(e,cls){const B=D.equip[e.b];return `<img class="eqi r${e.r} ${cls||''}" src="${ART('equip/'+B.icon+'.webp')}" alt="">`;}
 function matIco(k){const ic=(D.mats[k]&&D.mats[k].icon)||D.matIcon[k];return `<img class="eqi" src="${ART('items/'+ic+'.webp')}" alt="">`;}
-function stTxt(o){return Object.entries(o).map(([k,v])=>D.statName[k]+(v>=0?' +':' ')+v+(k==='crit'||k==='hit'||k==='eva'?'%':'')).join('・');}
+function stTxt(o){return Object.entries(o).map(([k,v])=>D.statName[k]+(v>=0?' +':' ')+v+(k==='crit'||k==='hit'||k==='eva'||k==='heal'?'%':'')).join('・');}
 function starBadge(star){return ` <span class="star-badge" aria-label="${star} 星">★ ${star} / ${D.maxStar}</span>`;}
 let rosterSort='team';
-function rosterList(){const ids=Object.keys(camp.roster);const T=id=>camp.team.indexOf(id);ids.sort(rosterSort==='lv'?(a,b)=>camp.roster[b].lv-camp.roster[a].lv:rosterSort==='r'?(a,b)=>CAMP.heroOf(D,b).r-CAMP.heroOf(D,a).r:(a,b)=>(T(a)<0?99:T(a))-(T(b)<0?99:T(b))||CAMP.heroOf(D,b).r-CAMP.heroOf(D,a).r);
+function rosterList(){const ids=Object.keys(camp.roster);const T=id=>camp.team.indexOf(id);ids.sort((a,b)=>{const x=T(a),y=T(b);if(x>=0||y>=0)return x<0?1:y<0?-1:x-y;return compare(a,b);});
+ function compare(a,b){return rosterSort==='lv'?camp.roster[b].lv-camp.roster[a].lv:CAMP.heroOf(D,b).r-CAMP.heroOf(D,a).r;}
  modal(`<h2>名冊</h2><p class="note">查看角色的能力、技能和裝備。兵團在兵營整備。戰記本：<b>${camp.mats.record}</b></p><div class="tabs">${[['team','出戰優先'],['lv','等級'],['r','稀有度']].map(([k,n])=>`<button class="small ${rosterSort===k?'on':''}" onclick="rosterSort='${k}';rosterList()">${n}</button>`).join('')}</div>`+
- ids.map(id=>{const h=CAMP.heroOf(D,id),r=camp.roster[id],u=D.units[h.unit];const ne=['w','a','t'].filter(s=>r.eq&&r.eq[s]!=null).length;return `<div class="ros" onclick="heroPage('${id}','roster')" style="cursor:pointer"><img src="${heroCardImg(h)}" alt=""><div style="flex:1"><b class="rar${h.r}">${esc(h.name)}</b> <span class="note">Lv${r.lv}・${D.rarityName[h.r]}${starBadge(r.star)}・${esc(h.title)}・${ICO(D.troopIcon[u.troop])}${D.troopName[u.troop]}${camp.team.includes(id)?'・<span class="good">出戰中</span>':''}</span><br><span class="note">裝備 ${ne}/3</span></div></div>`;}).join('')+`<p><button onclick="closeModal();drawHub()">返回</button></p>`);}
+ ids.map(id=>{const h=CAMP.heroOf(D,id),r=camp.roster[id],u=D.units[h.unit];const ne=Object.keys(D.eqSlots).filter(s=>r.eq&&r.eq[s]!=null).length;return `<div class="ros" onclick="heroPage('${id}','roster')" style="cursor:pointer"><img src="${heroCardImg(h)}" alt=""><div style="flex:1"><b class="rar${h.r}">${esc(h.name)}</b> <span class="note">Lv${r.lv}・${D.rarityName[h.r]}${starBadge(r.star)}・${esc(h.title)}・${ICO(D.troopIcon[u.troop])}${D.troopName[u.troop]}${camp.team.includes(id)?'・<span class="good">出戰中</span>':''}</span><br><span class="note">裝備 ${ne}/${Object.keys(D.eqSlots).length}</span></div></div>`;}).join('')+`<p><button onclick="closeModal();drawHub()">返回</button></p>`);}
 function heroPage(id,back){const h=CAMP.heroOf(D,id),r=camp.roster[id],u=D.units[h.unit],{b,e}=heroStats(id),need=D.xp.perLevel*r.lv;const sks=CAMP.skillsOf(D,id,camp);const sk2=D.secondSkill[h.unit];
- const row=(k)=>`<span>${k==='hit'?'命中加成':D.statName[k]}</span><span>${b[k]+Math.round(e[k]||0)}${k==='hit'||k==='eva'||k==='crit'?'%':''}${e[k]?` <span class="p">（裝備 ${e[k]>0?'+':''}${Math.round(e[k])}）</span>`:''}</span>`;
- const keys=['hp','atk','def',u.dmg==='MAGICAL'||u.mag>u.atk?'mag':null,'res','hit','eva','crit'].filter(Boolean);
+ const row=(k)=>k==='heal'?`<span>治療加成</span><span>+${e.heal}%</span>`:`<span>${k==='hit'?'命中加成':D.statName[k]}</span><span>${b[k]+Math.round(e[k]||0)}${k==='hit'||k==='eva'||k==='crit'?'%':''}${e[k]?` <span class="p">（裝備 ${e[k]>0?'+':''}${Math.round(e[k])}）</span>`:''}</span>`;
+ const keys=['hp','atk','def',u.dmg==='MAGICAL'||u.mag>u.atk?'mag':null,'res','hit','eva','crit',e.heal?'heal':null].filter(Boolean);
  const slot=sl=>{const uid=r.eq&&r.eq[sl];const it=uid!=null&&camp.inv.find(x=>x.u===uid);return `<div class="sl ${it?'on':''}" onclick="eqPick('${id}','${sl}','${back||''}')">${it?eqIco(it)+`<b class="rar${it.r}">${esc(CAMP.eqName(D,it))}</b><br><span class="note">${stTxt(CAMP.eqStats(D,it))}</span>`:`<div style="height:54px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--dim)">＋</div><span class="note">${D.eqSlots[sl]}（空）</span>`}</div>`;};
  modal(`<div class="hp2"><div style="flex:none"><img class="por" src="${heroCardImg(h)}" alt="">${spritePreview(id)}</div><div style="flex:1;min-width:0"><h2 style="margin:0"><span class="rar${h.r}">${esc(h.name)}</span></h2><div class="note">${esc(h.title)}・${D.rarityName[h.r]}${starBadge(r.star)}・${ICO(D.troopIcon[u.troop])}${D.troopName[u.troop]}</div>
   <div style="margin-top:4px">Lv <b>${r.lv}</b>／${D.xp.maxLv} <span class="note">經驗 ${r.xp}/${need}</span></div><div class="xpb"><i style="width:${r.lv>=D.xp.maxLv?100:Math.round(100*r.xp/need)}%"></i></div>
   <div class="stt">${keys.map(row).join('')}</div></div></div>
-  ${spritePicker(id,back)}
+  ${heroBookBadge(r)}${spritePicker(id,back)}
   ${affHtml(id,back)}
-  <h3 style="margin:10px 0 2px">裝備</h3><div class="eqs">${['w','a','t'].map(slot).join('')}</div>
-  ${h.bio?`<p class="note" style="margin:8px 0 0">${esc(h.bio)}</p>`:''}${traitHtml(id)}<h3 style="margin:10px 0 2px">技能</h3>${CAMP.allSkillsOf(D,id).concat((r.learned||[]).map(k=>[k,D.bookRules.minLv,'研習技'])).map(([k,lv,tag])=>{const S=D.skills[k],has=sks.includes(k);return `<p style="margin:4px 0;${has?'':'opacity:.5'}">${SICO(S)}<b class="${tag.startsWith('專屬')?'rar2':''}">${esc(S.name)}</b> <span class="note">${tag}・冷卻 ${S.cd}${has?'':'・Lv'+lv+' 學會'}<br>${esc(S.desc||'')}<br>${practiceInfo(r,k)}</span></p>`;}).join('')}<p><button onclick="skillStudy('${id}','${back||'roster'}')">研習職業技能書</button></p>
+  <h3 style="margin:10px 0 2px">裝備</h3><div class="eqs">${Object.keys(D.eqSlots).map(slot).join('')}</div>
+  ${h.bio?`<p class="note" style="margin:8px 0 0">${esc(h.bio)}</p>`:''}${traitHtml(id)}<h3 style="margin:10px 0 2px">技能</h3>${CAMP.allSkillsOf(D,id).concat((r.learned||[]).map(k=>[k,CAMP.bookOf(D,k)?.minLv||D.bookRules.minLv,CAMP.activeBook(r)===k?'研習技・已選':'研習技・未選'])).map(([k,lv,tag])=>{const S=D.skills[k],has=sks.includes(k);return `<p style="margin:4px 0;${has?'':'opacity:.5'}">${SICO(S)}<b class="${tag.startsWith('專屬')?'rar2':''}">${esc(S.name)}</b> <span class="note">${tag}・冷卻 ${S.cd}${has?'':'・Lv'+lv+' 學會'}<br>${esc(S.desc||'')}<br>${practiceInfo(r,k)}</span></p>`;}).join('')}<p><button onclick="skillStudy('${id}','${back||'roster'}')">研習職業技能書</button></p>
   ${talHtml(id,back)}${cosHtml(id,back)}
-  <h3 style="margin:10px 0 2px">士兵團</h3><p class="note">士兵 ${Math.round(r.sol*CAMP.soldiersOf(D,id,camp))}/${CAMP.soldiersOf(D,id,camp)}・兵團 Lv${r.sq.lv}・位階 ${r.sq.tier}／${D.squad.maxTier} ${'◆'.repeat(r.sq.tier)}${'◇'.repeat(D.squad.maxTier-r.sq.tier)}・被動：${r.sq.pas.map(k=>D.passives[k].name).join('、')||'—'}</p>
+  <h3 style="margin:10px 0 2px">士兵團</h3><p class="note">士兵 ${Math.round(r.sol*CAMP.soldiersOf(D,id,camp))}/${CAMP.soldiersOf(D,id,camp)}・兵團 Lv${r.sq.lv}・位階 ${r.sq.tier}／${D.squad.maxTier}${r.sq.promoted?' · 已晉升':''} ${'◆'.repeat(r.sq.tier)}${'◇'.repeat(D.squad.maxTier-r.sq.tier)}・被動：${r.sq.pas.map(k=>D.passives[k].name).join('、')||'—'}</p>
   <p>${r.lv<D.xp.maxLv?`<button ${camp.mats.record>0?'':'disabled'} onclick="doRecord('${id}','${back||''}')">讀戰記本（經驗 +${D.recordXp}，剩 ${camp.mats.record}）</button> `:''}<button onclick="${back==='barracks'?'barracks()':back==='storage'?'storage()':back==='wardrobe'?'wardrobe()':'rosterList()'}">返回</button></p>`);}
 function spr(ic){const [f,i]=ic;return `background-image:url(${f});background-position:${(i%3)*50}% ${Math.floor(i/3)*50}%`;}
 function talPaths(id){const h=CAMP.heroOf(D,id);const L=Object.entries(D.talents).map(([p,P])=>[p,h.unit==='P_HEALER'&&p==='atk'?{...P,desc:'補得更多（攻擊改成治療量）',nodes:P.nodes.map(n=>n.fx&&n.fx.atkP?{...n,desc:'治療量 +'+Math.round(n.fx.atkP*250)+'%'}:n)}:P]);const me=(D.ptal||{})[id];if(me){const pk=(D.personal||{})[id]||[];const ic=D.skills[pk[0]]&&D.skills[pk[0]].ic;L.push(['me',{name:'個人',desc:'只有 '+h.name+' 有',nodes:me.map(n=>({...n,ic:n.ic||ic}))}]);}return L;}
@@ -593,19 +599,19 @@ function wardrobe(){const own=rgOwned();const L=COS.slice().sort((a,b)=>(own.has
 function doRecord(id,back){const r=CAMP.useRecord(D,camp,id,1);if(!r.ok){toastInfo(r.error);return;}saveCamp();SFX.play(r.up?'r1':'mark');if(r.up)toastInfo(esc(CAMP.heroOf(D,id).name)+' 升到 Lv'+r.lv);heroPage(id,back);}
 function eqPick(id,sl,back){const h=CAMP.heroOf(D,id),r=camp.roster[id];const cur=r.eq[sl];const list=camp.inv.filter(e=>CAMP.fits(D,id,e,sl)).sort((a,b)=>b.r-a.r||b.p-a.p||a.b.localeCompare(b.b));
  modal(`<h2>${esc(h.name)}・${D.eqSlots[sl]}</h2><p class="note">${sl==='w'?'武器要對應職業。':sl==='a'?'防具分輕甲、重甲、法袍，看職業能穿哪種。':'飾品大家都能戴。'}已經有人穿的，換過來會自動從那人身上卸下。</p>`+
- (list.length?list.map(e=>{const o=CAMP.ownerOf(camp,e.u);const me=e.u===cur;return `<div class="ros">${eqIco(e)}<div style="flex:1"><b class="rar${e.r}">${esc(CAMP.eqName(D,e))}</b> <span class="note">${D.eqRarity.name[e.r]}${o?'・'+(me?'<span class="good">穿著中</span>':esc(CAMP.heroOf(D,o.id).name)+' 穿著'):''}</span><br><span class="note">${stTxt(CAMP.eqStats(D,e))}</span></div>${me?`<button class="small" onclick="doUnequip('${id}','${sl}','${back}')">卸下</button>`:`<button class="small pri" onclick="doEquip('${id}',${e.u},'${back}')">裝備</button>`}</div>`;}).join(''):'<p class="note">倉庫裡沒有這一格能用的裝備。打仗會掉落。</p>')+
+ (list.length?list.map(e=>{const o=CAMP.ownerOf(camp,e.u);const me=e.u===cur;return `<div class="ros">${eqIco(e)}<div style="flex:1"><b class="rar${e.r}">${esc(CAMP.eqName(D,e))}</b> <span class="note">${D.eqRarity.name[e.r]}${o?'・'+(me?'<span class="good">穿著中</span>':esc(CAMP.heroOf(D,o.id).name)+' 穿著'):''}</span><br><span class="note">${stTxt(CAMP.eqStats(D,e))}</span></div>${me?`<button class="small" onclick="doUnequip('${id}','${sl}','${back}')">卸下</button>`:`<button class="small pri" onclick="doEquip('${id}',${e.u},'${back}','${sl}')">裝備</button>`}</div>`;}).join(''):'<p class="note">倉庫裡沒有這一格能用的裝備。打仗會掉落。</p>')+
  `<p><button onclick="heroPage('${id}','${back}')">返回</button></p>`);}
-function doEquip(id,u,back){const r=CAMP.equip(D,camp,id,u);if(!r.ok){toastInfo(r.error);return;}saveCamp();SFX.play('guard');if(r.from)toastInfo('從 '+esc(CAMP.heroOf(D,r.from).name)+' 身上換過來了');heroPage(id,back);}
-function doUnequip(id,sl,back){CAMP.unequip(D,camp,id,sl);saveCamp();SFX.play('click');heroPage(id,back);}
+function doEquip(id,u,back,slot){const r=CAMP.equip(D,camp,id,u);if(!r.ok){toastInfo(r.error);return;}saveCamp();SFX.play('guard');if(r.from)toastInfo('從 '+esc(CAMP.heroOf(D,r.from).name)+' 身上換過來了');keepPage(()=>eqPick(id,slot||D.equip[camp.inv.find(e=>e.u===u).b].slot,back));}
+function doUnequip(id,sl,back){CAMP.unequip(D,camp,id,sl);saveCamp();SFX.play('click');keepPage(()=>eqPick(id,sl,back));}
 // ---------- 倉庫 ----------
 let stTab='eq',stSlot='all';
 function storage(){const tabs=`<div class="tabs"><button class="small ${stTab==='eq'?'on':''}" onclick="stTab='eq';storage()">裝備（${camp.inv.length}/${D.invMax}）</button><button class="small ${stTab==='mat'?'on':''}" onclick="stTab='mat';storage()">素材</button><button class="small" onclick="stTab='books';storage()">技能書</button></div>`;
  let body='';if(stTab==='books'){skillBookShelf();return;}if(stTab==='mat'){const all=[['tickets',camp.tickets,'招集券','去招集所招人。'],['supply',camp.supply,'補給','補士兵、升級兵團、強化裝備都要用。'],...Object.entries(D.mats).map(([k,M])=>[k,camp.mats[k],M.name,M.desc])];
   body=`<div class="mats"><div><img class="eqi" src="${ART('equip/eq_t_badge.webp')}" alt=""><span><b>渡鴉幣</b> ×${camp.coins}<br><span class="note">在衣櫃換時裝。</span></span></div>${all.map(([k,n,nm,ds])=>`<div>${matIco(k)}<span><b>${esc(nm)}</b> ×${n}<br><span class="note">${esc(ds)}</span></span></div>`).join('')}${Object.keys(TALK.gifts).filter(g=>camp.gifts[g]>0).map(g=>`<div>${giftIco(g)}<span><b>${esc(TALK.gifts[g].name)}</b> ×${camp.gifts[g]}<br><span class="note">禮物。到名冊送給成員。</span></span></div>`).join('')}</div>`;}
  else{const list=camp.inv.filter(e=>stSlot==='all'||D.equip[e.b].slot===stSlot).sort((a,b)=>b.r-a.r||b.p-a.p||a.b.localeCompare(b.b));
-  body=`<div class="tabs">${[['all','全部'],['w','武器'],['a','防具'],['t','飾品']].map(([k,n])=>`<button class="small ${stSlot===k?'on':''}" onclick="stSlot='${k}';storage()">${n}</button>`).join('')}</div><p class="note">白鐵礦石 <b>${camp.mats.ore}</b>・補給 <b>${camp.supply}</b>・強化最多 +${D.eqPlusMax}，每級能力 +${Math.round(D.eqPlusStep*100)}%。不要的可以拆成白鐵礦石。</p>`+
+  body=`<div class="tabs">${[['all','全部'],...Object.entries(D.eqSlots)].map(([k,n])=>`<button class="small ${stSlot===k?'on':''}" onclick="stSlot='${k}';storage()">${n}</button>`).join('')}</div><p class="note">白鐵礦石 <b>${camp.mats.ore}</b>・補給 <b>${camp.supply}</b>・強化最多 +${D.eqPlusMax}，每級能力 +${Math.round(D.eqPlusStep*100)}%。不要的可以拆成白鐵礦石。</p>`+
   (list.length?list.map(e=>{const B=D.equip[e.b],o=CAMP.ownerOf(camp,e.u),k=CAMP.enhanceCost(D,e);const who=B.units?B.units.map(x=>D.units[x].cls.replace(/（.*）/,'')).join('、'):'所有人';
-   return `<div class="ros" style="flex-wrap:wrap">${eqIco(e)}<div style="flex:1;min-width:150px"><b class="rar${e.r}">${esc(CAMP.eqName(D,e))}</b> <span class="note">${D.eqRarity.name[e.r]}${D.eqSlots[B.slot]}${o?'・<span class="good">'+esc(CAMP.heroOf(D,o.id).name)+' 穿著</span>':''}</span><br><span class="note">${stTxt(CAMP.eqStats(D,e))}<br>可用：${esc(who)}</span></div>
+   return `<div class="ros" style="flex-wrap:wrap">${eqIco(e)}<div style="flex:1;min-width:150px"><b class="rar${e.r}">${esc(CAMP.eqName(D,e))}</b> <span class="note">${D.eqRarity.name[e.r]}${D.eqSlots[B.slot]}${o?'・<span class="good">'+esc(CAMP.heroOf(D,o.id).name)+' 穿著</span>':''}</span><br><span class="note">${stTxt(CAMP.eqStats(D,e))}<br>可用：${esc(who)}${e.p<D.eqPlusMax?'<br>'+esc(eqBattlePreview(e)):''}</span></div>
    <div style="display:flex;gap:4px;width:100%;margin-top:4px">${e.p<D.eqPlusMax?`<button class="small" ${camp.mats.ore>=k.ore&&camp.supply>=k.supply?'':'disabled'} onclick="doEnh(${e.u})">強化 +${e.p+1}（白鐵 ${k.ore}・補給 ${k.supply}）</button>`:'<span class="note">已滿 +'+D.eqPlusMax+'</span>'}<button class="small" ${o?'disabled':''} onclick="doDis(${e.u})">拆解（白鐵 +${CAMP.dismantleGain(D,e)}）</button></div></div>`;}).join(''):'<p class="note">還沒有裝備。出戰勝利有機會掉落，第一次打下一個地點一定會給一件精良以上的。</p>');}
  modal(`<div style="margin:-14px -16px 0;padding:14px 16px;background:linear-gradient(#000b,#000e),url(${ART('backgrounds/fac_storage.webp')}) center/cover;border-radius:12px 12px 0 0"><h2>倉庫</h2>${tabs}</div>${body}<p><button onclick="rosterList()">去名冊換裝備</button> <button onclick="closeModal();drawHub()">返回</button></p>`);}
 function doEnh(u){
@@ -613,7 +619,7 @@ function doEnh(u){
  const before=item&&CAMP.eqStats(D,item);
  const r=CAMP.enhance(D,camp,u);if(!r.ok){toastInfo(r.error);return;}
  const after=CAMP.eqStats(D,item);
- saveCamp();SFX.play('crit');storage();
+ saveCamp();SFX.play('crit');keepPage(storage);
  toastInfo(esc(CAMP.eqName(D,item))+'<br>'+Object.keys(after).map(k=>esc(D.statName[k])+' '+before[k]+' → '+after[k]).join('・'));
 }
 function doDis(u){const e=camp.inv.find(x=>x.u===u);if(!e)return;if(e.r>=1&&!confirm('拆掉「'+CAMP.eqName(D,e)+'」？（'+D.eqRarity.name[e.r]+'）'))return;const r=CAMP.dismantle(D,camp,u);if(!r.ok){toastInfo(r.error);return;}saveCamp();SFX.play('hit');storage();}
@@ -622,7 +628,7 @@ function barracks(){const ids=Object.keys(camp.roster).sort((a,b)=>camp.team.ind
  modal(`<h2>兵營 · 兵團</h2><p class="note">補給：<b>${camp.supply}</b>・補 1 名士兵 ${D.barracks.costPerSoldier}・士兵團升級讓士兵更耐打、加成更高；強化多帶 1 名士兵；被動在士兵團 Lv${Q.slotsAt.join('／')} 各開一格。</p>`+
  ids.map(id=>{const h=CAMP.heroOf(D,id),r=camp.roster[id],N=CAMP.soldiersOf(D,id,camp),n=Math.round(r.sol*N),cost=CAMP.refillCost(D,camp,id),up=CAMP.sqLvCost(D,r),tc=CAMP.tierCost(D,r),slots=CAMP.slotsOf(D,r);const xpNeed=D.xp.perLevel*r.lv;
   return `<div class="ros" style="flex-wrap:wrap"><img src="${heroCardImg(h)}" alt="" onclick="heroPage('${id}','barracks')" style="cursor:pointer"><div style="flex:1;min-width:150px"><b class="rar${h.r}">${esc(h.name)}</b> <span class="note">Lv${r.lv}（經驗 ${r.xp}/${xpNeed}）${camp.team.includes(id)?'・出戰中':''}</span><br><span class="note">士兵 ${n}/${N}・兵團 Lv${r.sq.lv}・位階 ${r.sq.tier}／${D.squad.maxTier} ${'◆'.repeat(r.sq.tier)}${'◇'.repeat(Q.maxTier-r.sq.tier)}<br>被動（${r.sq.pas.length}/${slots}）：${r.sq.pas.map(k=>D.passives[k].name).join('、')||'—'}</span></div>
-  <div style="display:flex;gap:4px;flex-wrap:wrap;width:100%;margin-top:4px">${cost>0?`<button class="small" ${camp.supply>=cost?'':'disabled'} onclick="doRefill('${id}')">補滿（${cost}）</button>`:''}${r.sq.lv<Q.maxLv?`<button ${camp.supply>=up?'':'disabled'} onclick="doSq('${id}','up')">升級 · 士兵生命與編制加成（${up}）</button>`:'<span class="note">兵團滿級</span>'}${r.sq.tier<Q.maxTier?`<button ${camp.supply>=tc?'':'disabled'} onclick="doSq('${id}','tier')">升位階 · 容量 +1（${tc}）</button>`:''}<button ${slots?'':'disabled'} onclick="pasMenu('${id}')">被動</button></div></div>`;}).join('')+
+  <div style="display:flex;gap:4px;flex-wrap:wrap;width:100%;margin-top:4px">${cost>0?`<button class="small" ${camp.supply>=cost?'':'disabled'} onclick="doRefill('${id}')">補滿（${cost}）</button>`:''}${r.sq.lv<Q.maxLv?`<button ${camp.supply>=up?'':'disabled'} onclick="doSq('${id}','up')">升級 · 士兵生命與編制加成（${up}）</button>`:'<span class="note">兵團滿級</span>'}${r.sq.tier<Q.maxTier?`<button ${camp.supply>=tc?'':'disabled'} onclick="doSq('${id}','tier')">升位階 · 容量 +1（${tc}）</button>`:''}<button ${slots?'':'disabled'} onclick="pasMenu('${id}')">被動</button> <button onclick="skillStudy('${id}','barracks','squad')">兵團書與晉升</button></div></div>`;}).join('')+
  `<p><button onclick="refillAll()">全部補滿</button> <button onclick="closeModal();drawHub()">返回</button></p>`);}
 function doSq(id,k){const r=k==='up'?CAMP.sqUp(D,camp,id):CAMP.sqTier(D,camp,id);if(r.ok){saveCamp();SFX.play('form');}else toastInfo(r.error);barracks();}
 function pasMenu(id){const h=CAMP.heroOf(D,id),r=camp.roster[id],slots=CAMP.slotsOf(D,r);modal(`<h2>${esc(h.name)} 的士兵團被動</h2><p class="note">欄位 ${r.sq.pas.length}/${slots}・學一個要補給 ${D.squad.passiveCost}・忘掉不退補給。補給：<b>${camp.supply}</b></p>`+
@@ -678,7 +684,7 @@ function renderBar(){let h='';const u=selU();
  else if(busy){h='<button disabled>敵方行動中…</button>';}
  else if(u&&sel.to&&sel.mode==='skill'){const S=C.skillOf(D,u,sel.sk);h=skillBtn(u)+(S.kind==='self'||S.kind==='around'||(S.kind==='gen'&&S.tg==='self')||(sel.target||sel.at)?`<button class="pri" ${S.kind==='around'&&!C.skillTargets(D,st,u,sel.to,sel.sk).length?'disabled':''} onclick="commitSkill()">確認「${esc(S.name)}」</button>`:'')+`<button onclick="sel.mode=null;sel.sk=null;sel.target=null;sel.at=null;pickedDest()">返回</button><button class="dng" onclick="cancel()">取消</button>`;}
  else if(u&&sel.to&&sel.dash){h=(sel.target?`<button class="pri" onclick="commitDash()">確認影徑攻擊</button>`:'')+`<button onclick="commitDash(true)">影徑後待機</button><button class="dng" onclick="cancel()">取消</button>`;}
- else if(u&&sel.to){h=(sel.target?`<button class="pri" onclick="commit('ATTACK')">確認攻擊</button>`:'')+rescueBtn(u)+skillBtn(u)+`<button onclick="commit('WAIT')">待機</button><button onclick="commit('GUARD')">守備</button><button class="dng" onclick="cancel()">取消</button>`;}
+ else if(u&&sel.to){h=(sel.target?`<button class="pri" onclick="commit('ATTACK')">確認攻擊</button>`:'')+rescueBtn(u)+skillBtn(u)+fieldItemButtons()+`<button onclick="commit('WAIT')">待機</button><button onclick="commit('GUARD')">守備</button><button class="dng" onclick="cancel()">取消</button>`;}
  else if(u){h=skillBtn(u)+`<button onclick="sel.to={x:selU().x,y:selU().y};pickedDest()">原地行動</button><button class="dng" onclick="cancel()">取消</button>`;}
  else{const left=C.alive(st,'P').filter(v=>!v.usedAct).length;h=`<button class="pri" onclick="endTurn()">結束回合${left?'（'+left+'）':''}</button><button onclick="toggleThreat()">${showThreat?'隱藏':'看'}威脅</button><button onclick="help()">規則</button><button onclick="menu()">選單</button>`;}
  $('bar').innerHTML=h;}
@@ -751,10 +757,10 @@ function skillMode(sk){const u=selU();if(!u)return;if(!sel.to)sel.to={x:u.x,y:u.
  if(S.kind==='around'||S.kind==='self'||(S.kind==='gen'&&S.tg==='self')){showAreaSkillPreview();render();return;}toastInfo(`<b>${esc(S.name)}</b>：${esc(S.desc)}<br>${practiceInfo(u,sk)}<br><span class="note">${S.kind==='self'||S.kind==='around'||(S.kind==='gen'&&S.tg==='self')?'按確認發動。':S.kind==='zone'||(S.kind==='gen'&&S.tg==='tile')?'點金色虛線範圍裡的一格當中心（3×3）。':S.kind==='ally'||(S.kind==='gen'&&S.tg==='ally')?'點綠框的隊友（可以是自己）。':'點紅框的敵人。'}</span>`);render();}
 function stList(S){return (S.st||[]).map(x=>(C.STN[x[0]]||x[0])+' '+x[1]+' 回合'+(x[2]!=null&&x[2]<1?'（'+Math.round(x[2]*100)+'%）':'')).join('、');}
 function showSkillPreview(){const u=selU();const S=C.skillOf(D,u,sel.sk);const t=st.units.find(v=>v.id===sel.target);
- if(S.kind==='ally'||S.tg==='ally'){const h=C.healingForecast(D,st,u,t,sel.sk);toastInfo(`<b>${esc(S.name)}</b> → ${esc(t.name)}<br>${esc(S.desc)}<br>${h.hp||h.sol?'一般回復預估：生命 +'+h.hp+'、士兵生命 +'+h.sol+(h.mayDouble?'（可能觸發額外治療）':''):''}<br>${practiceInfo(u,sel.sk)}<br><span class="note">再點一次或按確認。</span>`);return;}
+ if(S.kind==='ally'||S.tg==='ally'){const h=C.healingForecast(D,st,u,t,sel.sk);toastInfo(`<b>${esc(S.name)}</b> → ${esc(t.name)}<br>${esc(S.desc)}<br>${h.shield?'護盾約 '+h.shield+'<br>':''}${h.hp||h.sol?'一般回復預估：生命 +'+h.hp+'、士兵生命 +'+h.sol+(h.mayDouble?'（可能觸發額外治療）':''):''}<br>${practiceInfo(u,sel.sk)}<br><span class="note">再點一次或按確認。</span>`);return;}
  if(S.kind==='gen'){if(S.tg==='ally'){const al=S.ally||{};toastInfo(`<b>${esc(S.name)}</b> → ${esc(t.name)}：${al.heal?'回復約 '+Math.min(t.maxHp-t.hp,Math.round(t.maxHp*al.heal*(al.low&&t.hp<t.maxHp*.6?al.low:1)))+' 生命':''}${al.cleanse?'、解除壞狀態':''}${S.oath?'立下誓約 '+S.oath+' 回合':''}<br><span class="note">再點一次或按確認。</span>`);return;}
   let m=S.mult||0;if(S.pactJudge)m+=S.pactJudge*(t.st.pactN||0);if(S.shatter&&(C.sv(t,'freeze')>0||C.sv(t,'slow')>0))m*=S.shatter;const cost=reachOf(u).get(C.key(sel.to.x,sel.to.y))||0;const p=C.preview(D,st,u,sel.to,sel.target,{mult:m,noCounter:true,skill:true,useDef:S.useDef,area:S.shape!=='one',charge:cost,chargeP:S.chargeP,skillKey:sel.sk});const hits=S.hits||1;
-  toastInfo(`<b>${esc(S.name)}</b> → ${esc(t.name)}<br>${S.mult?'每下約 '+p.dmg+(hits>1?' × '+hits+' 下':'')+'・命中 '+Math.round(p.hit*100)+'%'+(p.notes.length?'<br><span class="note">'+p.notes.map(esc).join('、')+'</span>':''):''}${stList(S)?'<br><span class="say">'+stList(S)+'</span>':''}${S.shape==='line'?'<br><span class="note">往這個方向直線 '+(S.len||3)+' 格都會打到。</span>':''}<br><span class="note">技能不會被反擊。再點一次或按確認。</span>`);return;}
+  toastInfo(`<b>${esc(S.name)}</b> → ${esc(t.name)}<br>${S.mult?'每下約 '+p.dmg+(hits>1?' × '+hits+' 下':'')+'・命中 '+Math.round(p.hit*100)+'%'+(p.notes.length?'<br><span class="note">'+p.notes.map(esc).join('、')+'</span>':''):''}${sel.sk==='bk_spear_pin'?'<br><span class="say">命中後下一次行動不能移動，仍可能攻擊。</span>':stList(S)?'<br><span class="say">'+stList(S)+'</span>':''}${S.shape==='line'?'<br><span class="note">往這個方向直線 '+(S.len||3)+' 格都會打到。</span>':''}<br><span class="note">技能不會被反擊。再點一次或按確認。</span>`);return;}
  if(S.kind==='ally'){toastInfo(`<b>${esc(S.name)}</b> → ${esc(t.name)}：回復約 ${Math.min(t.maxHp-t.hp,Math.round(t.maxHp*S.heal))} 生命、補 ${Math.round(S.solHeal*100)}% 士兵${t.st.root||t.st.mark?'、解除束縛與標記':''}。<br><span class="note">再點一次或按確認。</span>`);return;}
  const p=C.preview(D,st,u,sel.to,sel.target,{mult:S.mult,noCounter:!!S.noCounter,area:!!S.area,flank:S.flank,skillKey:sel.sk});let extra='';
  if(sel.sk==='pierce'){const b=C.unitAt(st,t.x+(t.x-sel.to.x),t.y+(t.y-sel.to.y));extra=b&&b.faction==='E'?'<br><span class="good">後面的 '+esc(b.name)+' 也會被刺到。</span>':'<br><span class="note">後面沒有敵人。</span>';}
@@ -880,7 +886,7 @@ function applyPix(){if(!pixOn)return;const e=$('tcss');if(e){if(!e.dataset.orig)
 function skillCut(u,sk,done){const S=C.skillOf(D,u,sk);const img=(D.skillArt&&D.skillArt[sk])||(S&&S.art);if(!u||!S||!img){done();return;}const el=$('cut');el.className='sk on';el.style.backgroundImage=`linear-gradient(90deg,#000c,#0002 55%,#0006),url(${img})`;
  const spk=visibleSpriteKey(u);const sp=spk&&sprOf(spk);const sprite=sp&&sprG(spk);el.innerHTML=`${sprite&&sprite.rows===4&&(!sprite.skillRows||sprite.skillRows.includes(sk))?`<div class="skp spr3" style="background-image:url(${sp})"></div>`:`<div class="skp" style="background-image:url(${ART(u.por||u.art)})"></div>`}<div class="skf"></div><div class="skn"><small>${esc(u.name)}</small><b>${esc(S.name)}</b><small>${SICO(S)}</small></div><div class="skip">點一下跳過</div>`;SFX.play('magic');
  let ended=false;const fin=()=>{if(ended)return;ended=true;clearTimeout(t);el.className='';el.innerHTML='';done();};el.onclick=fin;const t=setTimeout(fin,1250);}
-function send(a){if(busy||st.result)return false;const before=st;const r=C.apply(D,st,a);if(!r.ok){toastInfo('<span class="bad">不能這樣做：'+esc(r.error)+'</span>');return false;}acts.push(a);st=r.state;sel=null;persist();addLog(r.events);ambientBattleSounds(r.events,st);
+function send(a){if(busy||st.result||(a.act==='ITEM'&&!(camp.items?.[a.item]>0)))return false;const before=st;const r=C.apply(D,st,a);if(!r.ok){toastInfo('<span class="bad">不能這樣做：'+esc(r.error)+'</span>');return false;}acts.push(a);st=r.state;sel=null;if(a.act==='ITEM'){CAMP.spendItem(camp,a.item);saveCamp();}persist();addLog(r.events);ambientBattleSounds(r.events,st);
  const left=C.alive(st,'P').filter(u=>!u.usedAct).length;toastInfo(r.events.map(e=>esc(e.txt)).join('<br>')+(st.result?'':left?'':'<br><span class="note">大家都行動完了，按「結束回合」。</span>'));
  busy=true;const after=played=>{busy=false;render();boardFx(r.events,st,played);if(st.result){const ended=st;setTimeout(()=>{if(st===ended&&!document.body.classList.contains('inhub'))showResult();},900);}};const go=()=>cutIn(r.events,before,after);if(a.act==='SKILL'&&cutMode!=='off')skillCut(before.units.find(v=>v.id===a.actorId),a.skill,go);else go();return true;}
 function commit(act){if(!sel||!sel.to)return;const a={type:'ACT',actorId:sel.id,to:{...sel.to},act};if(act==='ATTACK')a.target=sel.target;send(a);}
@@ -902,8 +908,8 @@ function endTurn(){if(busy||st.result)return;const left=C.alive(st,'P').filter(u
  render();setTimeout(step,200);}
 function addLog(evs){const L=$('log');for(const e of evs){const d=document.createElement('div');d.className=['say','spawn','stabilize','warn','corrupt','purify'].includes(e.t)?'s':e.t==='end'?'e':'';d.textContent=e.txt;L.appendChild(d);}while(L.childElementCount>250)L.firstElementChild.remove();L.scrollTop=L.scrollHeight;}
 function logAll(reset){if(reset)$('log').innerHTML='';addLog(st.eventLog);}
-function retry(){if(busy)return;mid=st.missionId;startBattle(seed,team,level);}
-function closeModal(){$('modal').classList.add('hide');}
+function retry(){if(busy)return;mid=st.missionId;const next=team.map((t,i)=>i===0?{...t,pack:CAMP.packFor(D,camp)}:t);startBattle(seed,next,level);}
+function closeModal(){$('modal').classList.add('hide');if(roadMusic){roadMusic=false;BGM.play('base');}}
 function modal(h){$('box').innerHTML=h;$('modal').classList.remove('hide');}
 $('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
 let resultReward=null;
@@ -916,7 +922,7 @@ function settleBattle(){
 }
 function showResult(){if(busy||!st.result)return;const M=MM();const g=st.gate.hp;const P=st.units.filter(u=>u.faction==='P');const lost=P.filter(u=>u.hp<=0).map(u=>u.name);const solLeft=P.reduce((s,u)=>s+C.soldiers(u),0),solAll=P.reduce((s,u)=>s+C.solMaxN(u),0);
  const got=settleBattle();
- const rw=got&&!got.dup?`<p><b>戰利</b>：招集券 +${got.tickets}・補給 +${got.supply}${st.result.win?'':'（輸了也有一點點）'}<br>經驗：${Object.entries(got.xp||{}).map(([id,x])=>esc(CAMP.heroOf(D,id).name)+' +'+x+(got.lvUp&&got.lvUp[id]?' <span class="good">升到 Lv'+got.lvUp[id]+(got.lvUp[id]>=D.secondAt&&got.lvUp[id]-1<D.secondAt?'，學會「'+esc(D.skills[D.secondSkill[CAMP.heroOf(D,id).unit]].name)+'」':'')+'</span>':'')).join('、')}${got.drops?dropTxt(got.drops):''}${got.coins?'<br>渡鴉幣 +'+got.coins:''}${got.skillBook?'<br><span class="good">技能書：'+esc(CAMP.bookOf(D,got.skillBook).name)+'</span>':''}${practiceRewards(got.practice)}${got.gift?'<br>撿到禮物：'+esc(TALK.gifts[got.gift].name):''}${got.quests&&got.quests.length?got.quests.map(x=>`<br><span class="good">委託完成：${esc(D.quests.kinds[x.q.kind].name)}（${esc(x.q.from)}）</span>　${rwTxt(x.q.rw)}<br>${questMark(x.q.from)}<span class="say">${esc(x.q.from)}：「${esc(TALK.client[x.q.from]||'謝謝你們。')}」</span>`).join(''):''}<br><span class="note">士兵損失會帶回據點，記得去兵營補。</span></p>`:(camp.lastBattle===st.battleInstanceId?'<p class="note">這一場的戰利已經領過了（同一場重打不會再給）。</p>':'');
+ const rw=got&&!got.dup?`<p><b>戰利</b>：招集券 +${got.tickets}・補給 +${got.supply}${st.result.win?'':'（輸了也有一點點）'}<br>經驗：${Object.entries(got.xp||{}).map(([id,x])=>esc(CAMP.heroOf(D,id).name)+' +'+x+(got.lvUp&&got.lvUp[id]?' <span class="good">升到 Lv'+got.lvUp[id]+(got.lvUp[id]>=D.secondAt&&got.lvUp[id]-1<D.secondAt?'，學會「'+esc(D.skills[D.secondSkill[CAMP.heroOf(D,id).unit]].name)+'」':'')+'</span>':'')).join('、')}${got.drops?dropTxt(got.drops):''}${got.coins?'<br>渡鴉幣 +'+got.coins:''}${[got.skillBook,got.rankBook,got.squadBook].filter(Boolean).map(k=>'<br>獲得 '+esc(CAMP.bookOf(D,k).name)).join('')}${practiceRewards(got.practice)}${got.gift?'<br>撿到禮物：'+esc(TALK.gifts[got.gift].name):''}${got.quests&&got.quests.length?got.quests.map(x=>`<br><span class="good">委託完成：${esc(D.quests.kinds[x.q.kind].name)}（${esc(x.q.from)}）</span>　${rwTxt(x.q.rw)}<br>${questMark(x.q.from)}<span class="say">${esc(x.q.from)}：「${esc(TALK.client[x.q.from]||'謝謝你們。')}」</span>`).join(''):''}<br><span class="note">士兵損失會帶回據點，記得去兵營補。</span></p>`:(camp.lastBattle===st.battleInstanceId?'<p class="note">這一場的戰利已經領過了（同一場重打不會再給）。</p>':'');
  modal(`<h2>${st.result.win?'勝利':'失敗'}</h2><p>${esc(st.result.reason)}。</p>`+rw+`<p>${st.gate.none?'':'城門剩 '+g+'／'+st.gate.maxHp+'・'}倒下的隊伍：${lost.length?esc(lost.join('、')):'沒有'}・士兵剩 ${solLeft}／${solAll}・第 ${Math.min(st.round,M.roundLimit)} 回合</p>
  ${st.result.win&&camp.cleared&&camp.cleared[st.missionId]?'<p class="good">'+esc(M.place||'')+' 已經打下來了。'+(D.region.filter(R=>R.needs&&R.needs.includes(st.missionId)).map(R=>'新地點開放：'+esc(R.name)).join('、')||'')+'</p>':''}
 
@@ -986,7 +992,7 @@ function unitCard(u){const a=(D.counters[u.troop]||[]).map(k=>D.troopName[k]).jo
 function pvText(p,t){const a=selU();const why=a&&t&&p.cm!==1?D.troopName[p.cm>1?a.troop:t.troop]+'克制'+D.troopName[p.cm>1?t.troop:a.troop]:'';const h=`<div class="combat-preview"><b>${p.cm>1?'有利克制':p.cm<1?'兵種不利':'兵種相當'}</b>　一般命中傷害 <strong>${p.dmg}</strong><br>命中 ${Math.round(p.hit*100)}%・暴擊 ${Math.round(p.crit*100)}%${p.cm!==1?'・'+esc(why)+' ×'+p.cm:''}</div>`;return h+(p.notes.length?'<p class="note">'+esc(p.notes.join('、'))+'</p>':'')+(t&&C.sv(t,'shield')>0?'<div>目標護盾 '+t.st.shield+'，會先吸收傷害。</div>':'')+(p.counter?`<div class="bad">對方存活且仍可行動時，可能反擊約 ${p.counter.dmg}（命中 ${Math.round(p.counter.hit*100)}%）。</div>`:'<div class="good">這次攻擊不會受到直接反擊。</div>')+'<div class="note">數字為單次一般命中估值；暴擊、護盾、分攤與保命效果可能改變結果。</div>';}
 function mythExchangeMenu(){modal(`<h2>燈印邀約</h2><p>每次招集留下 1 枚燈印；累積 ${D.gacha.mythExchange} 枚可指定邀請一位神秘成員。燈印永久保留，不因抽到神秘而清空。</p><p>目前燈印：${camp.mythMarks||0}</p>`+D.heroes.filter(h=>h.r===3).map(h=>`<div class="ros"><img src="${CAMP.art(h)}" alt=""><div style="flex:1"><b class="rar3">${esc(h.name)}</b><br>${camp.roster[h.id]?'已擁有；邀請後按重複取得處理':'尚未加入'}</div><button ${(camp.mythMarks||0)>=D.gacha.mythExchange?'':'disabled'} onclick="doMythExchange('${h.id}')">邀請</button></div>`).join('')+'<button onclick="recruit()">返回招集所</button>');}
 function doMythExchange(id){if(!confirm('花 '+D.gacha.mythExchange+' 枚燈印邀請 '+CAMP.heroOf(D,id).name+'？'))return;const r=CAMP.exchangeMythic(D,camp,id);if(!r.ok){toastInfo(esc(r.error));return;}saveCamp();recruit();toastInfo(esc(r.results[0].name)+'：'+esc(r.results[0].note));}
-function probTable(){const R=D.gacha.rates;modal(`<h2>機率、保底與完整名單</h2><p>${[3,2,1,0].map(r=>`${D.rarityName[r]} ${(R[r]*100).toFixed(1)}%`).join('・')}。同位階內每位機率相同。</p><p>開場免費選一位神秘成員，兩位之後都能招集。首次十連至少一位傳世以上；每次十連至少一位精銳以上。</p><p>連續 ${D.gacha.pity-1} 次未取得傳世以上，下一次必出傳世以上。連續 ${D.gacha.mythPity-1} 次未取得神秘，下一次必出神秘；神秘也會重置傳世以上保底。指定成員可用 ${D.gacha.mythExchange} 枚燈印邀請。</p><p>重複取得升一星（最多 ★${D.maxStar}），每星基礎能力 +${Math.round(D.starStep*100)}%；滿星改給補給 20。</p>`+[3,2,1,0].map(r=>{const L=D.heroes.filter(h=>h.r===r);return `<p><b class="rar${r}">${D.rarityName[r]}（${L.length} 人）</b>・單人基礎機率 ${(R[r]*100/L.length).toFixed(3)}%<br>${L.map(h=>esc(h.name)+(camp.roster[h.id]?' ✓':'')).join('、')}</p>`;}).join('')+'<button onclick="recruit()">返回招集所</button>');}
+function probTable(){const R=D.gacha.rates;modal(`<h2>機率、保底與完整名單</h2><p>${[3,2,1,0].map(r=>`${D.rarityName[r]} ${(R[r]*100).toFixed(1)}%`).join('・')}。同位階內每位機率相同。</p><p>開場免費選一位神秘成員，兩位之後都能招集。首次十連至少一位傳世以上；每次十連至少一位精銳以上。</p><p>連續 ${D.gacha.pity-1} 次未取得傳世以上，下一次必出傳世以上。連續 ${D.gacha.mythPity-1} 次未取得神秘，下一次必出神秘；神秘也會重置傳世以上保底。指定成員可用 ${D.gacha.mythExchange} 枚燈印邀請。</p><p>重複成員可升星。五星且 Lv10 可用晉升書突破，開放第 6–10 星；突破前的重複會存星印，最多 5 枚。</p>`+[3,2,1,0].map(r=>{const L=D.heroes.filter(h=>h.r===r);return `<p><b class="rar${r}">${D.rarityName[r]}（${L.length} 人）</b>・單人基礎機率 ${(R[r]*100/L.length).toFixed(3)}%<br>${L.map(h=>esc(h.name)+(camp.roster[h.id]?' ✓':'')).join('、')}</p>`;}).join('')+'<button onclick="recruit()">返回招集所</button>');}
 
 
 // ---------- 職業技能書與熟練度 ----------
@@ -1000,11 +1006,149 @@ function showAreaSkillPreview(){const u=selU();if(!u||!sel.to)return;const S=C.s
  if(sel.sk==='guardStance')h+='<br>相鄰隊友受擊時，由施放者分攤傷害。';
  if(sel.sk==='shadowStep')h+='<br>選紫色落點後，可攻擊或待機。';
  h+='<br><span class="note">金色為效果範圍。確認後才會消耗行動與冷卻。</span>';toastInfo(h);}
-function skillStudy(id,back){const h=CAMP.heroOf(D,id),r=camp.roster[id],b=D.skillBooks[h.unit],k=b.skill,S=D.skills[k],known=(r.learned||[]).includes(k),count=(camp.skillBooks||{})[k]||0;modal(`<h2>${esc(h.name)}・職業研習</h2><p>渡鴉幣 ${camp.coins}・補給 ${camp.supply}</p><div class="book-card"><b>${esc(b.name)}</b><p class="say">${esc(b.lore)}</p><p>${esc(S.desc)}</p><p>庫存 ${count} 本・Lv${D.bookRules.minLv} 可學・${known?'已學會':'尚未研習'}</p><button class="pri" ${known||!count||r.lv<D.bookRules.minLv?'disabled':''} onclick="learnBook('${id}','${k}','${back}')">研習（消耗一本）</button> <button ${camp.coins<D.bookRules.price?'disabled':''} onclick="buyBook('${k}','${id}','${back}')">兌換（${D.bookRules.price} 渡鴉幣）</button>${count?` <button onclick="sellBook('${k}','${id}','${back}')">換補給（一本 +${D.bookRules.sellSupply}）</button>`:''}</div><p class="note">戰鬥勝利有 ${(D.bookRules.dropChance*100).toFixed(0)}% 機會掉落出戰職業技能書；每關首勝保證一本。角色專屬與神秘技能不在此列。已學會時不消耗重複書。</p><p class="note">熟練度依有效使用累積，每招每回合最多 +${D.practice.gain}、每場最多 +${D.practice.battleCap}。結算後保存，下場套用；滿級 ${D.practice.max}。階段加成 3%／6%／10%；純輔助有效施放時，自身另獲生命 1%／2%／3% 護盾。空放不累積。</p><button onclick="heroPage('${id}','${back}')">返回角色</button>`);}
-function learnBook(id,k,back){const r=CAMP.bookLearn(D,camp,id,k);if(!r.ok){toastInfo(esc(r.error));return;}saveCamp();skillStudy(id,back);toastInfo('學會「'+esc(D.skills[k].name)+'」，下次出戰可使用。');}
-function buyBook(k,id,back){const r=CAMP.bookBuy(D,camp,k);if(!r.ok){toastInfo(esc(r.error));return;}saveCamp();id?skillStudy(id,back):skillBookShelf();}
-function sellBook(k,id,back){if(!confirm('將一本 '+CAMP.bookOf(D,k).name+' 換成 '+D.bookRules.sellSupply+' 補給？'))return;const r=CAMP.bookSell(D,camp,k);if(!r.ok){toastInfo(esc(r.error));return;}saveCamp();id?skillStudy(id,back):skillBookShelf();}
-function skillBookShelf(){modal('<h2>職業技能書</h2><p>渡鴉幣 '+camp.coins+'・每本 '+D.bookRules.price+' 渡鴉幣。勝利可掉落，首勝保證一本。</p>'+Object.entries(D.skillBooks).map(([unit,b])=>{const heroes=Object.keys(camp.roster).filter(id=>CAMP.heroOf(D,id).unit===unit);return `<div class="book-card"><b>${esc(b.name)}</b> ×${(camp.skillBooks||{})[b.skill]||0}<p class="note">${esc(D.units[unit].cls)}用・${esc(D.skills[b.skill].desc)}</p><button ${camp.coins<D.bookRules.price?'disabled':''} onclick="buyBook('${b.skill}')">兌換</button> ${heroes.map(id=>`<button onclick="skillStudy('${id}','storage')">${esc(CAMP.heroOf(D,id).name)}研習</button>`).join(' ')}</div>`;}).join('')+'<button onclick="stTab=\'eq\';storage()">返回倉庫</button>');}
+// ── 南門商鋪、行囊與行旅 ────────────────────────
+const BOOK_KIND={active:'主動技',passive:'英雄被動',squad:'兵團戰術',heroRank:'英雄晉升',squadRank:'兵團晉升'};
+let shelfKind='active';
+function marketIcon(k){return D.tradeArt[k]?`<img class="market-icon" src="${ART(D.tradeArt[k])}" alt="" loading="lazy">`:'';}
+function keepPage(draw){const y=$('box').scrollTop;draw();$('box').scrollTop=y;}
+function market(){
+ modal(`<div class="market-banner" style="background-image:linear-gradient(#0006,#000d),url(${ART(D.tradeArt.shop)})"><h2>南門商鋪</h2><p>渡鴉幣 <b>${camp.coins}</b></p></div>
+ <div class="tabs"><button onclick="skillBookShelf()">書架</button><button onclick="packMenu('shop')">整理行囊</button><button onclick="tradeMenu()">生活職業</button></div>
+ ${Object.entries(D.fieldItems).map(([k,item])=>`<div class="ros market-row">${marketIcon(k)}<div><b>${esc(item.name)}</b> · 庫存 ${camp.items?.[k]||0}<br><span class="note">${esc(item.desc)}</span></div><button ${camp.coins<item.price?'disabled':''} onclick="marketBuy('${k}')">買 · ${item.price} 幣</button></div>`).join('')}
+ <div class="ros market-row"><div><b>行軍補給 ×${D.shopSupply.amount}</b></div><button ${camp.coins<D.shopSupply.price?'disabled':''} onclick="marketBuy('supply')">買 · ${D.shopSupply.price} 幣</button></div>
+ <p><button onclick="closeModal();drawHub()">返回據點</button></p>`);
+}
+function marketBuy(k){
+ const r=k==='supply'?CAMP.buySupplies(D,camp):CAMP.buyFieldItem(D,camp,k);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();keepPage(market);toastInfo(k==='supply'?'補給 +'+D.shopSupply.amount:'買下'+esc(D.fieldItems[k].name));
+}
+function packMenu(from='shop'){
+ const load=CAMP.packFor(D,camp);
+ modal(`<h2>行囊</h2><p>這一隊下次出戰可帶 ${D.packMax} 件道具。移動後使用，消耗一個行動。</p>
+ ${Object.entries(D.fieldItems).map(([k,item])=>`<div class="ros market-row">${marketIcon(k)}<div><b>${esc(item.name)}</b><br>攜帶 ${load[k]||0}／庫存 ${camp.items?.[k]||0}<br><span class="note">${esc(item.desc)}</span></div><button ${!(load[k]>0)?'disabled':''} onclick="changePack('${k}',false,'${from}')">−</button><button ${Object.values(load).reduce((a,b)=>a+b,0)>=D.packMax||(load[k]||0)>=(camp.items?.[k]||0)?'disabled':''} onclick="changePack('${k}',true,'${from}')">＋</button></div>`).join('')}
+ <p><button onclick="${from==='council'?'drawCouncil()':'market()'}">返回</button></p>`);
+}
+function changePack(k,add,from){if(CAMP.packItem(D,camp,k,add)){saveCamp();keepPage(()=>packMenu(from));}}
+function fieldItemButtons(){
+ const u=selU();if(!u||!sel.to)return '';
+ return Object.entries(st.pack||{}).filter(([k,n])=>n>0&&(camp.items?.[k]||0)>0).map(([k,n])=>{
+  const action={type:'ACT',act:'ITEM',actorId:u.id,to:sel.to,item:k};
+  return `<button class="small" title="${esc(D.fieldItems[k].desc)}" ${C.validate(D,st,action)?'disabled':''} onclick="usePackItem('${k}')">${esc(D.fieldItems[k].name)} ×${n}</button>`;
+ }).join('');
+}
+function usePackItem(k){
+ const u=selU();if(!u||!sel.to||!(camp.items?.[k]>0))return;
+ send({type:'ACT',act:'ITEM',actorId:u.id,to:{...sel.to},item:k});
+}
+function tradeMenu(){
+ const recipes={bandage:'藥草 2',smoke:'白鐵礦石 2',oil:'藥草 3 · 工匠 Lv2'};
+ modal(`<h2>生活職業</h2><p>藥草 ${camp.mats.herb||0} · 白鐵礦石 ${camp.mats.ore||0}</p>
+ ${Object.entries(D.trades).map(([k,t])=>`<p><b>${esc(t.name)} Lv${CAMP.tradeLevel(camp,k)}</b> · 熟練 ${camp.trades?.[k]||0}／12</p>`).join('')}
+ <p class="note">採藥與採礦從出戰歸途的事件練習。成功製作道具會累積工匠熟練。</p>
+ ${Object.entries(recipes).map(([k,cost])=>`<div class="ros market-row">${marketIcon(k)}<div><b>${esc(D.fieldItems[k].name)}</b><br>${cost}</div><button onclick="doCraft('${k}')">製作</button></div>`).join('')}
+ <p><button onclick="market()">返回商鋪</button></p>`);
+}
+function doCraft(k){
+ const r=CAMP.craftItem(D,camp,k);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();keepPage(tradeMenu);toastInfo('製作了'+esc(D.fieldItems[k].name));
+}
+const ROAD_EVENTS={
+ herb:{title:'牆根的藥草',desc:'牆縫裡有幾片葉子還帶露水。阿綴說過，這種根曬乾後能敷在布上。',choice:'採藥'},
+ ore:{title:'露出的白鐵',desc:'車輪刮開了路肩的泥，底下露出一線白鐵。這一小段沒有被掏空。',choice:'採礦'},
+ chest:{title:'半埋的木箱',desc:'鐵扣生了鏽，箱蓋上還壓著一塊石頭。從裂縫裡看得到一角乾布。',choice:'打開木箱'},
+ palanquin:{title:'岔道上的空轎',desc:'轎簾被風挑開一角，裡面沒有坐人。轎旁有個旅人，把僅剩的乾布裹在腳上。他願拿一罐油和手抄的戰術譜換乾糧，還問你，南門裡哪裡可以借塊乾布。',choice:'用 10 補給交換'}
+};
+let roadMusic=false;
+function mapEventMenu(){
+ const k=camp.mapEvent?.kind,e=ROAD_EVENTS[k];if(!e)return;
+ if(k==='palanquin'){roadMusic=true;BGM.play('palanquin');}
+ const region=D.region.find(r=>r.mission===camp.mapEvent.mission);
+ modal(`<h2>歸途 · ${esc(e.title)}</h2><p class="note">${esc(region?.name||'南門城外')}</p>
+ ${marketIcon(k==='palanquin'?'oil':k)}<p class="say">${esc(e.desc)}</p>
+ <p><button class="pri" onclick="finishMapEvent(true)">${esc(e.choice)}</button> <button onclick="finishMapEvent(false)">沿路回城</button></p>
+ <button onclick="closeModal()">稍後再處理</button>`);
+}
+function finishMapEvent(take){
+ const r=CAMP.mapEventClaim(D,camp,take);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();closeModal();BGM.play('base');drawHub();toastInfo(esc(r.note));
+}
+function roadFavor(){
+ if(camp.flags.roadFavor!=='waiting')return;
+ modal(`<h2>等在門邊的人</h2><div class="market-row">${marketIcon('bandage')}<div><p class="say">阿綴把一張矮凳擱在門裡：「他說只坐一會兒，靴子都沒肯脫。你把乾布給我，我替他把腳包了再讓他走。」</p><p class="note">交出一份急救布包，取得《照護手記》。</p></div></div>
+ <button class="pri" ${camp.items?.bandage?'':'disabled'} onclick="deliverRoadFavor()">交給阿綴</button> <button onclick="missionJournal()">返回日誌</button>`);
+}
+function deliverRoadFavor(){
+ const r=CAMP.finishRoadFavor(camp);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();missionJournal();toastInfo('取得《照護手記》。');
+}
+function bookCategory(k,b){return b.kind==='active'?D.units[b.unit].cls:BOOK_KIND[b.kind];}
+function bookRow(k,b,action){
+ return `<div class="book-card"><div class="market-row">${marketIcon(b.kind)}<div><b>${esc(b.name)}</b> · ${esc(bookCategory(k,b))} · ×${camp.skillBooks?.[k]||0}<p class="note">${esc(CAMP.bookDesc(D,b))}</p></div></div>${action}</div>`;
+}
+function heroBookBadge(r){
+ return `<p class="note">${r.rank?'已突破 · 可升至十星':'未突破 · 星級上限五星'}${r.starBank?' · 待兌星印 '+r.starBank:''}</p>`;
+}
+function eqBattlePreview(e){
+ const owner=CAMP.ownerOf(camp,e.u);
+ const total=owner?CAMP.heroEq(D,camp,owner.id):CAMP.eqStats(D,e);
+ const item=CAMP.eqStats(D,e);
+ function nextStats(p){
+  const next=CAMP.eqStats(D,{...e,p});
+  return Object.fromEntries(Object.keys(item).map(k=>[k,(total[k]||0)-item[k]+next[k]]));
+ }
+ function shown(k,x){return k==='heal'?+x.toFixed(1):Math.round(+x.toFixed(6));}
+ function changes(p){
+  const values=nextStats(p);
+  return Object.keys(item).filter(k=>shown(k,total[k]||0)!==shown(k,values[k])).map(k=>D.statName[k]+' '+shown(k,total[k]||0)+' → '+shown(k,values[k]));
+ }
+ const current=changes(e.p+1);
+ if(current.length)return '實戰 '+current.join('・');
+ for(let p=e.p+2;p<=D.eqPlusMax;p++){const next=changes(p);if(next.length)return '下一級實戰相同，至 +'+p+'：'+next.join('・');}
+ return '再強化，實戰數值相同。';
+}
+function skillStudy(id,back='roster',filter='all'){
+ const h=CAMP.heroOf(D,id),r=camp.roster[id];
+ const known=(kind,k)=>kind==='active'?r.learned?.includes(k):kind==='passive'?r.passiveKnown?.includes(k):false;
+ const cat=Object.entries(D.bookCatalog).filter(([,b])=>(!b.unit||h.unit===b.unit)&&(filter!=='squad'||['squad','squadRank'].includes(b.kind)));
+ const selected=k=>CAMP.activeBook(r)===k||r.passiveBook===k;
+ const backCall=back==='storage'?'skillBookShelf()':back==='barracks'?'barracks()':`heroPage('${id}','${back}')`;
+ modal(`<h2>${esc(h.name)}・研習與晉升</h2>${heroBookBadge(r)}
+ <p class="note">職業技與專屬技照常出戰。另可選一本主動書和一本英雄被動書。</p>
+ ${cat.map(([k,b])=>{
+  const err=CAMP.bookEligibility(D,camp,id,k);
+  const use=known(b.kind,k)?`<button aria-pressed="${selected(k)}" onclick="changeBook('${id}','${b.kind}','${selected(k)?'':k}','${back}','${filter}')">${selected(k)?'已選 · 卸下':'選作出戰書'}</button>`:`<button class="pri" ${err||!(camp.skillBooks?.[k]>0)?'disabled':''} onclick="learnBook('${id}','${k}','${back}','${filter}')">${b.kind.endsWith('Rank')?'使用晉升書':'研習一本'}</button> ${err?`<span class="note">${esc(err)}</span>`:''}`;
+  return bookRow(k,b,use);
+ }).join('')}<button onclick="${backCall}">返回</button>`);
+}
+function learnBook(id,k,back,filter){
+ const r=CAMP.bookLearn(D,camp,id,k);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();keepPage(()=>skillStudy(id,back,filter));toastInfo('使用了'+esc(CAMP.bookOf(D,k).name));
+}
+function changeBook(id,kind,k,back,filter){
+ const r=CAMP.selectBook(D,camp,id,kind,k);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();keepPage(()=>skillStudy(id,back,filter));
+}
+function buyBook(k){
+ const r=CAMP.bookBuy(D,camp,k);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();keepPage(skillBookShelf);
+}
+function sellBook(k){
+ const b=CAMP.bookOf(D,k);if(!b||!confirm('用一本'+b.name+'換 '+D.bookRules.sellSupply+' 補給？'))return;
+ const r=CAMP.bookSell(D,camp,k);if(!r.ok){toastInfo(esc(r.error));return;}
+ saveCamp();keepPage(skillBookShelf);
+}
+function skillBookShelf(){
+ modal(`<h2>南門書架</h2><p>渡鴉幣 ${camp.coins}。首勝優先掉落出戰成員還沒學的書。</p>
+ <div class="tabs">${Object.entries(BOOK_KIND).map(([k,n])=>`<button class="small" aria-pressed="${shelfKind===k}" onclick="shelfKind='${k}';skillBookShelf()">${n}</button>`).join('')}</div>
+ ${Object.entries(D.bookCatalog).filter(([,b])=>b.kind===shelfKind).map(([k,b])=>{
+  const price=CAMP.bookPrice(D,b);
+  const heroes=Object.keys(camp.roster).filter(id=>!b.unit||CAMP.heroOf(D,id).unit===b.unit);
+  const ready=heroes.filter(id=>!CAMP.bookEligibility(D,camp,id,k));
+  const hints=b.unit?`<p class="note">${heroes.length?(ready.length?'可用：'+ready.map(id=>esc(CAMP.heroOf(D,id).name)).join('、'):'同職成員暫無人可用'):'尚無此職業成員'}</p>`:'';
+  return bookRow(k,b,hints+`<button ${camp.coins<price?'disabled':''} onclick="buyBook('${k}')">兌換 · ${price} 幣</button> ${camp.skillBooks?.[k]?`<button onclick="sellBook('${k}')">換補給</button>`:''}
+   <div class="tabs">${(b.unit?heroes:ready).map(id=>`<button class="small" onclick="skillStudy('${id}','storage')">${esc(CAMP.heroOf(D,id).name)}</button>`).join('')}</div>`);
+ }).join('')}<button onclick="market()">返回商鋪</button> <button onclick="stTab='eq';storage()">返回倉庫</button>`);
+}
 
 boot();
 </script>

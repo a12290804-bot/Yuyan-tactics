@@ -1,7 +1,7 @@
 // 《永生戰棋》資料（世界觀＝渡鴉公會；數值都是測試提案，不是正史）
 (function(root){
 const DATA={
- rulesetVersion:'v0.7',
+ rulesetVersion:'v0.8',
  bgm:{title:'hall',base:'hall',map:'explore',battle:'battle',boss:'boss',win:'hall'},bgmRoot:'../raven-guild/audio/',
  prologue:[
   {img:'battle/bt_plain.webp',future:'pr_1',txt:'天闕大陸的北邊，白鐵礦城的礦坑從來沒有停過。'},
@@ -191,7 +191,7 @@ const DATA={
  innateTxt:{wangdeng:['未熄的歸途','隊友的生命第一次掉到三成以下時，月燈自動給生命 20% 的護盾（每 3 回合一次）。'],feie:['不肯斷裂的線','隊友受到致命傷時，緋厄用自己的生命替他擋下（隊友留兩成生命；每 3 回合一次），之後振奮 2 回合。']},
  cmdSkill:{"RETURN": "cm_return", "PAPER": "cm_fire", "MINE": "cm_drill"},
  // ---------- v1.1：渡鴉幣、好感、禮物 ----------
- version:'v1.7.0',
+ version:'v1.8.0',
  coins:{win:5,lose:1,first:15,name:'渡鴉幣'},costumePrice:100,
  aff:{tiers:[0,15,40,80,130],names:['普通','熟識','信賴','摯友','羈絆'],chat:8,gift:6,giftLike:15},
  giftDrop:{chance:.35,list:['soup','bread','fish','honey','wick','feather','iron']},
@@ -505,5 +505,69 @@ Object.assign(DATA.skillArtP,{
  wd_gate:'inbox/grok_1793973205813.jpg'
 });
 Object.assign(DATA.skills,DATA.genSkills,DATA.mythSkills||{});for(const [k,v] of Object.entries(DATA.skillArtP||{}))if(DATA.skills[k])DATA.skills[k].art=v;
+// ── 南門商鋪、研習和行旅 ──────────────────────
+DATA.maxStar=10;
+DATA.highStarStep=.02;
+DATA.rankStep=.04;
+Object.assign(DATA.eqSlots,{o:'副手',b:'腰帶',s:'印記'});
+DATA.statName.heal='治療加成';
+DATA.equip.w_kit.st={heal:6,res:2};
+DATA.equip.a_heavy.fixed=['eva'];
+Object.assign(DATA.equip,{
+ o_buckler:{slot:'o',name:'鉚釘護手',icon:'eq_w_shield',units:['P_SHIELD','P_SPEAR','P_SCOUT'],st:{def:2}},
+ o_lamp:{slot:'o',name:'備用燈罩',icon:'eq_w_lantern',units:['P_LANTERN','P_HEALER','P_WEAVER','P_ARCHER'],st:{res:2,hit:2}},
+ b_kit:{slot:'b',name:'行軍工具帶',icon:'eq_a_light',st:{hp:6,eva:1}},
+ b_iron:{slot:'b',name:'鐵扣腰帶',icon:'eq_a_heavy',st:{hp:9,def:1}},
+ s_reed:{slot:'s',name:'回程印記',icon:'eq_t_charm',st:{heal:3,res:1}},
+ s_ash:{slot:'s',name:'灰羽印記',icon:'eq_t_feather',st:{crit:2,hit:1}}
+});
+DATA.tradeArt={
+ shop:'inbox/grok_1794039500614.jpg',active:'inbox/grok_1794039546817.jpg',
+ passive:'inbox/grok_1794039572743.jpg',squad:'inbox/grok_1794039576464.jpg',
+ heroRank:'inbox/grok_1794039579845.jpg',squadRank:'inbox/grok_1794039582955.jpg',
+ bandage:'inbox/grok_1794039586375.jpg',smoke:'inbox/grok_1794039589448.jpg',
+ oil:'inbox/grok_1794039592405.jpg',herb:'inbox/grok_1794039595301.jpg',
+ ore:'inbox/grok_1794039598404.jpg',chest:'inbox/grok_1794039600666.jpg'
+};
+DATA.localBgm={palanquin:'assets/music/bgm/無人迎親・轎中有名.mp3'};
+DATA.fieldItems={
+ bandage:{name:'急救布包',price:5,desc:'移動後使用。回復本隊 20% 生命及 10% 士兵生命。'},
+ smoke:{name:'避箭煙瓶',price:5,desc:'移動後使用。本隊取得 1 回合閃避 +30%。'},
+ oil:{name:'淨路燈油',price:6,desc:'移動後使用。淨化腳下污染和預告，解除本隊 1 個負面狀態。'}
+};
+DATA.packMax=2;
+DATA.shopSupply={price:10,amount:35};
+DATA.mats.herb={name:'藥草',icon:'it_herb',desc:'在歸途採集，可用來製作急救布包與淨路燈油。'};
+DATA.artMap['items/it_herb.webp']=DATA.tradeArt.herb;
+DATA.trades={
+ herb:{name:'採藥',label:'藥草',recipe:'急救布包',item:'bandage'},
+ ore:{name:'採礦',label:'礦脈'},
+ craft:{name:'工匠',label:'製作',recipe:'避箭煙瓶',item:'smoke'}
+};
+const fieldSkills={
+ bk_shield_cover:{name:'掩護接手',kind:'gen',tg:'ally',shape:'one',range:[1,2],cd:3,ally:{shield:.2},icon:'sk_guard',fx:'fx_guard',desc:'為 1–2 格內一隊隊友加上生命 20% 的護盾。'},
+ bk_spear_break:{name:'破列突槍',kind:'gen',tg:'enemy',shape:'one',range:[1,1],cd:3,mult:1.1,st:[['brk',2,1]],icon:'sk_pierce',fx:'fx_pierce',desc:'鄰格 1.1 倍傷害，破甲 2 回合。'},
+ bk_lantern_ember:{name:'引燼',kind:'gen',tg:'enemy',shape:'one',range:[1,3],cd:3,mult:.85,st:[['burn',2,1]],icon:'sk_lamp',fx:'fx_magic',desc:'1–3 格 0.85 倍傷害，燃燒 2 回合。'},
+ bk_archer_screen:{name:'遮眼箭',kind:'gen',tg:'enemy',shape:'one',range:[2,4],cd:3,mult:.75,st:[['blind',1,1]],icon:'sk_mark',fx:'fx_arrow',desc:'2–4 格 0.75 倍傷害，致盲 1 回合。'},
+ bk_healer_triage:{name:'隨軍急救',kind:'gen',tg:'self',shape:'allyAround',r:1,cd:4,ally:{heal:.13,sol:.08},icon:'sk_mend',fx:'fx_heal',desc:'自身與鄰格隊友回復 13% 生命與 8% 士兵生命。'},
+ bk_weaver_ward:{name:'補縫線',kind:'gen',tg:'ally',shape:'one',range:[0,3],cd:3,ally:{shield:.18,st:[['resist',1]]},icon:'sk_bind',fx:'fx_guard',desc:'0–3 格給一隊生命 18% 的護盾與 1 回合抵抗。'},
+ bk_scout_spot:{name:'探路飛刃',kind:'gen',tg:'enemy',shape:'one',range:[1,2],cd:3,mult:.8,st:[['mark',2,1]],icon:'sk_shadow',fx:'fx_mark',desc:'1–2 格 0.8 倍傷害，標記 2 回合。'}
+};
+Object.assign(DATA.skills,fieldSkills);
+const fieldUnits=['P_SHIELD','P_SPEAR','P_LANTERN','P_ARCHER','P_HEALER','P_WEAVER','P_SCOUT'];
+DATA.bookCatalog=Object.fromEntries(Object.entries(DATA.skillBooks).map(([unit,b])=>[b.skill,{...b,kind:'active',unit}]));
+Object.keys(fieldSkills).forEach((skill,i)=>{
+ DATA.bookCatalog[skill]={skill,unit:fieldUnits[i],kind:'active',name:'《'+fieldSkills[skill].name+'》',lore:'南門行軍時留下的手抄本。',minLv:5,price:35};
+});
+Object.assign(DATA.bookCatalog,{
+ bp_watch:{name:'《完陣》',kind:'passive',desc:'生命至少八成時，攻擊傷害 +6%。',fx:{healthyAtk:.06},price:25},
+ bp_care:{name:'《照護手記》',kind:'passive',desc:'技能治療量 +8%。',fx:{healP:.08},price:25},
+ bp_cover:{name:'《避險筆記》',kind:'passive',desc:'受到傷害 −5%。',fx:{dr:.05},price:25},
+ bs_wall:{name:'《鐵壁列譜》',kind:'squad',desc:'兵團被動鐵壁：防禦與魔防 +10%。',pas:'wall',price:22},
+ bs_hold:{name:'《守路列譜》',kind:'squad',desc:'兵團被動堅守：原地行動後，受到傷害 −10%。',pas:'hold',price:22},
+ bs_march:{name:'《急行列譜》',kind:'squad',desc:'兵團被動急行：移動 +1。',pas:'march',price:26},
+ br_hero:{name:'《英雄晉升書》',kind:'heroRank',desc:'五星且 Lv10 的英雄可突破。突破後開放第 6–10 星。',price:60},
+ br_squad:{name:'《兵團晉升書》',kind:'squadRank',desc:'兵團 Lv5、三階後可晉升：上限 +1、每兵生命 +10%。',price:48}
+});
 if(typeof module!=='undefined'&&module.exports)module.exports=DATA;else root.TACTICS_DATA=DATA;
 })(this);
