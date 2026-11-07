@@ -131,13 +131,14 @@ function learn(D,c,id,pk){const r=c.roster[id];if(!D.passives[pk])return {ok:fal
 function forget(D,c,id,pk){const r=c.roster[id];r.sq.pas=r.sq.pas.filter(p=>p!==pk);return {ok:true};}
 function addXp(D,r,n){const X=D.xp;let up=0;r.xp+=n;while(r.lv<X.maxLv&&r.xp>=X.perLevel*r.lv){r.xp-=X.perLevel*r.lv;r.lv++;up++;}if(r.lv>=X.maxLv)r.xp=0;return up;}
 // ---------- 戰後 ----------
-function afterBattle(D,c,st,rng){rng=rng||Math.random;if(c.lastBattle===st.battleInstanceId||(c.settledBattles||[]).includes(st.battleInstanceId))return {dup:true};c.settledBattles=c.settledBattles||[];c.settledBattles.push(st.battleInstanceId);c.lastBattle=st.battleInstanceId;const R=D.rewards;const win=st.result&&st.result.win;const got={tickets:0,supply:0};
+function afterBattle(D,c,st,rng){if(D.missions[st.missionId].practice)return {practice:true};rng=rng||Math.random;if(c.lastBattle===st.battleInstanceId||(c.settledBattles||[]).includes(st.battleInstanceId))return {dup:true};c.settledBattles=c.settledBattles||[];c.settledBattles.push(st.battleInstanceId);c.lastBattle=st.battleInstanceId;const R=D.rewards;const win=st.result&&st.result.win;const got={tickets:0,supply:0};
  if(win){got.tickets+=R.win.tickets;got.supply+=R.win.supply;if(!st.gate.none&&st.gate.hp>=200)got.tickets+=R.winClean.tickets;if(!D.missions[st.missionId].optional)c.wins++;c.cleared=c.cleared||{};if(!c.cleared[st.missionId]){c.cleared[st.missionId]=true;got.first=true;got.tickets+=2;got.supply+=(R.firstSupply||0);}}else{got.tickets+=R.lose.tickets;got.supply+=R.lose.supply;}
  c.battles++;c.tickets+=got.tickets;c.supply+=got.supply;
  got.xp={};got.lvUp={};got.practice={};const X=D.xp;
  for(const u of st.units)if(u.faction==='P'&&u.rid&&c.roster[u.rid]){const r=c.roster[u.rid];for(const [sk,n]of Object.entries(u.practiceGain||{})){if(!D.skills[sk]||!(u.skills||[]).includes(sk))continue;r.mastery=r.mastery||{};const gain=Math.max(0,Math.min(D.practice.battleCap,Number(n)||0,D.practice.max-(r.mastery[sk]||0)));if(gain){r.mastery[sk]=(r.mastery[sk]||0)+gain;(got.practice[u.rid]=got.practice[u.rid]||{})[sk]=gain;}}r.sol=u.hp>0?+(u.sol/Math.max(1,u.solMax)).toFixed(3):0;const k=u.kills||0;const xp=X.join+(win?X.win:0)+X.kill*k;const up=addXp(D,r,xp);got.xp[u.rid]=xp;if(up)got.lvUp[u.rid]=r.lv;got.supply+=(D.rewards.perKill||0)*k;c.supply+=(D.rewards.perKill||0)*k;}
  if(D.equip)got.drops=rollDrops(D,c,st,win,!!got.first,rng);if(D.coins){const k=win?D.coins.win+(got.first?D.coins.first:0):D.coins.lose;c.coins+=k;got.coins=k;}
  if(D.giftDrop&&win&&rng()<D.giftDrop.chance){const g=D.giftDrop.list[Math.floor(rng()*D.giftDrop.list.length)%D.giftDrop.list.length];addGift(c,g);got.gift=g;}
+ if(win&&st.missionId==='MISSION_PALANQUIN_ROAD'&&['left','right','ledger'].includes(st.result.route))c.flags.palanquinRoute=st.result.route;
  if(D.quests)got.quests=questCheck(D,c,st,rng);got.rescue=rescueOutcome(c,st);got.skillBook=rollSkillBook(D,c,st,!!got.first,rng);
  if(win){
   if(c.cleared.MISSION_MINE&&!c.flags.heroBookGift){giveBook(c,'br_hero');c.flags.heroBookGift=true;got.rankBook='br_hero';}

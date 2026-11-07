@@ -191,7 +191,7 @@ const DATA={
  innateTxt:{wangdeng:['未熄的歸途','隊友的生命第一次掉到三成以下時，月燈自動給生命 20% 的護盾（每 3 回合一次）。'],feie:['不肯斷裂的線','隊友受到致命傷時，緋厄用自己的生命替他擋下（隊友留兩成生命；每 3 回合一次），之後振奮 2 回合。']},
  cmdSkill:{"RETURN": "cm_return", "PAPER": "cm_fire", "MINE": "cm_drill"},
  // ---------- v1.1：渡鴉幣、好感、禮物 ----------
- version:'v1.9.0',
+ version:'v2.0.0',
  coins:{win:5,lose:1,first:15,name:'渡鴉幣'},costumePrice:100,
  aff:{tiers:[0,15,40,80,130],names:['普通','熟識','信賴','摯友','羈絆'],chat:8,gift:6,giftLike:15},
  giftDrop:{chance:.35,list:['soup','bread','fish','honey','wick','feather','iron']},
@@ -497,6 +497,53 @@ DATA.region.push(
  {id:'palanquin_road',scene:'lv_marsh',image:'assets/scenes/side_palanquin_road.webp',name:'霧棧道',x:.31,y:.64,mission:'MISSION_PALANQUIN_ROAD',needs:['MISSION_BC_001'],desc:'守住南門後，可赴棧道調查。',side:true},
  {id:'palanquin_lamp',scene:'lv_post',image:'assets/scenes/side_palanquin_lamp.webp',name:'舊迎親台',x:.68,y:.48,mission:'MISSION_PALANQUIN_LAMP',needs:['MISSION_PALANQUIN_ROAD'],desc:'先從霧棧道救回挑燈人。',side:true}
 );
+// 短演習用獨立關卡。第一章原本的南門任務與存檔規則維持原設定。
+DATA.fieldArt={
+ road:'inbox/grok_1794056638260.jpg',lamp:'inbox/grok_1794056664528.jpg',
+ lamplighter:'inbox/grok_1794056672332.jpg',ledger:'inbox/grok_1794056842526.jpg',
+ breach:'inbox/grok_1794058151612.jpg',lit:'inbox/grok_1794058180769.jpg',
+ unlit:'inbox/grok_1794058395089.jpg',returned:'inbox/grok_1794058188783.jpg',
+ bearer:'inbox/grok_1794058231823.jpg',palanquin:'inbox/grok_1794058237963.jpg',
+ page:'inbox/grok_1794058244769.jpg',call:'inbox/grok_1794058312436.jpg',
+ post:'inbox/grok_1794058398701.jpg'
+};
+DATA.region.find(r=>r.id==='palanquin_road').image=DATA.fieldArt.road;
+DATA.region.find(r=>r.id==='palanquin_lamp').image=DATA.fieldArt.lamp;
+DATA.missions.MISSION_PALANQUIN_ROAD.fieldPickup={x:8,y:6,label:'轎簿殘頁'};
+DATA.missions.MISSION_PALANQUIN_LAMP.call={x:5,y:4,early:1,normal:2,strike:3};
+DATA.missions.MISSION_PALANQUIN_LAMP.flank=[2,6];
+DATA.missions.MISSION_SOUTH_VANGUARD={
+ name:'南門前哨・第一盞燈',place:'南門',chapter:1,practice:true,faction:'MINE',
+ w:12,h:12,roundLimit:3,threat:0,
+ intro:'城門破口有人逼近。走到居民旁解救，護送他回南側金框。也可以先堵住敵路，或用燈界保護門邊的燈位。',
+ map:['WW..WW..WW..','W..........W','...R....R...','............','WWW......WWW','...R.....R..','.....L......','............','............','............','............','............'],
+ legend:{'.':'PLAIN','W':'WALL','R':'RUBBLE','L':'LAMP'},
+ obj:{type:'watch',person:[4,7],personName:'撤離居民',exit:[[4,10],[5,10]],lamp:[5,6]},
+ deploy:[[5,8],[4,8],[6,8]],enemySlots:[[5,3],[7,3]],
+ events:[
+  {round:1,say:'三回合演習。可先救居民，也能搶在敵軍前封住破口。'},
+  {round:2,warn:[[5,6]],say:'門邊的燈有異樣。提燈術士的燈界可以穩住這一格。'}
+ ],
+ win:'盡可能護送居民回金框、守住燈位，撐過三回合。',lose:'前哨小隊全滅。'
+};
+DATA.missions.MISSION_POST_REHEARSAL={
+ name:'北境驛路・取證預演',place:'北境驛路',chapter:2,practice:true,faction:'RETURN',
+ w:12,h:12,roundLimit:9,threat:0,
+ intro:'這是第二章玩法預演。從驛站外圍取回清冊，再讓持有者撤離。東側近，西側掩體較多。',
+ map:['WW..WW..WW..','W..........W','...R....R...','..F......F..','..F..WW..F..','.....WW.....','..R......R..','......SS....','...F....F...','............','............','............'],
+ legend:{'.':'PLAIN','W':'WALL','R':'RUBBLE','F':'FOREST','S':'SWAMP'},
+ obj:{type:'retrieve',exit:[[2,10],[3,10],[8,10],[9,10]],timeout:'霧封住驛路，清冊還在站外'},
+ fieldPickup:{x:7,y:5,label:'補給清冊'},
+ deploy:[[4,9],[7,9],[3,9],[8,9],[2,9],[9,9]],enemySlots:[[4,4],[8,4],[5,2]],
+ events:[
+  {round:1,say:'靠近清冊，花一次行動取證。帶著清冊的隊伍須撤回南端金框。'},
+  {round:2,warn:[[7,7],[8,7]],say:'東路水面映出兩個站印。下一回合兩格受污染。'},
+  {round:4,wave:[[1,9,5]],say:'退件局從東路追來。西側仍有撤離點。'}
+ ],
+ win:'取得清冊，並讓持有者抵達任一金框。',lose:'持有者倒下、我方全滅，或第 9 回合結束仍未撤離。'
+};
+DATA.region.push({id:'post_rehearsal',name:'取證預演',scene:'lv_post',image:DATA.fieldArt.post,x:.57,y:.28,mission:'MISSION_POST_REHEARSAL',needs:['MISSION_CHURCH'],desc:'第一章結束後開放的第二章玩法預演。',side:true});
+
 // 開局更早接敵；仍維持三勢力隨機與原本的勝利條件。
 DATA.missions.MISSION_BC_001.enemySlots=[[5,1],[8,2],[5,5],[7,4],[3,3],[9,2]];
 

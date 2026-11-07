@@ -13,7 +13,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 function rngAt(seed,idx){let z=(seed>>>0)^Math.imul(idx+1,0x9E3779B1);z=Math.imul(z^(z>>>16),0x85EBCA6B);z=Math.imul(z^(z>>>13),0xC2B2AE35);z^=z>>>16;return (z>>>0)/4294967296;}
 function roll(st){const v=rngAt(st.seed,st.rngIndex);st.rngIndex++;return v;}
-function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.hold,st.tiles.join(''),st.result,st.done||0,st.lit||0,st.breach||0,st.escort||null,st.units.map(u=>[u.mastery||{},u.practiceGain||{},u.practiceLast||{}]),st.pack||{}]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
+function hash(st){const s=JSON.stringify([st.round,st.phase,st.rngIndex,st.gate,st.units.map(u=>[u.id,u.x,u.y,u.hp,u.sol,u.usedAct,u.guard,u.st,u.cd,u.kills]),st.zones,st.warn,st.corr,st.faction,st.hold,st.tiles.join(''),st.result,st.done||0,st.lit||0,st.breach||0,st.escort||null,st.units.map(u=>[u.mastery||{},u.practiceGain||{},u.practiceLast||{}]),st.pack||{},...(st.field?[st.field]:[])]);let h=0x811c9dc5;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,0x01000193);}return ('00000000'+(h>>>0).toString(16)).slice(-8);}
 
 // ---------- 建立戰鬥 ----------
 function makeUnit(D,def,id,faction,x,y,ov){const b={...D.units[def],...(ov||{})};if(!b)throw new Error('unknown unit '+def);const n=b.soldiers||0,hp1=b.hpPer||10;
@@ -32,9 +32,13 @@ function createBattle(D,missionId,seed,opts){opts=opts||{};const M=D.missions[mi
  const st={schemaVersion:SCHEMA,rulesetVersion:D.rulesetVersion,missionId,battleInstanceId:missionId+'_'+(seed>>>0).toString(16),seed:seed>>>0,rngIndex:0,round:1,phase:'PLAYER',w:M.w,h:M.h,tiles,team:team.slice(),
   gate:M.gate?{...M.gate,maxHp:M.gate.hp}:{none:true,x:-99,y:-99,hp:0,maxHp:0,def:0,res:0},obj:M.obj||{type:'gate'},hold:0,done:[],lit:[],breach:0,units:[],zones:[],warn:[],corr:0,pressure:false,result:null,eventLog:[],nextId:1};
  st.pack=Object.fromEntries(Object.keys(D.fieldItems||{}).map(k=>[k,Math.max(0,team[0]?.pack?.[k]|0)]));
- if(M.obj&&M.obj.type==='escort')st.escort={status:'trapped',x:M.obj.person[0],y:M.obj.person[1],carrier:null};
+ if(M.practice||opts.field===true||opts.field?.enabled){
+  const route=['left','right','ledger'].includes(opts.field?.route)?opts.field.route:null;
+  st.field={enabled:true,route};
+ }
+ if(M.obj?.person)st.escort={status:'trapped',x:M.obj.person[0],y:M.obj.person[1],carrier:null};
  const fk=Object.keys(D.factions);st.faction=opts.faction&&D.factions[opts.faction]?opts.faction:M.faction||fk[Math.floor(rngAt(st.seed,0x7ffff)*fk.length)];const F=D.factions[st.faction];
- const DEP=M.deploy||D.deploySlots;team.forEach((t,i)=>{const [x,y]=DEP[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
+ const DEP=M.flank&&st.field?.route==='left'?[M.flank,...M.deploy.slice(1)]:M.deploy||D.deploySlots;team.forEach((t,i)=>{const [x,y]=DEP[i];if(typeof t==='string'){const h=D.units[t].hero;st.units.push(makeUnit(D,t,'P'+(i+1),'P',x,y,h?{art:'heroes/tok_'+h+'.webp',por:'heroes/por_'+h+'.webp'}:null));return;}
   const b=D.units[t.def],k=t.mult||1;const ov={name:t.name||b.name,cls:t.title||b.cls,hero:t.hero||null,art:t.art||null,por:t.por||t.art||null,hp:Math.round(b.hp*k),atk:Math.round(b.atk*k),def:Math.round(b.def*k),mag:Math.round(b.mag*k),res:Math.round(b.res*k),lv:t.lv||1};
   if(t.skills)ov.skills=t.skills.filter(x=>D.skills[x]);if(t.pas)ov.pas=t.pas.filter(x=>D.passives[x]);if(t.soldiers)ov.soldiers=t.soldiers;if(t.hpPer)ov.hpPer=Math.round(b.hpPer*t.hpPer);if(t.sb!=null)ov.sb=t.sb;
   const u=makeUnit(D,t.def,'P'+(i+1),'P',x,y,ov);if(t.sol!=null)u.sol=Math.round(u.solMax*Math.max(0,Math.min(1,t.sol)));if(t.rid)u.rid=t.rid;if(t.por)u.por=t.por;if(t.tm)u.tm=JSON.parse(JSON.stringify(t.tm));if(t.mastery)u.mastery=clone(t.mastery);if(t.tal)applyTal(u,t.tal);if(t.eq)applyEq(u,t.eq);st.units.push(u);});
@@ -310,7 +314,7 @@ function finishSkill(D,st,u,k,S,before,ev,start){if(!ev.slice(start).some(e=>e.t
 }
 
 // ---------- 行動驗證 ----------
-const ACTS=['ATTACK','WAIT','GUARD','SKILL','RESCUE','ITEM'];
+const ACTS=['ATTACK','WAIT','GUARD','SKILL','RESCUE','ITEM','COLLECT'];
 function moveOpts(D,u,a){if(a.act==='SKILL'&&a.skill==='shadowStep'){const S=D.skills.shadowStep;return {extra:S.extraMove,ignoreZoc:true};}return {};}
 function skillTargets(D,st,u,to,sk){sk=sk||u.skills[0];const S=D.skills[sk];if(!S)return [];
  return withPos(u,to,()=>{
@@ -329,6 +333,7 @@ function validate(D,st,a){if(st.result)return 'battle_over';
  if(!ACTS.includes(a.act))return 'bad_act';
  const to=a.to||{x:u.x,y:u.y};if(!inside(st,to.x,to.y))return 'out_of_map';const R=reachable(D,st,u,moveOpts(D,u,a));if(!R.has(key(to.x,to.y)))return 'unreachable';
  if(a.act==='RESCUE'&&!(u.faction==='P'&&st.escort&&st.escort.status==='trapped'&&manhattan(to,st.escort)<=1))return 'not_rescuable';
+ if(a.act==='COLLECT'&&!(u.faction==='P'&&st.field&&!st.field.collector&&M_(D,st).fieldPickup&&manhattan(to,M_(D,st).fieldPickup)<=1))return 'not_collectible';
  if(a.act==='ITEM'){
   if(u.faction!=='P'||!Object.hasOwn(D.fieldItems,a.item)||!(st.pack?.[a.item]>0))return 'no_item';
   if(a.item==='bandage'&&u.hp>=u.maxHp&&u.sol>=u.solMax)return 'already_full';
@@ -373,6 +378,7 @@ function doAct(D,st,a,ev){const actionBefore=a.act==='SKILL'?{units:clone(st.uni
  const attackWithCounter=(tid,o)=>{const r=strike(D,st,u,to,tid,ev,o);const tgt=tid==='GATE'?null:st.units.find(v=>v.id===tid);
   if(!o.noCounter&&tgt&&tgt.hp>0&&u.hp>0&&canCounter(tgt)){const [ra,rb]=rangeOf(D,st,tgt,tgt);const d=manhattan(to,tgt);if(d>=ra&&d<=rb&&(d===1||los(D,st,tgt,to))&&!(tgt.st&&tgt.st.stun))strike(D,st,tgt,{x:tgt.x,y:tgt.y},u.id,ev,{counter:true});}return r;};
  if(a.act==='RESCUE'){st.escort.status='escorting';st.escort.carrier=u.id;u.escorting=true;ev.push({t:'rescue',a:u.id,txt:u.name+' 解開了繩索，開始護送'+(st.obj.personName||'推車人')+'。移動 −1，其他隊伍請掩護回程。'});}
+ else if(a.act==='COLLECT'){st.field.collector=u.id;ev.push({t:'say',a:u.id,txt:u.name+' 取得了'+M_(D,st).fieldPickup.label+'。'});}
  else if(a.act==='ITEM'){useFieldItem(D,st,u,a.item,ev);}
  else if(a.act==='ATTACK'){attackWithCounter(a.target,{charge:cost,normal:true});}
  else if(a.act==='GUARD'){u.guard=true;ev.push({t:'guard',a:u.id,txt:u.name+' 守備（防禦 +30%，到下次行動前）'});}
@@ -422,7 +428,29 @@ function roundStart(D,st,ev=[]){const M=M_(D,st);
   if(e.warn)for(const [x,y] of e.warn)st.warn.push({x,y,to:'FLESH',at:st.round+1});if(e.pressure)st.pressure=true;
   if(e.say)ev.push({t:'say',txt:'【第 '+st.round+' 回合】'+e.say});}
  if(st.round>1&&st.round%2===0)for(const u of alive(st,'P'))if(hasP(u,'refill')&&u.sol<u.solMax){const n0=soldiers(u);u.sol=Math.min(u.solMax,u.sol+u.hpPer);if(soldiers(u)>n0)ev.push({t:'heal',d:u.id,txt:u.name+'〔補員〕補回 1 名士兵'});}
+ if(st.field&&M.call)announceCall(st,M.call,ev);
  phaseStart(st,'P');st.phase='PLAYER';return ev;}
+function announceCall(st,rule,ev){
+ if(st.field.call||st.round<(st.field.route==='ledger'?rule.early:rule.normal))return;
+ const bearers=alive(st,'E').filter(u=>u.art==='enemies/tok_palanquin.webp');
+ if(!bearers.length)return;
+ const target=alive(st,'P').sort((a,b)=>manhattan(a,rule)-manhattan(b,rule))[0];
+ if(!target)return;
+ st.field.call={target:target.id,bearers:bearers.map(u=>u.id),round:Math.max(st.round,rule.strike)};
+ ev.push({t:'say',a:target.id,txt:'轎鈴點名了 '+target.name+'。第 '+st.field.call.round+' 回合結束時，轎夫會追這一隊。'});
+}
+function pursuitPlan(D,st,u,preview=false){
+ const call=st.field?.call;
+ if(!call?.bearers.includes(u.id)||(!preview&&st.round!==call.round))return null;
+ const target=alive(st,'P').find(v=>v.id===call.target);
+ if(!target)return null;
+ const dist=distMap(D,st,[target]);
+ const places=[...reachable(D,st,u).keys()].map(k=>{const [x,y]=k.split(',').map(Number);return {x,y};});
+ const metric=p=>dist.get(key(p.x,p.y))??(100+manhattan(p,target));
+ places.sort((a,b)=>metric(a)-metric(b));
+ const to=places.find(p=>withPos(u,p,()=>targetsFrom(D,st,u,p).includes(target.id)));
+ return to?{type:'ACT',actorId:u.id,to,act:'ATTACK',target:target.id}:{type:'ACT',actorId:u.id,to:places[0],act:'GUARD'};
+}
 function spawnCmd(D,st,M,ev){const F=D.factions[st.faction];const [t,name,art]=F.commander;const [cx,cy]=M.commanderAt;const p=freeNear(D,st,cx,cy);if(!p)return;const u=makeUnit(D,t,'E'+(st.nextId++),'E',p.x,p.y,{name,glyph:name[0],art:'bosses/tok_'+art+'.webp',por:'bosses/por_'+art+'.webp',commander:true});const em=1+(D.levelStep||0)*Math.min(st.level||0,D.levelMax||0);{u.hp=u.maxHp=Math.round(u.hp*em*EMH(D));u.atk=Math.round(u.atk*em*EMA(D));u.mag=Math.round(u.mag*em*EMA(D));}
  if(D.cmdSkill&&D.cmdSkill[st.faction]&&D.skills[D.cmdSkill[st.faction]])u.skills=[D.cmdSkill[st.faction]];
  if(M.cmdMult){const k=M.cmdMult;if(k.hp){u.hp=u.maxHp=Math.round(u.hp*k.hp);u.sol=u.solMax=Math.round(u.solMax*k.hp);}if(k.atk){u.atk=Math.round(u.atk*k.atk);u.mag=Math.round(u.mag*k.atk);}if(k.def)u.def=Math.round(u.def*k.def);}
@@ -431,7 +459,7 @@ function pendingSpawns(D,st){const M=M_(D,st);return M.events.some(e=>e.round>st
 function freeNear(D,st,x,y){for(let r=0;r<6;r++)for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){if(Math.abs(dx)+Math.abs(dy)!==r)continue;const nx=x+dx,ny=y+dy;if(inside(st,nx,ny)&&T(D,st,nx,ny).pass&&!unitAt(st,nx,ny))return {x:nx,y:ny};}return null;}
 function runEnemyPhase(D,st,ev){st.phase='ENEMY';phaseStart(st,'E');
  const order=alive(st,'E').map(u=>u.id);st.frames=[];
- for(const id of order){if(st.result)break;const u=st.units.find(v=>v.id===id);if(!u||u.hp<=0)continue;if(u.usedAct){if(u.skipped){const sub=[{t:'say',txt:u.name+' 動不了（凍住／魅惑）'}];ev.push(...sub);st.frames.push({actor:id,units:st.units.map(v=>[v.id,v.x,v.y,v.hp,v.sol]),gate:st.gate.hp,events:sub});}continue;}const a=plan(D,st,u);const err=validate(D,st,a);
+ for(const id of order){if(st.result)break;const u=st.units.find(v=>v.id===id);if(!u||u.hp<=0)continue;if(u.usedAct){if(u.skipped){const sub=[{t:'say',txt:u.name+' 動不了（凍住／魅惑）'}];ev.push(...sub);st.frames.push({actor:id,units:st.units.map(v=>[v.id,v.x,v.y,v.hp,v.sol]),gate:st.gate.hp,events:sub});}continue;}const a=pursuitPlan(D,st,u)||plan(D,st,u);const err=validate(D,st,a);
   if(err){ev.push({t:'ai_error',a:id,txt:'AI 行動不合法：'+err});u.usedAct=true;continue;}const sub=[];doAct(D,st,a,sub);ev.push(...sub);
   st.frames.push({actor:id,units:st.units.map(v=>[v.id,v.x,v.y,v.hp,v.sol]),gate:st.gate.hp,events:sub});}
  phaseEnd(st,'E');if(!st.result)roundEnd(D,st,ev);}
@@ -444,6 +472,12 @@ function roundEnd(D,st,ev){const M=M_(D,st);
  if(O.type==='reach'){const n=alive(st,'P').filter(u=>O.tiles.some(([x,y])=>u.x===x&&u.y===y)).length;if(n>=O.need){st.result={win:true,reason:n+' 隊抵達對岸'};ev.push({t:'end',txt:'勝利：'+st.result.reason});st.phase='RESULT';return;}if(n)ev.push({t:'say',txt:'對岸已經有 '+n+'／'+O.need+' 隊'});}
  if(O.type==='defend'){const n=alive(st,'E').filter(u=>O.tiles.some(([x,y])=>u.x===x&&u.y===y)).length;if(n){st.breach+=n;ev.push({t:'say',txt:'有 '+n+' 隊敵人過了橋（'+st.breach+'／'+O.max+'）'});if(st.breach>=O.max){st.result={win:false,reason:'太多敵人過了橋'};ev.push({t:'end',txt:'失敗：'+st.result.reason});st.phase='RESULT';return;}}}
  if(O.seals){for(const [x,y] of O.seals){const k=key(x,y);if(st.lit.includes(k))continue;const p=alive(st,'P').some(u=>u.x===x&&u.y===y),e=alive(st,'E').some(u=>u.x===x&&u.y===y);if(p&&!e){st.lit.push(k);ev.push({t:'say',txt:'燈點起來了（'+st.lit.length+'／'+O.seals.length+'）'+(st.lit.length>=O.seals.length?'：鐘聲停了，指揮官不再被保護':'')});}}}
+ if(st.round>=M.roundLimit&&alive(st,'P').length&&O.type==='watch'){
+  const [x,y]=O.lamp;
+  const held=tileAt(st,x,y)!=='FLESH'&&unitAt(st,x,y)?.faction!=='E';
+  st.result={win:true,reason:'前哨小隊撐過了三回合',watch:{lamp:held,residents:st.escort.status==='safe'}};
+  st.phase='RESULT';ev.push({t:'end',txt:st.result.reason});return;
+ }
  if(st.round>=M.roundLimit&&alive(st,'P').length){if((O.type==='gate'&&st.gate.hp>0)||O.type==='defend'){st.result={win:true,reason:O.type==='defend'?'守住石橋到第 '+M.roundLimit+' 回合結束':'守住城門到第 '+M.roundLimit+' 回合結束'};ev.push({t:'end',txt:'勝利：'+st.result.reason});}
   else{st.result={win:false,reason:O.timeout?O.timeout:O.type==='boss'?'時間到了，指揮退回礦坑深處':O.type==='hold'?'時間到了，驛站沒能守住':'時間到了，霧裡還有敵人'};ev.push({t:'end',txt:'失敗：'+st.result.reason});}st.phase='RESULT';return;}
  st.round++;roundStart(D,st,ev);checkEnd(D,st,ev);}
@@ -459,7 +493,29 @@ function pollute(D,st,ev){const K=D.corruption;updCorr(D,st);
   if(!nb.length)continue;const p=nb[Math.floor(roll(st)*nb.length)];st.warn.push({x:p.x,y:p.y,to:'FLESH',at:st.round+2});made++;}
  if(made)ev.push({t:'warn',txt:'污染正在擴散：'+made+' 格出現暗紅的微光，下下回合開始時會變成污染地（濁度 '+st.corr+'）'});}
 function checkEnd(D,st,ev){if(st.result)return;
- if(st.escort&&st.escort.status==='escorting'){const u=st.units.find(u=>u.id===st.escort.carrier);if(!u||u.hp<=0){st.escort.status='failed';st.result={win:false,reason:'護送隊倒下，救援未能完成'};}else{st.escort.x=u.x;st.escort.y=u.y;if(st.obj.exit.some(([x,y])=>u.x===x&&u.y===y)){st.escort.status='safe';st.result={win:true,reason:st.obj.safe||'推車人已平安撤回南門'};}}if(st.result){st.phase='RESULT';ev.push({t:'end',txt:(st.result.win?'勝利：':'失敗：')+st.result.reason});return;}}
+ const goal=st.obj;
+ if(st.escort?.status==='escorting'){
+  const u=st.units.find(v=>v.id===st.escort.carrier);
+  if(!u||u.hp<=0){
+   st.escort.status='failed';
+   if(goal.type==='escort')st.result={win:false,reason:'護送隊倒下，救援未能完成'};
+  }else{
+   st.escort.x=u.x;st.escort.y=u.y;
+   if(goal.exit.some(([x,y])=>u.x===x&&u.y===y)){
+    st.escort.status='safe';
+    if(goal.type==='escort'){
+     st.result={win:true,reason:goal.safe||'推車人已平安撤回南門'};
+     if(st.field&&M_(D,st).fieldPickup)st.result.route=u.x<st.w/2?'left':st.field.collector?'ledger':'right';
+    }else ev.push({t:'say',txt:'居民已撤回南門。'});
+   }
+  }
+ }
+ if(goal?.type==='retrieve'&&st.field.collector){
+  const carrier=st.units.find(u=>u.id===st.field.collector&&u.hp>0);
+  if(!carrier)st.result={win:false,reason:'持有清冊的小隊倒下了'};
+  else if(goal.exit.some(([x,y])=>carrier.x===x&&carrier.y===y))st.result={win:true,reason:'清冊已送回南門'};
+ }
+ if(st.result){st.phase='RESULT';ev.push({t:'end',txt:(st.result.win?'勝利：':'失敗：')+st.result.reason});return;}
  const O=st.obj||{type:'gate'};const lose=(!st.gate.none&&st.gate.hp<=0)?'城門被打破':!alive(st,'P').length?'我方全滅':null;
  const cmdDown=st.units.some(u=>u.commander&&u.hp<=0);const routed=O.type==='rout'&&!alive(st,'E').length&&!pendingSpawns(D,st);const saved=O.type==='rescue'&&st.done&&st.done.length>=O.need;
  if(lose){st.result={win:false,reason:lose};}else if(cmdDown&&O.type!=='rout'&&O.type!=='escort'){st.result={win:true,reason:O.type==='gate'?'擊倒敵軍指揮官，城門還在':'擊倒敵方指揮官'};}else if(routed){st.result={win:true,reason:'霧裡的敵人全部清掉了'};}else if(saved){st.result={win:true,reason:'村裡的人都救出來了'};}
@@ -536,6 +592,6 @@ function plan(D,st,u,style){if(st.escort&&st.escort.status==='trapped'&&u.factio
 // ---------- 重播 ----------
 function replay(D,missionId,seed,actions,opts){let st=createBattle(D,missionId,seed,opts);for(const a of actions){const r=apply(D,st,a);if(!r.ok)throw new Error('replay failed at '+JSON.stringify(a)+': '+r.error);st=r.state;}return st;}
 
-const API={healingForecast,masteryTier,masteryBoost,skillOf,skillAffected,sv,tm,STN,genTargets,genArea,hasP,updCorr,SCHEMA,createBattle,apply,validate,reachable,targetsFrom,skillTargets,preview,calc,plan,replay,hash,rngAt,los,key,manhattan,unitAt,tileAt,alive,rangeOf,counterMult,clone,soldiers,solMaxN,splitPreview,inZone,moveOpts,withPos};
+const API={pursuitPlan,healingForecast,masteryTier,masteryBoost,skillOf,skillAffected,sv,tm,STN,genTargets,genArea,hasP,updCorr,SCHEMA,createBattle,apply,validate,reachable,targetsFrom,skillTargets,preview,calc,plan,replay,hash,rngAt,los,key,manhattan,unitAt,tileAt,alive,rangeOf,counterMult,clone,soldiers,solMaxN,splitPreview,inZone,moveOpts,withPos};
 if(typeof module!=='undefined'&&module.exports)module.exports=API;else root.TACTICS=API;
 })(this);
