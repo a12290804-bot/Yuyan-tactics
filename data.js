@@ -4,12 +4,12 @@ const DATA={
  rulesetVersion:'v0.7',
  bgm:{title:'hall',base:'hall',map:'explore',battle:'battle',boss:'boss',win:'hall'},bgmRoot:'../raven-guild/audio/',
  prologue:[
-  {img:'battle/bt_plain.webp',future:'pr_1',txt:'天闕大陸的北邊，白鐵礦城的礦坑從來沒有停過。'},
-  {img:'backgrounds/fac_lighthouse.webp',future:'pr_1',txt:'渡鴉公會在城的北境有一座分站。這幾年，分站的燈一盞一盞熄了，只剩下礦坑底下的機器還在挖。'},
-  {img:'backgrounds/fac_council.webp',future:'pr_2',txt:'這個月，暮簡村地方站收到一封退回來的信。信封上沒有寄件人，只有一枚燒焦的渡鴉印。'},
-  {img:'backgrounds/cover_wall.webp',future:'pr_3',txt:'公會沒有派正式成員。去的是我們——名冊最後幾頁的外圍成員：還沒拿到徽章的盾衛、只會點燈的術士、背著藥箱的人。'},
-  {img:'backgrounds/base_bg.webp',future:'pr_3',txt:'任務只有一句：「到白鐵礦城南門，把燈重新點起來。」'},
-  {img:'battle/bt_gate.webp',future:'pr_4',txt:'我們到的那晚，南門已經破了一半。霧裡有提燈的隊伍，正慢慢往城門走過來。'}
+  {img:'battle/bt_plain.webp',future:'pr_1',txt:'我第一次聽見白鐵礦城的名字，是在暮簡村地方站。送信的人把手在火盆上烘了半天，才解開郵袋。'},
+  {img:'backgrounds/fac_lighthouse.webp',future:'pr_1',txt:'站裡管退件的把信翻過來。寄件人的位置空著，封口卻印著燒焦的渡鴉。她認出了北境分站用的蠟。'},
+  {img:'backgrounds/fac_council.webp',future:'pr_2',txt:'她去翻名冊。最近一筆是礦城的燈油，領用人的名字還在，三個月沒人來畫押。'},
+  {img:'backgrounds/cover_wall.webp',future:'pr_3',txt:'出發那天，站員發給我們一罐燈油。背藥箱的人問有沒有多的。站員想了想，把自己桌上的半罐也遞了過來。'},
+  {img:'backgrounds/base_bg.webp',future:'pr_3',txt:'「到南門再點。」她把油罐塞進我懷裡，「那裡要是還有人值夜，他看得見。」'},
+  {img:'battle/bt_gate.webp',future:'pr_4',txt:'我們到時，南門只剩半扇。牆內有人叫我們蹲下。霧裡也有人喊蹲下，喊得跟他一模一樣。'}
  ],
  // 我方兵種對應的小兵圖（接戰演出）
  soldierArt:{P_SHIELD:'sd_shield',P_SPEAR:'sd_spear',P_LANTERN:'sd_lantern',P_ARCHER:'sd_archer',P_HEALER:'sd_healer',P_WEAVER:'sd_weaver',P_SCOUT:'sd_scout'},
@@ -191,7 +191,7 @@ const DATA={
  innateTxt:{wangdeng:['未熄的歸途','隊友的生命第一次掉到三成以下時，月燈自動給生命 20% 的護盾（每 3 回合一次）。'],feie:['不肯斷裂的線','隊友受到致命傷時，緋厄用自己的生命替他擋下（隊友留兩成生命；每 3 回合一次），之後振奮 2 回合。']},
  cmdSkill:{"RETURN": "cm_return", "PAPER": "cm_fire", "MINE": "cm_drill"},
  // ---------- v1.1：渡鴉幣、好感、禮物 ----------
- version:'v1.5.0',
+ version:'v1.6.0',
  coins:{win:5,lose:1,first:15,name:'渡鴉幣'},costumePrice:100,
  aff:{tiers:[0,15,40,80,130],names:['普通','熟識','信賴','摯友','羈絆'],chat:8,gift:6,giftLike:15},
  giftDrop:{chance:.35,list:['soup','bread','fish','honey','wick','feather','iron']},
@@ -449,7 +449,7 @@ DATA.gacha.mythPity=200;
 DATA.gacha.mythExchange=200;
 // 先救出，再護送；戰後居民的狀態由這場戰鬥的結果決定。
 DATA.missions.MISSION_RESCUE={
- name:'礦道旁・未歸的推車人',place:'礦道旁',chapter:1,threat:0,w:12,h:12,roundLimit:12,
+ name:'礦道旁・左輪還在響',place:'礦道旁',chapter:1,threat:0,w:12,h:12,roundLimit:12,
  intro:'一名推車人被壓在礦道旁。靠近後花一次行動解開繩索，再由同一隊護送回南側撤離點。其他成員要替他們留住回程的路。',
  map:DATA.missions.MISSION_MINE.map.slice(),legend:{...DATA.missions.MISSION_MINE.legend},
  obj:{type:'escort',person:[2,5],exit:[[2,10],[3,10],[4,10],[5,10],[6,10]],timeout:'夜霧封住礦道，救援隊被迫撤回'},
@@ -459,7 +459,7 @@ DATA.missions.MISSION_RESCUE={
  {round:5,wave:[[4,9,8]],say:'回程右側出現敵人。留一隊接應，或用束縛拖住追兵。'}],
  win:'解救推車人，並護送到南側任一撤離點。',lose:'護送隊倒下、我方全滅，或第 12 回合結束仍未撤離。'};
 DATA.missions.MISSION_RESCUE.map[5]='..........R.';DATA.missions.MISSION_RESCUE.map[6]='.....S......';
-DATA.region.push({id:'rescue',scene:'lv_mine',name:'未歸的推車人',x:.24,y:.29,mission:'MISSION_RESCUE',needs:['MISSION_BC_001'],desc:'南門有人在等一名沒有回來的推車人。先到街巷接下請託。',side:true});
+DATA.region.push({id:'rescue',scene:'lv_mine',name:'左輪還在響',x:.24,y:.29,mission:'MISSION_RESCUE',needs:['MISSION_BC_001'],desc:'南門有人在等一名沒有回來的推車人。先到街巷接下請託。',side:true});
 // 開局更早接敵；仍維持三勢力隨機與原本的勝利條件。
 DATA.missions.MISSION_BC_001.enemySlots=[[5,1],[8,2],[5,5],[7,4],[3,3],[9,2]];
 DATA.missions.MISSION_BC_001.events[0].say='霧裡的快隊已逼近中路。先點敵人看兵種與威脅；用長槍攔騎兵，盾衛守住通往城門的缺口。';

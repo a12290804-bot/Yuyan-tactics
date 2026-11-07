@@ -114,7 +114,7 @@ function dealTo(D,st,tgt,d,ev,src){if(tgt.hp<=0)return;src=src||{};d=redirect(D,
  const guardian=alive(st,tgt.faction).find(g=>g.id!==tgt.id&&g.st.gs>0&&manhattan(g,tgt)===1);
  if(guardian&&!src.noShare){const share=D.skills.guardStance.share;const r=Math.floor(d*share);if(r>0){d-=r;ev.push({t:'share',a:guardian.id,d:tgt.id,dmg:r,txt:guardian.name+' 替 '+tgt.name+' 擋下 '+r});applySplit(D,st,guardian,r,ev);}}
  applySplit(D,st,tgt,d,ev);if(tgt.hp>0&&!src.noShare)takenHit(D,st,tgt,ev);}
-function applySplit(D,st,t,d,ev){if(sv(t,'shield')>0&&d>0){const a=Math.min(t.st.shield,d);t.st.shield-=a;d-=a;ev.push({t:'shield',d:t.id,txt:t.name+' 的護盾擋下 '+a});if(d<=0)return;}const p=splitPreview(t,d);const n0=soldiers(t);t.sol=Math.max(0,p.sol);t.hp=Math.max(0,p.hp);const lost=n0-soldiers(t);
+function applySplit(D,st,t,d,ev){if(sv(t,'shield')>0&&d>0){const a=Math.min(t.st.shield,d);t.st.shield-=a;d-=a;ev.push({t:'shield',d:t.id,broken:t.st.shield===0,txt:t.name+' 的護盾擋下 '+a});if(d<=0)return;}const p=splitPreview(t,d);const n0=soldiers(t);t.sol=Math.max(0,p.sol);t.hp=Math.max(0,p.hp);const lost=n0-soldiers(t);
  if(lost>0)ev.push({t:'soldier',d:t.id,n:lost,txt:t.name+' 損失士兵 '+lost+' 名（剩 '+soldiers(t)+'）'});
  if(t.hp<=0){if(saveLife(D,st,t,ev))return;t.sol=0;ev.push({t:'down',d:t.id,txt:t.name+' 倒下了，兵隊潰散'});onDown(D,st,t,ev);}}
 
