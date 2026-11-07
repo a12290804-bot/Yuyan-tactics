@@ -1,5 +1,5 @@
 // 《語嫣・永生戰棋》P0 單元測試：node tests/run_tests.js
-const D=require('../data.js'),C=require('../core.js');
+const D=require('../data.js'),C=require('../core.js'),Camp=require('../camp.js');
 let pass=0,fail=0;const out=[];
 function t(id,name,fn){try{fn();pass++;out.push('PASS '+id+' '+name);}catch(e){fail++;out.push('FAIL '+id+' '+name+' — '+e.message);}}
 function eq(a,b,m){if(a!==b)throw new Error((m||'')+' 期待 '+b+' 實際 '+a);}
@@ -7,7 +7,7 @@ function ok(v,m){if(!v)throw new Error(m||'不成立');}
 // 空白測試場：全平原、只放指定單位
 function blank(units,tiles){const st=C.createBattle(D,'MISSION_BC_001',1);st.tiles=st.tiles.map(()=> 'PLAIN');st.units=[];st.eventLog=[];st.gate={x:11,y:11,hp:300,maxHp:300,def:10,res:0};
  if(tiles)for(const [x,y,tt] of tiles)st.tiles[y*st.w+x]=tt;
- units.forEach(([def,id,f,x,y,nosol])=>{const b=D.units[def];const n=nosol?0:(b.soldiers||0),hp1=b.hpPer||10;st.units.push({id,def,name:b.name,glyph:b.glyph,troop:b.troop,faction:f,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,sol:n*hp1,solMax:(b.soldiers||0)*hp1,hpPer:hp1,skill:b.skill||null,cd:{},form:'NONE',st:{root:0,mark:0,gs:0},usedAct:false,guard:false});});st.zones=[];
+ units.forEach(([def,id,f,x,y,nosol])=>{const b=D.units[def];const n=nosol?0:(b.soldiers||0),hp1=b.hpPer||10;st.units.push({id,unitType:def,name:b.name,glyph:b.glyph,troop:b.troop,faction:f,x,y,hp:b.hp,maxHp:b.hp,atk:b.atk,def:b.def,mag:b.mag,res:b.res,move:b.move,rmin:b.rmin,rmax:b.rmax,dmg:b.dmg,hit:b.hit||0,eva:b.eva||0,crit:5,commander:!!b.commander,sol:n*hp1,solMax:(b.soldiers||0)*hp1,hpPer:hp1,skills:b.skills||(b.skill?[b.skill]:[]),pas:b.pas||[],cd:{},st:{root:0,mark:0,gs:0},usedAct:false,guard:false});});st.zones=[];
  st.round=1;st.phase='PLAYER';st.result=null;return st;}
 const has=(R,x,y)=>R.has(x+','+y);
 
@@ -58,23 +58,143 @@ t('S01','技能冷卻：用過要等，到時間才能再用',()=>{const st=blan
  eq(C.validate(D,r.state,{type:'ACT',actorId:'A',to:{x:r.state.units[0].x,y:r.state.units[0].y},act:'SKILL',skill:'pierce',target:'B'})||'',r.state.units[0].cd.pierce>0?'cooldown':'');});
 t('S02','貫穿突刺打到後面一格、不被反擊',()=>{const st=blank([['P_SPEAR','A','P',5,6],['E_INF','B','E',5,5],['E_INF','C','E',5,4]]);for(const u of st.units)u.eva=-300;
  const r=C.apply(D,st,{type:'ACT',actorId:'A',to:{x:5,y:6},act:'SKILL',skill:'pierce',target:'B'});const hits=r.events.filter(e=>e.t==='hit');eq(hits.length,2,'兩段');ok(hits.every(e=>!e.counter),'沒有反擊');ok(hits.some(e=>e.d==='C'));});
-t('S03','燈界：我方在裡面防禦提高，而且穩住預告的異變格',()=>{let st=C.createBattle(D,'MISSION_BC_001',5,{team:['P_LANTERN','P_SHIELD','P_SPEAR','P_ARCHER']});
- const L=st.units.find(u=>u.skill==='lampZone');L.x=8;L.y=5;st.units.filter(u=>u.faction==='E').forEach(u=>{u.x=0;u.y=11-0;});st.units.filter(u=>u.faction==='E').forEach((u,i)=>{u.x=i;u.y=11;});
- st.round=2;st.zones=[{x:8,y:4,faction:'P',owner:L.id,until:3}];st.units.forEach(u=>u.usedAct=u.faction==='P');
- const r=C.apply(D,st,{type:'END_PHASE'});eq(r.state.round,3);eq(r.state.tiles[3*12+8],'FOREST','(8,3) 被穩住');eq(r.state.tiles[3*12+9],'FOREST','(9,3) 也在燈界裡');ok(r.events.some(e=>e.t==='stabilize'));});
+t('S03','燈界穩住範圍內即將異變的格子',()=>{
+ const st=blank([['P_LANTERN','L','P',8,5],['E_INF','B','E',0,0]]);
+ st.round=2;
+ st.warn=[{x:8,y:3,to:'FLESH',at:3},{x:9,y:3,to:'FLESH',at:3},{x:10,y:3,to:'FLESH',at:3}];
+ const cast=C.apply(D,st,{type:'ACT',actorId:'L',to:{x:8,y:5},act:'SKILL',skill:'lampZone',at:{x:8,y:4}});
+ ok(cast.ok,cast.error);
+ const r=C.apply(D,cast.state,{type:'END_PHASE'});ok(r.ok,r.error);eq(r.state.round,3);
+ eq(C.tileAt(r.state,8,3),'PLAIN');eq(C.tileAt(r.state,9,3),'PLAIN');eq(C.tileAt(r.state,10,3),'FLESH');
+ eq(r.events.filter(e=>e.t==='stabilize').length,2);
+});
 t('S04','治療：回生命、補士兵、解除束縛',()=>{const st=blank([['P_HEALER','H','P',5,7],['P_SPEAR','A','P',5,6],['E_INF','B','E',9,1]]);const a=st.units[1];a.hp=40;a.sol=10;a.st.root=1;
  const r=C.apply(D,st,{type:'ACT',actorId:'H',to:{x:5,y:7},act:'SKILL',skill:'mend',target:'A'});ok(r.ok,r.error);const b=r.state.units[1];ok(b.hp>40&&b.sol>10&&b.st.root===0);});
 t('S05','影徑：無視控制區多走一格，可以背襲',()=>{const st=blank([['P_SCOUT','S','P',2,5],['P_SPEAR','A','P',6,4],['E_INF','B','E',5,4]]);const u=st.units[0];
  const normal=C.reachable(D,st,u),dash=C.reachable(D,st,u,{extra:1,ignoreZoc:true});ok(!normal.has('6,5'),'平常被控制區擋住');ok(dash.has('6,5')||dash.has('5,3'),'影徑可以繞到後面');
  const p=C.preview(D,st,u,{x:5,y:5},'B',{flank:.2});ok(p.notes.some(n=>/背襲/.test(n)),'旁邊有隊友＝背襲');});
-t('S06','軍陣：堅盾陣移動 −1、物理傷害 −15%；長槍陣讓騎兵衝鋒失效',()=>{const st=blank([['P_SHIELD','A','P',5,5],['E_CAV','B','E',5,1]]);const u=st.units[0];const m0=C.reachable(D,st,u).size;u.form='SHIELD_WALL';ok(C.reachable(D,st,u).size<m0,'移動變少');
- const st2=blank([['P_SPEAR','A','P',5,6],['E_CAV','B','E',5,1]]);const cav=st2.units[1];const p1=C.preview(D,st2,cav,{x:5,y:5},'A',{charge:4});ok(p1.notes.some(n=>/衝鋒/.test(n)),'衝鋒');st2.units[0].form='PIKE';const p2=C.preview(D,st2,cav,{x:5,y:5},'A',{charge:4});ok(!p2.notes.some(n=>/衝鋒/.test(n)),'長槍陣擋衝鋒');ok(p2.counter.notes.some(n=>/長槍陣/.test(n)),'反擊加成');
- eq(C.validate(D,st,{type:'ACT',actorId:'A',to:{x:5,y:5},act:'FORM',form:'SHIELD_WALL'}),'same_form');});
+t('S06','兵團被動急行增加移動，鐵壁減少受到的傷害',()=>{
+ const st=blank([['P_SHIELD','A','P',5,5],['E_INF','B','E',5,4]]);const [u,e]=st.units;
+ const normal=C.reachable(D,st,u);u.pas=['march'];ok(C.reachable(D,st,u).size>normal.size,'急行多一格');
+ const hit=()=>C.preview(D,st,e,{x:e.x,y:e.y},u.id).dmg;
+ const before=hit();u.pas=['wall'];ok(hit()<before,'鐵壁降低傷害');
+});
 t('S07','35 種隊伍組合各 3 場：每一步都合法、都有結果',()=>{const ALL=['P_SHIELD','P_SPEAR','P_ARCHER','P_LANTERN','P_HEALER','P_WEAVER','P_SCOUT'];let n=0;
  for(let a=0;a<7;a++)for(let b=a+1;b<7;b++)for(let c=b+1;c<7;c++)for(let d=c+1;d<7;d++)for(let k=0;k<3;k++){const team=[ALL[a],ALL[b],ALL[c],ALL[d]];let st=C.createBattle(D,'MISSION_BC_001',n*31+k+1,{team});let g=0;
   while(!st.result&&g<400){g++;const ps=C.alive(st,'P').filter(u=>!u.usedAct);const r=C.apply(D,st,ps.length?C.plan(D,st,ps[0],k%2?'hold':'free'):{type:'END_PHASE'});ok(r.ok,team+' '+r.error);ok(!r.events.some(e=>e.t==='ai_error'),'敵方 AI 不合法');st=r.state;}ok(st.result,'要有結果');n++;}});
 t('S08','重播：任何隊伍、同 seed＋同指令 → 同狀態碼',()=>{for(const team of [['P_SCOUT','P_WEAVER','P_HEALER','P_LANTERN'],['P_SHIELD','P_SPEAR','P_ARCHER','P_LANTERN']]){let st=C.createBattle(D,'MISSION_BC_001',999,{team});const acts=[];let g=0;
  while(!st.result&&g<300){g++;const ps=C.alive(st,'P').filter(u=>!u.usedAct);const a=ps.length?C.plan(D,st,ps[0]):{type:'END_PHASE'};acts.push(a);st=C.apply(D,st,a).state;}
  eq(C.hash(C.replay(D,'MISSION_BC_001',999,JSON.parse(JSON.stringify(acts)),{team})),C.hash(st));}});
+
+// 走據點、出戰、行動與結算的正式介面，並以固定 seed 比對結果。
+function spearCamp(){
+ const camp=Camp.newCamp(D);
+ camp.team=['spear'];
+ camp.coins=500;
+ return camp;
+}
+function buyAndLearn(camp,book){
+ const bought=Camp.bookBuy(D,camp,book);ok(bought.ok,bought.error);
+ const learned=Camp.bookLearn(D,camp,'spear',book);ok(learned.ok,learned.error);
+}
+function deploy(camp){
+ return C.createBattle(D,'MISSION_BC_001',42,{team:Camp.teamFor(D,camp)});
+}
+function duel(camp){
+ const st=deploy(camp);const hero=st.units[0],enemy=st.units.find(u=>u.faction==='E');
+ st.tiles.fill('PLAIN');
+ hero.x=5;hero.y=5;hero.hit=100;enemy.x=5;enemy.y=4;enemy.eva=0;
+ enemy.hp=enemy.maxHp=999;
+ st.units=[hero,enemy];
+ return {st,hero,enemy};
+}
+function act(st,hero,action){
+ const r=C.apply(D,st,{type:'ACT',actorId:hero.id,to:{x:hero.x,y:hero.y},...action});
+ ok(r.ok,r.error);
+ return r;
+}
+
+t('V01','升級和英雄突破提高實際出戰數值，保留星印可升至十星',()=>{
+ const camp=spearCamp(),record=camp.roster.spear;
+ const lv1=deploy(camp).units[0];
+ eq(Camp.addXp(D,record,D.xp.perLevel),1);
+ const lv2=deploy(camp).units[0];
+ eq(lv2.lv,2);ok(lv2.atk>lv1.atk&&lv2.maxHp>lv1.maxHp,'升級後攻擊及生命提高');
+ record.star=5;record.starBank=5;
+ const bought=Camp.bookBuy(D,camp,'br_hero');ok(bought.ok,bought.error);
+ eq(Camp.bookLearn(D,camp,'spear','br_hero').ok,false);eq(camp.skillBooks.br_hero,1);
+ Camp.addXp(D,record,D.xp.perLevel*44);
+ eq(record.lv,10);
+ const before=deploy(camp).units[0];
+ const learned=Camp.bookLearn(D,camp,'spear','br_hero');ok(learned.ok,learned.error);
+ const restored=Camp.fix(D,C.clone(camp)),after=deploy(restored).units[0];
+ eq(restored.roster.spear.star,10);eq(restored.roster.spear.rank,1);
+ eq(restored.roster.spear.starBank,0);eq(restored.skillBooks.br_hero,0);
+ ok(after.atk>before.atk&&after.maxHp>before.maxHp,'突破後攻擊及生命提高');
+});
+
+t('V02','主動技能書造成傷害與束縛，熟練度結算一次並提高下場傷害',()=>{
+ const camp=spearCamp();const skill=D.skillBooks.P_SPEAR.skill;
+ Camp.addXp(D,camp.roster.spear,D.xp.perLevel*15);
+ buyAndLearn(camp,skill);
+ camp.roster.spear.mastery[skill]=D.practice.thresholds[1]-D.practice.gain;
+ const first=duel(camp);
+ const cast=({st,hero,enemy})=>act(st,hero,{act:'SKILL',skill,target:enemy.id});
+ const r=cast(first),target=r.state.units.find(u=>u.id===first.enemy.id);
+ const damage=first.enemy.hp+first.enemy.sol-target.hp-target.sol;
+ ok(damage>0);eq(target.st.root,1);eq(target.st.slow,2);
+ eq(r.state.units[0].practiceGain[skill],D.practice.gain);
+ const finished=C.apply(D,r.state,{type:'RETREAT'});ok(finished.ok,finished.error);
+ const reward=Camp.afterBattle(D,camp,finished.state,()=>.99);
+ eq(reward.practice.spear[skill],D.practice.gain);
+ eq(Camp.afterBattle(D,camp,finished.state,()=>.99).dup,true);
+ const restored=Camp.fix(D,C.clone(camp));
+ eq(restored.roster.spear.mastery[skill],D.practice.thresholds[1]);
+ const next=duel(restored),nextTarget=cast(next).state.units[1];
+ ok(next.enemy.hp+next.enemy.sol-nextTarget.hp-nextTarget.sol>damage,'同 seed 下熟練技能造成更多傷害');
+ const deselected=Camp.selectBook(D,restored,'spear','active','');ok(deselected.ok,deselected.error);
+ const last=duel(restored);
+ eq(C.validate(D,last.st,{type:'ACT',actorId:last.hero.id,to:last.hero,act:'SKILL',skill,target:last.enemy.id}),'no_skill');
+});
+
+t('V03','英雄被動技能書在戰鬥結算時提高傷害',()=>{
+ const camp=spearCamp();
+ Camp.addXp(D,camp.roster.spear,D.xp.perLevel*15);
+ const damage=({st,hero,enemy})=>{
+  const target=act(st,hero,{act:'ATTACK',target:enemy.id}).state.units[1];
+  return enemy.hp+enemy.sol-target.hp-target.sol;
+ };
+ const before=damage(duel(camp));
+ buyAndLearn(camp,'bp_watch');
+ ok(damage(duel(camp))>before,'滿血時完陣增加傷害');
+ const deselected=Camp.selectBook(D,camp,'spear','passive','');ok(deselected.ok,deselected.error);
+ eq(damage(duel(camp)),before,'卸下後恢復原傷害');
+});
+
+t('V04','兵團技能書提高移動，兵團晉升增加上限及每兵生命',()=>{
+ const camp=spearCamp(),squad=camp.roster.spear.sq;
+ squad.lv=D.squad.maxLv;squad.tier=D.squad.maxTier;
+ const before=duel(camp);
+ buyAndLearn(camp,'bs_march');
+ const after=duel(camp);
+ ok(C.reachable(D,after.st,after.hero).size>C.reachable(D,before.st,before.hero).size);
+ buyAndLearn(camp,'br_squad');
+ const promoted=deploy(camp).units[0];
+ eq(C.solMaxN(promoted),C.solMaxN(after.hero)+1);
+ ok(promoted.hpPer>after.hero.hpPer);eq(C.soldiers(promoted),C.soldiers(after.hero));
+});
+
+t('V05','商鋪購物、帶入戰鬥、使用道具及扣除庫存',()=>{
+ const camp=spearCamp(),item='bandage',price=D.fieldItems[item].price;
+ const coins=camp.coins;
+ const bought=Camp.buyFieldItem(D,camp,item);ok(bought.ok,bought.error);
+ eq(camp.coins,coins-price);eq(camp.items[item],1);
+ ok(Camp.packItem(D,camp,item,true));
+ const {st,hero}=duel(camp);
+ eq(st.pack[item],1);hero.hp=Math.floor(hero.maxHp/2);
+ const r=act(st,hero,{act:'ITEM',item}),healed=r.state.units[0];
+ ok(healed.hp>hero.hp);eq(healed.usedAct,true);eq(r.state.pack[item],0);
+ ok(Camp.spendItem(camp,item));eq(camp.items[item],0);eq(Camp.packFor(D,camp)[item],undefined);
+});
 
 console.log(out.join('\n'));console.log(`\n通過 ${pass}／${pass+fail}`);process.exit(fail?1:0);
