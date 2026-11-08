@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#14110e">
+<title>燈火邊境</title>
+<style>
+:root{--bg:#14110e;--panel:#1e1915;--line:#5a4a36;--gold:#d8b46a;--ink:#eadfcb;--dim:#9c8f7a;--taint:#8a3cc8;--red:#c85a4a;--lit:#f3d27a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;overflow:hidden}
+body{display:flex;flex-direction:column}
+#bgimg{position:fixed;inset:0;background:center/cover no-repeat;opacity:.18;filter:grayscale(.4) blur(2px);z-index:-1}
+header{padding:calc(env(safe-area-inset-top) + 8px) 12px 6px;background:linear-gradient(#14110eee,#14110e99)}
+.top{display:flex;align-items:baseline;gap:10px}
+h1{margin:0;font-size:20px;color:var(--gold);letter-spacing:2px}
+#day{color:var(--dim);font-size:14px}
+#res{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 3px;border:1px solid var(--line);border-radius:14px;background:#0008;font-size:14px}
+.chip img{width:20px;height:20px;border-radius:50%;object-fit:cover}
+.chip.warn{border-color:var(--red);color:#ffb3a6}
+#fc{font-size:12px;color:var(--dim);margin-top:4px;min-height:16px}
+#fc b{color:var(--ink);font-weight:normal}
+#fc .bad{color:#ffab9c}
+#mapwrap{flex:1;overflow:auto;position:relative;touch-action:pan-x pan-y}
+#map{display:block;margin:0 auto;width:100%;height:100%}
+#mapwrap.zoom #map{width:175%;height:175%}
+.hx{cursor:pointer}
+.hx .base{stroke:#0009;stroke-width:.05}
+.hx.fog .base{fill:#0b0a09}
+.hx .tnt{fill:var(--taint);pointer-events:none}
+.hx .litr{fill:none;stroke:var(--lit);stroke-width:.06;stroke-dasharray:.18 .14;opacity:.55;pointer-events:none}
+.hx .front{fill:none;stroke:var(--red);stroke-width:.055;opacity:.8;pointer-events:none}
+.hx .sel{fill:none;stroke:#fff;stroke-width:.12;pointer-events:none}
+.hx .prot{fill:#7fd0ff;opacity:.12;pointer-events:none}
+.pulse{animation:pl 1.6s ease-in-out infinite}
+@keyframes pl{50%{opacity:.35}}
+.newt{animation:nt 1.2s ease-out 2}
+@keyframes nt{0%{opacity:1}100%{opacity:.25}}
+.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.2)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+#team{display:flex;gap:6px;overflow-x:auto;padding:6px 10px;background:#0009;border-top:1px solid #3a3026}
+.mem{flex:0 0 auto;width:54px;text-align:center;font-size:11px;color:var(--dim);position:relative}
+.mem img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid var(--line);display:block;margin:0 auto}
+.mem.busy img{border-color:var(--gold);filter:brightness(.6)}
+.mem.tired img{filter:grayscale(1) brightness(.5)}
+.pips{display:flex;justify-content:center;gap:2px;margin-top:2px}
+.pips i{width:8px;height:4px;border-radius:2px;background:#3a3026}
+.pips i.on{background:var(--gold)}
+.mem .tk{position:absolute;top:28px;left:0;right:0;font-size:10px;color:var(--gold);text-shadow:0 0 3px #000}
+nav{display:flex;gap:6px;padding:6px 10px calc(env(safe-area-inset-bottom) + 8px);background:#0d0b09}
+button{font:inherit;color:var(--ink);background:#2a221b;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:15px}
+button:active{transform:scale(.97)}
+button:disabled{opacity:.4}
+button.main{flex:1;background:#5a4426;border-color:var(--gold);color:#fff3d6;font-size:16px}
+#sheet{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:2px solid var(--gold);border-radius:14px 14px 0 0;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);max-height:62vh;overflow:auto;transform:translateY(105%);transition:transform .22s;z-index:20;box-shadow:0 -8px 30px #000a}
+#sheet.on{transform:none}
+#sheet h2{margin:0 0 4px;font-size:18px;color:var(--gold);display:flex;align-items:center;gap:8px}
+#sheet h2 img{width:34px;height:34px;border-radius:6px;object-fit:cover}
+#sheet .x{position:absolute;right:12px;top:10px;background:none;border:none;font-size:22px;color:var(--dim)}
+.note{color:var(--dim);font-size:13px;line-height:1.55}
+.sec{margin-top:10px}
+.sec h3{margin:0 0 6px;font-size:14px;color:var(--ink);font-weight:normal;border-left:3px solid var(--gold);padding-left:6px}
+.bopt{display:flex;align-items:center;gap:8px;width:100%;text-align:left;margin-bottom:6px;padding:7px 9px}
+.bopt img{width:34px;height:34px;border-radius:6px;object-fit:cover;flex:0 0 auto}
+.bopt .t{flex:1}
+.bopt .t small{display:block;color:var(--dim);font-size:12px;line-height:1.4}
+.cost{display:flex;gap:6px;font-size:13px;white-space:nowrap}
+.cost span{display:flex;align-items:center;gap:2px}
+.cost img{width:16px;height:16px;border-radius:50%}
+.cost .no{color:#ff9a8a}
+.trow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.trow .tn{width:48px;font-size:14px;color:var(--gold)}
+.ava{display:flex;flex-direction:column;align-items:center;padding:3px 4px;width:58px;font-size:11px}
+.ava img{width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:50% 18%}
+.ava b{font-weight:normal;color:var(--gold)}
+#modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
+#modal.hide,#night.hide,.hide{display:none!important}
+.box{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:16px;max-width:460px;width:100%;max-height:86vh;overflow:auto}
+.box h2{margin:0 0 8px;color:var(--gold)}
+.box p{line-height:1.7;margin:6px 0}
+.gain{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.rep li{margin:3px 0;line-height:1.55}
+.lost{color:#ffab9c}
+.recruit{display:flex;gap:10px;align-items:center;margin:10px 0;padding:8px;border:1px solid var(--line);border-radius:10px}
+.recruit img{width:70px;height:70px;border-radius:10px;object-fit:cover;object-position:50% 15%}
+#night{position:fixed;inset:0;background:#05040a;z-index:35;display:flex;align-items:center;justify-content:center;font-size:26px;color:#b8a6d8;letter-spacing:6px;animation:nf 1.3s ease forwards}
+@keyframes nf{0%{opacity:0}30%{opacity:1}75%{opacity:1}100%{opacity:0}}
+#hint{position:fixed;left:12px;right:12px;top:130px;z-index:15;background:#1e1915ee;border:1px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.6}
+#toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:#000d;border:1px solid var(--line);padding:6px 14px;border-radius:16px;font-size:14px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.on{opacity:1}
+.mlist .m{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #3a3026}
+.mlist img{width:56px;height:56px;border-radius:10px;object-fit:cover;object-position:50% 15%}
+.stat{font-size:12px;color:var(--dim)}
+.stat b{color:var(--gold);font-weight:normal}
+</style>
+</head>
+<body>
+<div id="bgimg"></div>
+<header>
+ <div class="top"><h1>燈火邊境</h1><span id="day"></span></div>
+ <div id="res"></div>
+ <div id="fc"></div>
+</header>
+<div id="mapwrap"><svg id="map" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<div id="team"></div>
+<nav>
+ <button onclick="showTeam()">成員</button>
+ <button onclick="toggleZoom()" id="zb">放大</button>
+ <button onclick="showMenu()">選單</button>
+ <button class="main" onclick="endDay()">結束這一天</button>
+</nav>
+<div id="sheet"></div>
+<div id="modal" class="hide"><div class="box" id="mbox"></div></div>
+<div id="night" class="hide"></div>
+<div id="hint" class="hide"></div>
+<div id="toast"></div>
+<script src="data.js"></script>
+<script src="core.js"></script>
+<script>
+const D=window.HEX_DATA,H=window.HEX,SAVE='hex_save_v1',SQ3=Math.sqrt(3);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let st=null,sel=null,newT=new Set(),popK=null;
+function save(){try{localStorage.setItem(SAVE,JSON.stringify(st));}catch(e){}}
+function load(){try{const s=localStorage.getItem(SAVE);if(s){const o=JSON.parse(s);if(o&&o.v===1)return o;}}catch(e){}return null;}
+function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1600);}
+function act(a){const r=H.apply(D,st,a);if(!r.ok){toast(r.error);return null;}st=r.state;save();return r;}
+const T0=c=>D.terrain[c.t];
+const px=c=>({x:SQ3*(c.q+c.r/2),y:1.5*c.r});
+const hexPts=(s)=>{const p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((s*Math.cos(a)).toFixed(3)+','+(s*Math.sin(a)).toFixed(3));}return p.join(' ');};
+function resChip(k,v,warn){const R=D.res[k];return `<span class="chip${warn?' warn':''}"><img src="${R.ic}" alt="">${R.name} ${v}</span>`;}
+function costHtml(cost,res){return `<span class="cost">${Object.entries(cost).map(([k,v])=>`<span class="${(res[k]||0)<v?'no':''}"><img src="${D.res[k].ic}" alt="">${v}</span>`).join('')}</span>`;}
+
+function drawTop(){$('day').textContent=`第 ${st.day} 天`;const f=H.forecast(D,st);
+ $('res').innerHTML=['food','wood','iron','oil','coin'].map(k=>resChip(k,st.res[k],(k==='oil'&&f.oilShort)||(k==='food'&&st.res.food<f.eat))).join('');
+ const nests=Object.values(st.cells).filter(c=>c.nest).length;
+ $('fc').innerHTML=`今晚：吃 <b>${f.eat}</b> 補給 · 燈塔燒 <b class="${f.oilShort?'bad':''}">${f.oilNeed}</b> 燈油${f.oilShort?'（不夠，有燈會熄）':''} · <span class="${f.front.size?'bad':''}">紅框 ${f.front.size} 格可能被污染</span> · 污染巢 ${nests}`;}
+
+function drawMap(){const svg=$('map');const R=D.radius;const W=SQ3*(2*R+1)+.4,Hh=1.5*2*R+2+.4;svg.setAttribute('viewBox',`${-W/2} ${-Hh/2} ${W} ${Hh}`);
+ const f=H.forecast(D,st);const pts=hexPts(.985);
+ let defs='<defs>';for(const [t,T] of Object.entries(D.terrain))defs+=`<pattern id="p_${t}" patternContentUnits="objectBoundingBox" width="1" height="1"><image href="${T.img}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/></pattern>`;
+ defs+='<clipPath id="cc" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath>';
+ defs+='<radialGradient id="glow"><stop offset="0" stop-color="#f3d27a" stop-opacity=".35"/><stop offset="1" stop-color="#f3d27a" stop-opacity="0"/></radialGradient></defs>';
+ let g='';const ms={};for(const m of st.members)if(m.task)(ms[m.task.cell]=ms[m.task.cell]||[]).push(m);
+ for(const [k,c] of Object.entries(st.cells)){const p=px(c);const fog=!c.rev;
+  g+=`<g class="hx${fog?' fog':''}" transform="translate(${p.x.toFixed(3)},${p.y.toFixed(3)})" onclick="pick('${k}')">`;
+  g+=`<polygon class="base" points="${pts}" ${fog?'':`fill="url(#p_${c.t})"`}/>`;
+  if(fog){g+=`<text y=".18" text-anchor="middle" font-size=".5" fill="#3a3026">？</text>`;}
+  else{
+   if(f.lit.has(k)&&!c.taint)g+=`<circle r=".85" fill="url(#glow)" pointer-events="none"/>`;
+   if(f.P.has(k)&&!c.taint)g+=`<polygon class="prot" points="${pts}"/>`;
+   if(c.taint)g+=`<polygon class="tnt${c.nest?' pulse':''}${newT.has(k)?' newt':''}" points="${pts}" opacity="${c.nest?.55:(.18+.14*c.taint)}"/>`;
+   if(c.nest)g+=`<text y=".2" text-anchor="middle" font-size=".55" fill="#f0d6ff" pointer-events="none">巢 ${c.nest}</text>`;
+   if(T0(c).ab&&!c.b&&!c.nest)g+=`<text x="0" y=".72" text-anchor="middle" font-size=".26" fill="#eadfcb" opacity=".75" stroke="#000" stroke-width=".05" paint-order="stroke" pointer-events="none">${T0(c).ab}</text>`;
+   if(c.t==='town')g+=`<text y=".72" text-anchor="middle" font-size=".28" fill="#fff3d6" stroke="#000" stroke-width=".05" paint-order="stroke" pointer-events="none">南門</text>`;
+   if(c.b){const B=D.buildings[c.b];g+=`<g class="${popK===k?'pop':''}" pointer-events="none"><circle r=".42" fill="#000a" stroke="${c.taint?'#8a3cc8':'#d8b46a'}" stroke-width=".05"/><image href="${B.ic}" x="-.38" y="-.38" width=".76" height=".76" clip-path="url(#cc)" preserveAspectRatio="xMidYMid slice"${c.taint?' opacity=".45"':''}/></g>`;}
+   if(f.lit.has(k)&&!c.taint)g+=`<polygon class="litr" points="${hexPts(.86)}"/>`;
+   if(f.front.has(k))g+=`<polygon class="front" points="${hexPts(.9)}"/>`;}
+  const mm=ms[k]||[];mm.forEach((m,i)=>{const x=-.3*(mm.length-1)/2+.3*i;g+=`<image href="${D.heroes[m.id].img}" x="${(x-.2).toFixed(2)}" y=".28" width=".4" height=".4" clip-path="url(#cc)" preserveAspectRatio="xMidYMin slice" pointer-events="none"/>`;});
+  if(sel===k)g+=`<polygon class="sel" points="${hexPts(.93)}"/>`;
+  g+='</g>';}
+ svg.innerHTML=defs+g;popK=null;}
+
+function drawTeam(){$('team').innerHTML=st.members.map(m=>{const h=D.heroes[m.id];const T=m.task&&D.tasks[m.task.type];return `<div class="mem${m.task?' busy':''}${!m.task&&m.stam<1?' tired':''}" onclick="memInfo('${m.id}')"><img src="${h.img}" alt="">${T?`<span class="tk">${T.name}</span>`:''}<div>${esc(m.name)}</div><div class="pips">${Array.from({length:D.maxStam},(_,i)=>`<i class="${i<m.stam?'on':''}"></i>`).join('')}</div></div>`;}).join('')+(st.pending&&st.pending.length?`<div class="mem" onclick="showRecruit()"><img src="${D.heroes[st.pending[0]].img}" alt="" style="border-color:#7fd0ff"><div style="color:#7fd0ff">等你</div></div>`:'');}
+function draw(){drawTop();drawMap();drawTeam();if(sel)drawSheet();}
+
+function pick(k){sel=(sel===k&&$('sheet').classList.contains('on'))?null:k;if(sel)drawSheet();else closeSheet();drawMap();}
+function closeSheet(){$('sheet').classList.remove('on');sel=null;drawMap();}
+function drawSheet(){const c=st.cells[sel];const sh=$('sheet');if(!c){closeSheet();return;}
+ let h=`<button class="x" onclick="closeSheet()">×</button>`;
+ if(!c.rev){h+=`<h2>迷霧</h2><p class="note">看不清楚的地方。派擅長探索的人去看看。</p>`;}
+ else{const T=D.terrain[c.t];h+=`<h2><img src="${T.img}" alt="">${T.name}${c.b?'・'+D.buildings[c.b].name:''}</h2>`;
+  const notes=[];if(c.t==='town')notes.push('大家的家。污染漫進來，燈就熄了。');
+  if(c.nest)notes.push(`污染巢，還剩 ${c.nest}。派淨化強的人去削弱它，三座都拔除就能守住南門。`);
+  else if(c.taint)notes.push(`被污染了（${'●'.repeat(c.taint)}${'○'.repeat(3-c.taint)}）。${c.b?'建築停工中；污染到三格滿就會毀掉。':'不能蓋房子，也採不到東西。'}`);
+  if(T.gather&&!c.taint&&!c.b)notes.push('可以採集：'+Object.entries(T.gather).map(([k,v])=>D.res[k].name+' '+v).join('、')+'。');
+  if(c.b)notes.push(D.buildings[c.b].desc);
+  const f=H.forecast(D,st);const k=sel;if(f.front.has(k))notes.push('<span style="color:#ffab9c">今晚可能被污染。</span>');else if(f.P.has(k))notes.push('<span style="color:#9fd8ff">今晚被守住了。</span>');else if(f.lit.has(k))notes.push('<span style="color:#f3d27a">今晚有燈照著。</span>');
+  h+=`<p class="note">${notes.join('<br>')}</p>`;
+  const bo=H.buildOptions(D,st,sel);if(bo.length){h+=`<div class="sec"><h3>蓋</h3>`+bo.map(o=>`<button class="bopt" ${o.ok?'':'disabled'} onclick="build('${o.id}')"><img src="${o.B.ic}" alt=""><span class="t">${o.B.name}<small>${o.B.desc}</small></span>${costHtml(o.cost,st.res)}</button>`).join('')+`</div>`;}
+  else if(!c.b&&!c.taint&&T.build&&c.t!=='nest'&&!H.nb(st,c).some(n=>n.b||n.t==='town'))h+=`<p class="note">要蓋在南門或其他建築旁邊。</p>`;
+  if(c.b&&c.t!=='town')h+=`<div class="sec"><button onclick="demolish()">拆掉${D.buildings[c.b].name}</button></div>`;}
+ const here=st.members.filter(m=>m.task&&m.task.cell===sel);
+ if(here.length)h+=`<div class="sec"><h3>派在這裡</h3><div class="trow">`+here.map(m=>`<button class="ava" onclick="unassign('${m.id}')"><img src="${D.heroes[m.id].img}" alt="">${esc(m.name)}<b>${D.tasks[m.task.type].name}・取消</b></button>`).join('')+`</div></div>`;
+ const to=H.taskOptions(D,st,sel);if(to.length){h+=`<div class="sec"><h3>派人</h3>`;
+  for(const t of to){const T=D.tasks[t];const free=st.members.filter(m=>!m.task&&m.stam>0).sort((a,b)=>D.heroes[b.id][T.stat]-D.heroes[a.id][T.stat]);
+   h+=`<div class="trow"><span class="tn">${T.name}</span>${free.length?free.map(m=>`<button class="ava" onclick="assign('${m.id}','${t}')"><img src="${D.heroes[m.id].img}" alt="">${esc(m.name)}<b>${'★'.repeat(D.heroes[m.id][T.stat])}</b></button>`).join(''):'<span class="note">今天沒有人有空。</span>'}</div><p class="note" style="margin:-4px 0 8px">${T.desc}</p>`;}
+  h+=`</div>`;}
+ sh.innerHTML=h;sh.classList.add('on');}
+function build(b){const k=sel;if(act({type:'BUILD',cell:k,b})){popK=k;draw();}}
+function demolish(){if(!confirm('拆掉這座建築？不會退回材料。'))return;if(act({type:'DEMOLISH',cell:sel}))draw();}
+function assign(m,t){if(act({type:'ASSIGN',m,cell:sel,task:t}))draw();}
+function unassign(m){if(act({type:'UNASSIGN',m}))draw();}
+
+function modal(h){$('mbox').innerHTML=h;$('modal').classList.remove('hide');}
+function closeModal(){$('modal').classList.add('hide');}
+function endDay(){if(st.result){showResult();return;}
+ const idle=st.members.filter(m=>!m.task&&m.stam>0).length;
+ if(idle&&!endDay._ok){modal(`<h2>結束這一天？</h2><p>還有 ${idle} 位成員今天沒事做（休息會多恢復 1 點體力）。</p><p><button class="main" onclick="endDay._ok=1;closeModal();endDay();endDay._ok=0">結束這一天</button> <button onclick="closeModal()">再想想</button></p>`);return;}
+ const before=new Set(Object.keys(st.cells).filter(k=>st.cells[k].taint));
+ closeSheet();const n=$('night');n.textContent=`第 ${st.day} 夜`;n.classList.remove('hide');n.style.animation='none';void n.offsetWidth;n.style.animation='';
+ setTimeout(()=>{const r=act({type:'END_DAY'});n.classList.add('hide');if(!r)return;newT=new Set(Object.keys(st.cells).filter(k=>st.cells[k].taint&&!before.has(k)));draw();setTimeout(()=>{newT=new Set();},2600);showReport();},900);}
+function showReport(){const R=st.lastReport;if(!R)return;
+ let h=`<h2>第 ${R.day} 夜</h2>`;const items=[...R.lines,...R.found];
+ if(items.length)h+=`<ul class="rep">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+ const g=Object.entries(R.gain).filter(([,v])=>v);if(g.length)h+=`<p class="note">收入</p><div class="gain">${g.map(([k,v])=>resChip(k,'+'+v)).join('')}</div>`;
+ h+=`<p class="note">吃掉補給 ${R.eat}${R.oilUsed?`，燈塔燒掉燈油 ${R.oilUsed}`:''}。${R.newTaint.length?`<span class="lost">污染擴散了 ${R.newTaint.length} 格。</span>`:'今晚污染沒有擴散。'}</p>`;
+ if(R.lost.length)h+=`<ul class="rep lost">${R.lost.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
+ if(R.morning)h+=`<p>天亮了。${esc(R.morning)}</p>`;
+ h+=`<p><button class="main" onclick="closeModal();afterReport()">繼續</button></p>`;modal(h);}
+function afterReport(){if(st.result){showResult();return;}if(st.pending&&st.pending.length)showRecruit();}
+function showRecruit(){const id=st.pending&&st.pending[0];if(!id)return;const h=D.heroes[id];const full=st.members.length>=H.cap(D,st);
+ modal(`<h2>有人在等你</h2><div class="recruit"><img src="${h.img}" alt=""><div><b>${esc(h.name)}</b><p class="note">「${esc(h.line)}」</p><p class="stat">探索 <b>${'★'.repeat(h.exp)}</b>　淨化 <b>${'★'.repeat(h.pur)}</b><br>採集 <b>${'★'.repeat(h.gat)}</b>　守夜 <b>${'★'.repeat(h.grd)}</b></p></div></div>
+ <p class="note">招待要 ${D.recruitCost.food} 補給。住處：${st.members.length}／${H.cap(D,st)}${full?'（住不下了，先蓋宿舍）':''}</p>
+ <p><button class="main" onclick="doRecruit()" ${full||st.res.food<D.recruitCost.food?'disabled':''}>留下來吧</button> <button onclick="closeModal()">晚點再說</button></p>`);}
+function doRecruit(){if(act({type:'RECRUIT'})){closeModal();draw();toast('新成員加入了');}}
+function showResult(){const R=st.result;modal(`<h2>${R.win?'守住了':'燈熄了'}</h2><p>${esc(R.txt)}</p><p class="note">撐了 ${st.day-1} 天 · 蓋了 ${st.stats.built} 座建築 · 打開 ${st.stats.explored} 格迷霧 · 淨化 ${st.stats.purified} 次</p><p><button class="main" onclick="newGame()">再來一次</button></p>`);}
+function memInfo(id){const m=st.members.find(x=>x.id===id);const h=D.heroes[id];modal(`<div class="recruit"><img src="${h.img}" alt=""><div><b>${esc(h.name)}</b><p class="note">「${esc(h.line)}」</p><p class="stat">探索 <b>${'★'.repeat(h.exp)}</b>　淨化 <b>${'★'.repeat(h.pur)}</b><br>採集 <b>${'★'.repeat(h.gat)}</b>　守夜 <b>${'★'.repeat(h.grd)}</b></p><p class="stat">體力 ${m.stam}／${D.maxStam}${m.task?`　今天：${D.tasks[m.task.type].name}`:''}</p></div></div><p><button onclick="closeModal()">關閉</button></p>`);}
+function showTeam(){modal(`<h2>成員 ${st.members.length}／${H.cap(D,st)}</h2><div class="mlist">${st.members.map(m=>{const h=D.heroes[m.id];return `<div class="m"><img src="${h.img}" alt=""><div><b>${esc(h.name)}</b>　<span class="stat">體力 ${m.stam}／${D.maxStam}${m.task?'・'+D.tasks[m.task.type].name:''}</span><div class="stat">探索 <b>${h.exp}</b>　淨化 <b>${h.pur}</b>　採集 <b>${h.gat}</b>　守夜 <b>${h.grd}</b></div></div></div>`;}).join('')}</div><p class="note">做事扣 1 體力；晚上做過事的恢復 1，休息的恢復 2，藥草園再多。補給不夠就不會恢復。</p><p><button onclick="closeModal()">關閉</button></p>`);}
+function toggleZoom(){const w=$('mapwrap');w.classList.toggle('zoom');$('zb').textContent=w.classList.contains('zoom')?'縮小':'放大';if(w.classList.contains('zoom')){w.scrollLeft=(w.scrollWidth-w.clientWidth)/2;w.scrollTop=(w.scrollHeight-w.clientHeight)/2;}}
+function showMenu(){modal(`<h2>選單</h2><p><button onclick="help()">怎麼玩</button></p><p><button onclick="showLog()">最近的紀錄</button></p><p><button onclick="if(confirm('放棄這一局，從頭開始？'))newGame()" style="border-color:#a84035;color:#ff9a8a">重新開始</button></p><p class="note">${D.version} · 試作版 · 紀錄只存在這台裝置</p><p><button onclick="closeModal()">關閉</button></p>`);}
+function showLog(){modal(`<h2>最近的紀錄</h2>${st.log.slice(-12).reverse().map(l=>`<p class="note">第 ${l.day} 天：${esc(l.txt)}</p>`).join('')}<p><button onclick="closeModal()">關閉</button></p>`);}
+function help(){modal(`<h2>怎麼玩</h2>
+<p><b>白天</b>：點格子。<br>・在南門或建築旁邊<b>蓋房子</b>：農田、伐木場、礦坑、油坊、藥草園、燈塔、結界碑、宿舍。<br>・<b>派成員</b>去探索迷霧、淨化污染、採集資源，或在危險的地方守夜。每人一天一件事。</p>
+<p><b>晚上</b>：按「結束這一天」。建築產出、大家吃飯、燈塔燒燈油，然後污染往外擴散。</p>
+<p><b>污染</b>：紫色的格子。紅框是今晚可能被污染的地方。燈塔照到的地方很難被污染、已經有的會退去；結界碑和守夜的人旁邊，污染完全進不來。建築被污染會停工，污染滿三格就毀掉。</p>
+<p><b>目標</b>：找到最外圈的三座污染巢，派淨化強的人把它們拔除。污染漫進南門就輸了。</p>
+<p class="note">探索廢墟可能撿到東西，也可能遇到願意加入的人。</p><p><button onclick="closeModal()">知道了</button></p>`);}
+function hint(t){const e=$('hint');if(!t){e.classList.add('hide');return;}e.innerHTML=t+'<div style="text-align:right;margin-top:6px"><button onclick="hint()">好</button></div>';e.classList.remove('hide');}
+function newGame(){const seed=(Date.now()%2147483647)>>>0;st=H.newGame(D,seed);save();sel=null;closeModal();draw();intro();}
+function intro(){modal(`<h2>燈火邊境</h2><p>白鐵礦城的南門外，迷霧一天比一天濃。霧裡藏著三座污染巢，紫黑色的污漬從那裡一圈一圈往外爬。</p><p>公會派你們守在南門。蓋起燈塔與農田，派人走進迷霧，在燈熄滅以前，把污染巢一座一座拔除。</p><p><button class="main" onclick="closeModal();hint('點地圖上的格子，可以<b>蓋房子</b>或<b>派人</b>。先在南門旁邊蓋農田和伐木場，再派鳶去探索迷霧。準備好了，按右下角「結束這一天」。')">出發</button></p>`);}
+(function(){$('bgimg').style.backgroundImage=`url('../../raven-guild/images/bg_village.webp')`;st=load();if(!st){st=H.newGame(D,(Date.now()%2147483647)>>>0);save();draw();intro();}else{draw();if(st.result)showResult();}})();
+</script>
+</body>
+</html>
