@@ -104,9 +104,9 @@
   - 「射擊」×4：1 費攻擊，6 傷害。
   - 「漏頁」×1：1 費技能，從棄牌堆拿一張牌回手上。
 - 卡池約 25 張，第二批再寫。他的事件選項比較多「調查」，失敗時不扣血，改成扣金幣。
-- 圖：`gcz_base`、`gcz_ex_*`；說話人代號 `gcz`。
+- 圖：`gu_base`、`gu_ex_*`；說話人代號 `gu`。
 
 ## 七、給程式
-- 每個本源、慾望、心願、個性、癖好各寫一筆資料：`{id, kind:'origin|desire|wish|persona|quirk', who:'yy|cl|yx|gcz', img, sfx, cards, fx, lines}`。規則欄留空，就代表只換外觀。
+- 每個本源、慾望、心願、個性、癖好各寫一筆資料：`{id, kind:'origin|desire|wish|persona|quirk', who:'yy|cl|yx|gu', img, sfx, cards, fx, lines}`。規則欄留空，就代表只換外觀。
 - 跨局存檔要多記：疤痕、留下的牌（最多 3 局）、第四副碗筷的進度、已撿到的癖好物件、燈芯、克勞德寫給下一局的信。
 - `x_fourth` 不佔手牌上限，也不受「移除」影響。
