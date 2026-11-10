@@ -3,234 +3,382 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#14110e">
-<title>燈火邊境</title>
+<meta name="theme-color" content="#120f0d">
+<title>渡鴉下潛</title>
 <style>
-:root{--bg:#14110e;--panel:#1e1915;--line:#5a4a36;--gold:#d8b46a;--ink:#eadfcb;--dim:#9c8f7a;--taint:#8a3cc8;--red:#c85a4a;--lit:#f3d27a}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#120f0d;--panel:#1d1814;--line:#56452f;--gold:#d8b46a;--ink:#ecdfc9;--dim:#9a8c76;--red:#c65a4a;--blue:#6fb1e0;--pact:#c0415a;--inkc:#8fa7ff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;overflow:hidden}
-body{display:flex;flex-direction:column}
-#bgimg{position:fixed;inset:0;background:center/cover no-repeat;opacity:.18;filter:grayscale(.4) blur(2px);z-index:-1}
-header{padding:calc(env(safe-area-inset-top) + 8px) 12px 6px;background:linear-gradient(#14110eee,#14110e99)}
-.top{display:flex;align-items:baseline;gap:10px}
-h1{margin:0;font-size:20px;color:var(--gold);letter-spacing:2px}
-#day{color:var(--dim);font-size:14px}
-#res{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.chip{display:flex;align-items:center;gap:4px;padding:2px 8px 2px 3px;border:1px solid var(--line);border-radius:14px;background:#0008;font-size:14px}
-.chip img{width:20px;height:20px;border-radius:50%;object-fit:cover}
-.chip.warn{border-color:var(--red);color:#ffb3a6}
-#fc{font-size:12px;color:var(--dim);margin-top:4px;min-height:16px}
-#fc b{color:var(--ink);font-weight:normal}
-#fc .bad{color:#ffab9c}
-#mapwrap{flex:1;overflow:auto;position:relative;touch-action:pan-x pan-y}
-#map{display:block;margin:0 auto;width:100%;height:100%}
-#mapwrap.zoom #map{width:175%;height:175%}
-.hx{cursor:pointer}
-.hx .base{stroke:#0009;stroke-width:.05}
-.hx.fog .base{fill:#0b0a09}
-.hx .tnt{fill:var(--taint);pointer-events:none}
-.hx .litr{fill:none;stroke:var(--lit);stroke-width:.06;stroke-dasharray:.18 .14;opacity:.55;pointer-events:none}
-.hx .front{fill:none;stroke:var(--red);stroke-width:.055;opacity:.8;pointer-events:none}
-.hx .sel{fill:none;stroke:#fff;stroke-width:.12;pointer-events:none}
-.hx .prot{fill:#7fd0ff;opacity:.12;pointer-events:none}
-.pulse{animation:pl 1.6s ease-in-out infinite}
-@keyframes pl{50%{opacity:.35}}
-.newt{animation:nt 1.2s ease-out 2}
-@keyframes nt{0%{opacity:1}100%{opacity:.25}}
-.pop{animation:pop .5s ease-out}
-@keyframes pop{0%{transform:scale(.2)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
-#team{display:flex;gap:6px;overflow-x:auto;padding:6px 10px;background:#0009;border-top:1px solid #3a3026}
-.mem{flex:0 0 auto;width:54px;text-align:center;font-size:11px;color:var(--dim);position:relative}
-.mem img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid var(--line);display:block;margin:0 auto}
-.mem.busy img{border-color:var(--gold);filter:brightness(.6)}
-.mem.tired img{filter:grayscale(1) brightness(.5)}
-.pips{display:flex;justify-content:center;gap:2px;margin-top:2px}
-.pips i{width:8px;height:4px;border-radius:2px;background:#3a3026}
-.pips i.on{background:var(--gold)}
-.mem .tk{position:absolute;top:28px;left:0;right:0;font-size:10px;color:var(--gold);text-shadow:0 0 3px #000}
-nav{display:flex;gap:6px;padding:6px 10px calc(env(safe-area-inset-bottom) + 8px);background:#0d0b09}
-button{font:inherit;color:var(--ink);background:#2a221b;border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:15px}
-button:active{transform:scale(.97)}
-button:disabled{opacity:.4}
-button.main{flex:1;background:#5a4426;border-color:var(--gold);color:#fff3d6;font-size:16px}
-#sheet{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:2px solid var(--gold);border-radius:14px 14px 0 0;padding:12px 14px calc(env(safe-area-inset-bottom) + 14px);max-height:62vh;overflow:auto;transform:translateY(105%);transition:transform .22s;z-index:20;box-shadow:0 -8px 30px #000a}
-#sheet.on{transform:none}
-#sheet h2{margin:0 0 4px;font-size:18px;color:var(--gold);display:flex;align-items:center;gap:8px}
-#sheet h2 img{width:34px;height:34px;border-radius:6px;object-fit:cover}
-#sheet .x{position:absolute;right:12px;top:10px;background:none;border:none;font-size:22px;color:var(--dim)}
-.note{color:var(--dim);font-size:13px;line-height:1.55}
-.sec{margin-top:10px}
-.sec h3{margin:0 0 6px;font-size:14px;color:var(--ink);font-weight:normal;border-left:3px solid var(--gold);padding-left:6px}
-.bopt{display:flex;align-items:center;gap:8px;width:100%;text-align:left;margin-bottom:6px;padding:7px 9px}
-.bopt img{width:34px;height:34px;border-radius:6px;object-fit:cover;flex:0 0 auto}
-.bopt .t{flex:1}
-.bopt .t small{display:block;color:var(--dim);font-size:12px;line-height:1.4}
-.cost{display:flex;gap:6px;font-size:13px;white-space:nowrap}
-.cost span{display:flex;align-items:center;gap:2px}
-.cost img{width:16px;height:16px;border-radius:50%}
-.cost .no{color:#ff9a8a}
-.trow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.trow .tn{width:48px;font-size:14px;color:var(--gold)}
-.ava{display:flex;flex-direction:column;align-items:center;padding:3px 4px;width:58px;font-size:11px}
-.ava img{width:38px;height:38px;border-radius:50%;object-fit:cover;object-position:50% 18%}
-.ava b{font-weight:normal;color:var(--gold)}
-#modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:40;padding:16px}
-#modal.hide,#night.hide,.hide{display:none!important}
-.box{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:16px;max-width:460px;width:100%;max-height:86vh;overflow:auto}
-.box h2{margin:0 0 8px;color:var(--gold)}
-.box p{line-height:1.7;margin:6px 0}
-.gain{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.rep li{margin:3px 0;line-height:1.55}
-.lost{color:#ffab9c}
-.recruit{display:flex;gap:10px;align-items:center;margin:10px 0;padding:8px;border:1px solid var(--line);border-radius:10px}
-.recruit img{width:70px;height:70px;border-radius:10px;object-fit:cover;object-position:50% 15%}
-#night{position:fixed;inset:0;background:#05040a;z-index:35;display:flex;align-items:center;justify-content:center;font-size:26px;color:#b8a6d8;letter-spacing:6px;animation:nf 1.3s ease forwards}
-@keyframes nf{0%{opacity:0}30%{opacity:1}75%{opacity:1}100%{opacity:0}}
-#hint{position:fixed;left:12px;right:12px;top:130px;z-index:15;background:#1e1915ee;border:1px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.6}
-#toast{position:fixed;left:50%;bottom:150px;transform:translateX(-50%);background:#000d;border:1px solid var(--line);padding:6px 14px;border-radius:16px;font-size:14px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
-#toast.on{opacity:1}
-.mlist .m{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #3a3026}
-.mlist img{width:56px;height:56px;border-radius:10px;object-fit:cover;object-position:50% 15%}
-.stat{font-size:12px;color:var(--dim)}
-.stat b{color:var(--gold);font-weight:normal}
+button{font:inherit;color:var(--ink);background:#2a221b;border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-size:15px}
+button:active{transform:scale(.97)}button:disabled{opacity:.4}
+button.main{background:#5a4426;border-color:var(--gold);color:#fff3d6}
+.scr{position:fixed;inset:0;display:none;flex-direction:column}
+.scr.on{display:flex}
+.bg{position:absolute;inset:0;background:center/cover no-repeat;z-index:-1;opacity:.35;filter:saturate(.7)}
+.bar{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 12px 6px;background:linear-gradient(#120f0df0,#120f0d90);flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:4px;padding:2px 9px;border:1px solid var(--line);border-radius:14px;background:#0009;font-size:14px}
+.pill img{width:18px;height:18px;border-radius:50%;object-fit:cover}
+.hpbar{position:relative;height:9px;background:#3a1a16;border-radius:5px;overflow:hidden;border:1px solid #0008}
+.hpbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#e0614c,#9d2f22);transition:width .3s}
+.relics{display:flex;gap:4px;flex-wrap:wrap}
+.relics img{width:26px;height:26px;border-radius:6px;border:1px solid var(--line);object-fit:cover;background:#000}
+/* 標題 */
+#title{align-items:center;justify-content:flex-end;padding:0 20px calc(env(safe-area-inset-bottom) + 40px);text-align:center}
+#title .bg{opacity:.55}
+#title h1{font-size:40px;letter-spacing:10px;margin:0;color:#f1e2c2;text-shadow:0 2px 14px #000}
+#title p{color:var(--dim);margin:8px 0 22px;line-height:1.7}
+#title .btns{display:flex;flex-direction:column;gap:10px;width:min(280px,80vw)}
+/* 選角 */
+#pick .list{flex:1;overflow:auto;padding:10px 14px;display:flex;flex-direction:column;gap:12px}
+.ch{display:flex;gap:12px;background:#1d1814e8;border:1px solid var(--line);border-radius:12px;padding:10px;align-items:center}
+.ch img{width:96px;height:132px;object-fit:cover;object-position:50% 12%;border-radius:8px;flex:0 0 auto}
+.ch .lamp{width:96px;height:132px;border-radius:8px;flex:0 0 auto;background:radial-gradient(circle at 50% 42%,#f6d27d 0,#a76b2a 14%,#2a1c12 46%,#0c0907 75%);display:flex;align-items:flex-end;justify-content:center;font-size:11px;color:#c9b48d;padding-bottom:6px;position:relative;overflow:hidden}
+.ch .lamp:after{content:"";position:absolute;left:50%;top:18%;width:22px;height:46px;margin-left:-11px;border:2px solid #4b3a25;border-radius:6px 6px 10px 10px;box-shadow:0 0 30px 10px #f6c86655}
+.ch .relics img{width:28px;height:28px;object-position:50% 50%;border-radius:6px}
+.ch h3{margin:0;color:var(--gold)}.ch small{color:var(--dim)}
+.ch p{margin:6px 0;font-size:14px;line-height:1.6}
+/* 對話 */
+#talk{position:fixed;inset:0;z-index:60;display:none;background:#0d0b09 center/cover no-repeat}
+#talk:before{content:'';position:absolute;inset:0;background:linear-gradient(#0d0b09cc,#0d0b0966 40%,#0d0b09ee)}
+#talk.on{display:block}
+#talk .por{position:absolute;bottom:150px;width:min(52vw,360px);max-height:62vh;object-fit:contain;object-position:50% 100%;transition:filter .25s,transform .25s;-webkit-mask-image:linear-gradient(to top,transparent,#000 24%,#000 86%,transparent),linear-gradient(to right,transparent,#000 16%,#000 84%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(to top,transparent,#000 24%,#000 86%,transparent),linear-gradient(to right,transparent,#000 16%,#000 84%,transparent);mask-composite:intersect}
+#talk .por.l{left:-2vw}#talk .por.r{right:-2vw}
+#talk .por.dim{filter:brightness(.4);transform:scale(.95)}
+#talk .lampP{position:absolute;bottom:170px;right:4vw;width:min(40vw,240px);height:min(50vh,340px);border-radius:50%;background:radial-gradient(circle at 50% 40%,#f6d27d 0,#a76b2a 10%,#2a1c1200 55%);transition:opacity .25s}
+#talk .box{position:absolute;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 16px);min-height:120px;background:#1d1814f2;border:1px solid var(--gold);border-radius:12px;padding:12px 14px}
+#talk .who{color:var(--gold);font-size:15px;margin-bottom:6px}
+#talk .say{font-size:17px;line-height:1.7}
+#talk .tap{position:absolute;right:12px;bottom:8px;font-size:12px;color:var(--dim)}
+/* 地圖 */
+#map .wrap{flex:1;overflow:auto;padding:6px 0 30px}
+#map svg{display:block;margin:0 auto}
+.node{cursor:pointer}
+.node circle.bg2{fill:#1d1814;stroke:var(--line);stroke-width:2}
+.node.can circle.bg2{stroke:var(--gold);stroke-width:3;animation:pul 1.4s infinite}
+.node.done{opacity:.45}
+.node.here circle.bg2{stroke:#fff;stroke-width:3}
+@keyframes pul{50%{stroke-opacity:.35}}
+.lg{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;font-size:12px;color:var(--dim);padding:4px 10px}
+.lg span{display:flex;align-items:center;gap:3px}.lg img{width:16px;height:16px;border-radius:50%}
+/* 戰鬥 */
+#cb .foes{flex:1;display:flex;justify-content:center;align-items:flex-end;gap:6px;padding:8px 6px 0;min-height:0}
+.foe{flex:1;max-width:46vw;display:flex;flex-direction:column;align-items:center;position:relative;transition:transform .15s}
+.foe .art{width:100%;max-height:30vh;aspect-ratio:3/4;object-fit:cover;object-position:50% 25%;border-radius:10px;border:2px solid #0000;-webkit-mask-image:radial-gradient(ellipse at 50% 45%,#000 55%,transparent 80%);mask-image:radial-gradient(ellipse at 50% 45%,#000 55%,transparent 80%)}
+.foe.tgt .art{border-color:var(--red);animation:pul2 1s infinite}
+@keyframes pul2{50%{filter:brightness(1.35)}}
+.foe .nm{font-size:13px;margin-top:2px;text-align:center}
+.foe .hpbar{width:90%;margin-top:3px}
+.foe .hpt{font-size:11px;color:var(--dim)}
+.intent{position:absolute;z-index:3;top:4px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:3px;background:#000c;border:1px solid var(--line);border-radius:12px;padding:2px 8px;font-size:14px;white-space:nowrap}
+.intent img{width:18px;height:18px;border-radius:50%}
+.intent.atk{border-color:var(--red);color:#ffb3a6}
+.sts{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:2px;min-height:18px}
+.sts span{display:flex;align-items:center;font-size:11px;background:#0009;border-radius:8px;padding:0 4px 0 1px}
+.sts img{width:15px;height:15px;border-radius:50%}
+.blk{display:inline-flex;align-items:center;gap:2px;color:var(--blue);font-size:12px}
+.foe.dead{opacity:0;transform:scale(.8);transition:all .5s;pointer-events:none}
+.shake{animation:shk .3s}
+@keyframes shk{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.fxi{position:absolute;left:50%;top:35%;width:80%;transform:translate(-50%,-50%);pointer-events:none;mix-blend-mode:screen;animation:fxa .55s ease-out forwards}
+@keyframes fxa{0%{opacity:0;transform:translate(-50%,-50%) scale(.6)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
+.num{position:absolute;left:50%;top:30%;font-size:26px;font-weight:bold;color:#ffd7c9;text-shadow:0 0 6px #000,0 0 2px #000;pointer-events:none;animation:numa .9s ease-out forwards;z-index:5}
+.num.b{color:#a9d8ff}.num.h{color:#9fe8a3}.num.p{color:#ff7a90}
+@keyframes numa{0%{opacity:0;transform:translate(-50%,0) scale(.7)}20%{opacity:1;transform:translate(-50%,-12px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-48px)}}
+#me{display:flex;align-items:center;gap:10px;padding:6px 12px;position:relative}
+#me .orb{width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffe7a8,#c8892d 55%,#5a3a10);display:flex;align-items:center;justify-content:center;font-size:20px;color:#2a1a05;font-weight:bold;box-shadow:0 0 14px #e9b44a88;flex:0 0 auto}
+#me .info{flex:1;min-width:0}
+#me .row{display:flex;align-items:center;gap:8px;font-size:13px;flex-wrap:wrap}
+.inkb{color:var(--inkc)}
+#hand{display:flex;gap:6px;overflow-x:auto;padding:10px 10px 6px;min-height:178px;align-items:flex-end;scroll-snap-type:x proximity}
+.card{flex:0 0 auto;width:112px;height:162px;border-radius:10px;background:#211a14;border:2px solid #6b5537;position:relative;overflow:hidden;transition:transform .15s;scroll-snap-align:center;box-shadow:0 3px 8px #0008}
+.card.a{border-color:#9c4a3c}.card.s{border-color:#3f6a8f}.card.p{border-color:#8a6ab0}.card.x{border-color:#444;filter:grayscale(1)}
+.card .ci{position:absolute;left:0;right:0;top:0;height:74px;background:center/cover no-repeat}
+.card .cc{position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#e4b75e;color:#2a1a05;font-weight:bold;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid #1d1408}
+.card .cn{position:absolute;left:0;right:0;top:74px;text-align:center;font-size:13px;padding:2px;background:#0008;color:#f3e3c2}
+.card .cn.up{color:#9fe8a3}
+.card .cd{position:absolute;left:5px;right:5px;top:96px;bottom:4px;font-size:10.5px;line-height:1.35;color:#d9ccb4;overflow:hidden}
+.card.sel{transform:translateY(-14px);border-color:#fff;box-shadow:0 0 16px #ffe7a8aa}
+.card.no{opacity:.55}
+#hand .card.no .cc{background:#7a6a55}
+#cbtm{display:flex;align-items:center;gap:8px;padding:4px 10px calc(env(safe-area-inset-bottom) + 8px)}
+#cbtm .pile{font-size:12px;color:var(--dim)}
+#cbtm .grow{flex:1}
+#detail{position:fixed;left:50%;bottom:196px;transform:translateX(-50%);width:min(92vw,380px);background:#1d1814f4;border:1px solid var(--gold);border-radius:12px;padding:10px 12px;z-index:30;display:none}
+#detail.on{display:block}
+#detail h4{margin:0 0 4px;color:var(--gold)}#detail p{margin:0 0 8px;font-size:14px;line-height:1.6}
+#hint{position:fixed;left:50%;top:44%;transform:translateX(-50%);background:#000c;border:1px solid var(--red);color:#ffcdbf;padding:6px 14px;border-radius:16px;z-index:25;display:none;font-size:14px}
+#turnBan{position:fixed;left:0;right:0;top:40%;text-align:center;font-size:26px;letter-spacing:6px;color:#f3e3c2;text-shadow:0 0 12px #000;z-index:40;pointer-events:none;opacity:0}
+#turnBan.go{animation:ban 1s ease forwards}
+@keyframes ban{0%{opacity:0;transform:scale(.9)}25%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+/* 通用面板 */
+.page{flex:1;overflow:auto;padding:12px 14px calc(env(safe-area-inset-bottom) + 20px)}
+.page h2{color:var(--gold);margin:6px 0 10px}
+.cards{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.cards .card{cursor:pointer}
+.price{display:block;text-align:center;font-size:13px;margin-top:3px;color:var(--gold)}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:10px 12px;line-height:1.5}
+.opt small{display:block;color:var(--dim);font-size:13px}
+.big{font-size:17px;line-height:1.8}
+.rel{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0;background:#0006}
+.rel img{width:44px;height:44px;border-radius:8px;object-fit:cover}
+.rel b{color:var(--gold);font-weight:normal}.rel small{display:block;color:var(--dim);font-size:13px;line-height:1.5}
+#toasts{position:fixed;top:calc(env(safe-area-inset-top) + 60px);left:50%;transform:translateX(-50%);z-index:80;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none;width:92vw}
+.toast{background:#1d1814f2;border:1px solid var(--gold);border-radius:12px;padding:8px 14px;font-size:14px;animation:tin 3s ease forwards;text-align:center}
+.toast b{color:var(--gold);font-weight:normal}
+@keyframes tin{0%{opacity:0;transform:translateY(-10px)}10%{opacity:1;transform:none}85%{opacity:1}100%{opacity:0}}
+.codex{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.codex div{text-align:center;font-size:12px;color:var(--dim)}
+.codex img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.codex .no img{filter:brightness(0) contrast(.5);opacity:.5}
+.ach{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #2e261e}
+.ach i{width:28px;height:28px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-style:normal;color:var(--gold)}
+.ach.got i{background:#5a4426;border-color:var(--gold)}
+.ach small{display:block;color:var(--dim)}
+.modal{position:fixed;inset:0;background:#000b;z-index:70;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.modal .box{background:var(--panel);border:1px solid var(--gold);border-radius:12px;padding:14px;max-width:460px;width:100%;max-height:84vh;overflow:auto}
 </style>
 </head>
 <body>
-<div id="bgimg"></div>
-<header>
- <div class="top"><h1>燈火邊境</h1><span id="day"></span></div>
- <div id="res"></div>
- <div id="fc"></div>
-</header>
-<div id="mapwrap"><svg id="map" xmlns="http://www.w3.org/2000/svg"></svg></div>
-<div id="team"></div>
-<nav>
- <button onclick="showTeam()">成員</button>
- <button onclick="toggleZoom()" id="zb">放大</button>
- <button onclick="showMenu()">選單</button>
- <button class="main" onclick="endDay()">結束這一天</button>
-</nav>
-<div id="sheet"></div>
-<div id="modal" class="hide"><div class="box" id="mbox"></div></div>
-<div id="night" class="hide"></div>
-<div id="hint" class="hide"></div>
-<div id="toast"></div>
+<!-- 標題 -->
+<section id="title" class="scr on"><div class="bg" id="tbg"></div>
+ <h1>渡鴉下潛</h1>
+ <p>天闕市的底下，一層比一層深。<br>提著燈，往下走。</p>
+ <div class="btns">
+  <button class="main" id="bCont" onclick="contRun()">繼續這一局</button>
+  <button class="main" onclick="show('pick')">開始下潛</button>
+  <button onclick="openBook()">回憶之書</button>
+  <button onclick="openCodex()">圖鑑</button>
+  <button onclick="openAch()">成就</button>
+ </div>
+ <p id="tmem" style="margin-top:14px;font-size:13px"></p>
+</section>
+<!-- 選角 -->
+<section id="pick" class="scr"><div class="bg" id="pbg"></div>
+ <div class="bar"><b style="color:var(--gold)">誰下去？</b><span style="flex:1"></span><button onclick="show('title')">返回</button></div>
+ <div class="list" id="chlist"></div>
+</section>
+<!-- 地圖 -->
+<section id="map" class="scr"><div class="bg" id="mbg"></div>
+ <div class="bar" id="mbar"></div>
+ <div class="lg" id="mlg"></div>
+ <div class="wrap" id="mwrap"></div>
+</section>
+<!-- 戰鬥 -->
+<section id="cb" class="scr"><div class="bg" id="cbg"></div>
+ <div class="bar" id="cbar"></div>
+ <div class="foes" id="foes"></div>
+ <div id="me"></div>
+ <div id="hand"></div>
+ <div id="cbtm"><span class="pile" onclick="showPile('draw')" id="pDraw"></span><span class="pile" onclick="showPile('disc')" id="pDisc"></span><span class="grow"></span><button onclick="showDeck()">牌組</button><button class="main" id="bEnd" onclick="endTurn()">結束回合</button></div>
+</section>
+<!-- 一般頁面（獎勵、商店、營火、事件、寶箱、選牌、結算） -->
+<section id="pg" class="scr"><div class="bg" id="gbg"></div><div class="bar" id="gbar"></div><div class="page" id="gpage"></div></section>
+<!-- 回憶、圖鑑、成就 -->
+<section id="book" class="scr"><div class="bg" id="bbg"></div><div class="bar"><b style="color:var(--gold)" id="btitle"></b><span style="flex:1"></span><button onclick="show('title')">返回</button></div><div class="page" id="bpage"></div></section>
+<div id="detail"></div><div id="hint"></div><div id="turnBan"></div>
+<div id="talk" onclick="talkNext()"></div>
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()"><div class="box" id="mbox"></div></div>
+<div id="toasts"></div>
 <script src="data.js"></script>
 <script src="core.js"></script>
 <script>
-const D=window.HEX_DATA,H=window.HEX,SAVE='hex_save_v1',SQ3=Math.sqrt(3);
+const D=window.CARD_DATA,C=window.CARD,I=D.img;
+const RUNK='dive_run_v1',METAK='dive_meta_v1';
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let st=null,sel=null,newT=new Set(),popK=null;
-function save(){try{localStorage.setItem(SAVE,JSON.stringify(st));}catch(e){}}
-function load(){try{const s=localStorage.getItem(SAVE);if(s){const o=JSON.parse(s);if(o&&o.v===1)return o;}}catch(e){}return null;}
-function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1600);}
-function act(a){const r=H.apply(D,st,a);if(!r.ok){toast(r.error);return null;}st=r.state;save();return r;}
-const T0=c=>D.terrain[c.t];
-const px=c=>({x:SQ3*(c.q+c.r/2),y:1.5*c.r});
-const hexPts=(s)=>{const p=[];for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);p.push((s*Math.cos(a)).toFixed(3)+','+(s*Math.sin(a)).toFixed(3));}return p.join(' ');};
-function resChip(k,v,warn){const R=D.res[k];return `<span class="chip${warn?' warn':''}"><img src="${R.ic}" alt="">${R.name} ${v}</span>`;}
-function costHtml(cost,res){return `<span class="cost">${Object.entries(cost).map(([k,v])=>`<span class="${(res[k]||0)<v?'no':''}"><img src="${D.res[k].ic}" alt="">${v}</span>`).join('')}</span>`;}
+let st=null,meta=null,sel=null,busy=false;
+function ls(k,v){try{if(v===undefined){const s=localStorage.getItem(k);return s?JSON.parse(s):null;}if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){return null;}}
+function save(){ls(RUNK,st&&st.screen!=='over'?st:null);ls(METAK,meta);}
+function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));$('detail').classList.remove('on');$('hint').style.display='none';if(id==='title')drawTitle();if(id==='pick')drawPick();}
+function toast(h){const e=document.createElement('div');e.className='toast';e.innerHTML=h;$('toasts').appendChild(e);setTimeout(()=>e.remove(),3100);}
+function modal(h){$('mbox').innerHTML=h;$('modal').classList.add('on');}
+function closeModal(){$('modal').classList.remove('on');}
+const CH=()=>D.chars[st.ch];
+function chImg(k){return k==='cl'?null:D.chars[k].img;}
 
-function drawTop(){$('day').textContent=`第 ${st.day} 天`;const f=H.forecast(D,st);
- $('res').innerHTML=['food','wood','iron','oil','coin'].map(k=>resChip(k,st.res[k],(k==='oil'&&f.oilShort)||(k==='food'&&st.res.food<f.eat))).join('');
- const nests=Object.values(st.cells).filter(c=>c.nest).length;
- $('fc').innerHTML=`今晚：吃 <b>${f.eat}</b> 補給 · 燈塔燒 <b class="${f.oilShort?'bad':''}">${f.oilNeed}</b> 燈油${f.oilShort?'（不夠，有燈會熄）':''} · <span class="${f.front.size?'bad':''}">紅框 ${f.front.size} 格可能被污染</span> · 污染巢 ${nests}`;}
+// ── 動作與永久進度
+function act(a){const r=C.apply(D,st,a);if(!r.ok){flash(r.error);return null;}st=r.state;const m=C.metaApply(D,meta,r.events);meta=m.meta;
+ for(const id of m.news.ach){const A=D.achievements.find(x=>x.id===id);if(A)toast(`成就達成：<b>${esc(A.n)}</b>`);}
+ for(const id of m.news.codex)toast(`圖鑑新增：<b>${esc(D.enemies[id].n)}</b>`);
+ r.news=m.news;save();return r;}
+function flash(t){const h=$('hint');h.textContent=t;h.style.display='block';clearTimeout(h._t);h._t=setTimeout(()=>h.style.display='none',1300);}
 
-function drawMap(){const svg=$('map');const R=D.radius;const W=SQ3*(2*R+1)+.4,Hh=1.5*2*R+2+.4;svg.setAttribute('viewBox',`${-W/2} ${-Hh/2} ${W} ${Hh}`);
- const f=H.forecast(D,st);const pts=hexPts(.985);
- let defs='<defs>';for(const [t,T] of Object.entries(D.terrain))defs+=`<pattern id="p_${t}" patternContentUnits="objectBoundingBox" width="1" height="1"><image href="${T.img}" width="1" height="1" preserveAspectRatio="xMidYMid slice"/></pattern>`;
- defs+='<clipPath id="cc" clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5"/></clipPath>';
- defs+='<radialGradient id="glow"><stop offset="0" stop-color="#f3d27a" stop-opacity=".35"/><stop offset="1" stop-color="#f3d27a" stop-opacity="0"/></radialGradient></defs>';
- let g='';const ms={};for(const m of st.members)if(m.task)(ms[m.task.cell]=ms[m.task.cell]||[]).push(m);
- for(const [k,c] of Object.entries(st.cells)){const p=px(c);const fog=!c.rev;
-  g+=`<g class="hx${fog?' fog':''}" transform="translate(${p.x.toFixed(3)},${p.y.toFixed(3)})" onclick="pick('${k}')">`;
-  g+=`<polygon class="base" points="${pts}" ${fog?'':`fill="url(#p_${c.t})"`}/>`;
-  if(fog){g+=`<text y=".18" text-anchor="middle" font-size=".5" fill="#3a3026">？</text>`;}
-  else{
-   if(f.lit.has(k)&&!c.taint)g+=`<circle r=".85" fill="url(#glow)" pointer-events="none"/>`;
-   if(f.P.has(k)&&!c.taint)g+=`<polygon class="prot" points="${pts}"/>`;
-   if(c.taint)g+=`<polygon class="tnt${c.nest?' pulse':''}${newT.has(k)?' newt':''}" points="${pts}" opacity="${c.nest?.55:(.18+.14*c.taint)}"/>`;
-   if(c.nest)g+=`<text y=".2" text-anchor="middle" font-size=".55" fill="#f0d6ff" pointer-events="none">巢 ${c.nest}</text>`;
-   if(T0(c).ab&&!c.b&&!c.nest)g+=`<text x="0" y=".72" text-anchor="middle" font-size=".26" fill="#eadfcb" opacity=".75" stroke="#000" stroke-width=".05" paint-order="stroke" pointer-events="none">${T0(c).ab}</text>`;
-   if(c.t==='town')g+=`<text y=".72" text-anchor="middle" font-size=".28" fill="#fff3d6" stroke="#000" stroke-width=".05" paint-order="stroke" pointer-events="none">南門</text>`;
-   if(c.b){const B=D.buildings[c.b];g+=`<g class="${popK===k?'pop':''}" pointer-events="none"><circle r=".42" fill="#000a" stroke="${c.taint?'#8a3cc8':'#d8b46a'}" stroke-width=".05"/><image href="${B.ic}" x="-.38" y="-.38" width=".76" height=".76" clip-path="url(#cc)" preserveAspectRatio="xMidYMid slice"${c.taint?' opacity=".45"':''}/></g>`;}
-   if(f.lit.has(k)&&!c.taint)g+=`<polygon class="litr" points="${hexPts(.86)}"/>`;
-   if(f.front.has(k))g+=`<polygon class="front" points="${hexPts(.9)}"/>`;}
-  const mm=ms[k]||[];mm.forEach((m,i)=>{const x=-.3*(mm.length-1)/2+.3*i;g+=`<image href="${D.heroes[m.id].img}" x="${(x-.2).toFixed(2)}" y=".28" width=".4" height=".4" clip-path="url(#cc)" preserveAspectRatio="xMidYMin slice" pointer-events="none"/>`;});
-  if(sel===k)g+=`<polygon class="sel" points="${hexPts(.93)}"/>`;
-  g+='</g>';}
- svg.innerHTML=defs+g;popK=null;}
+// ── 對話
+let TQ=[],TCB=null;
+function talk(lines,cb){TQ=lines.slice();TCB=cb||null;const L=st&&D.layers[Math.min(st.layer,D.layers.length-1)];$('talk').style.backgroundImage=`url(${L?L.bg:I+'bg_guild.webp'})`;$('talk').classList.add('on');talkNext();}
+function talkNext(){if(!TQ.length){$('talk').classList.remove('on');const cb=TCB;TCB=null;cb&&cb();return;}
+ const [who,ex,txt]=TQ.shift();const yy=D.chars.yy;const yimg=(ex&&yy.ex[ex])||yy.img;
+ const yOn=who==='yy';
+ $('talk').innerHTML=`<img class="por l ${yOn?'':'dim'}" src="${yimg}" alt=""><div class="lampP" style="opacity:${yOn?.35:1}"></div>
+ <div class="box"><div class="who">${who==='yy'?'語嫣':'克勞德'}</div><div class="say">${esc(txt)}</div><div class="tap">點一下繼續</div></div>`;}
 
-function drawTeam(){$('team').innerHTML=st.members.map(m=>{const h=D.heroes[m.id];const T=m.task&&D.tasks[m.task.type];return `<div class="mem${m.task?' busy':''}${!m.task&&m.stam<1?' tired':''}" onclick="memInfo('${m.id}')"><img src="${h.img}" alt="">${T?`<span class="tk">${T.name}</span>`:''}<div>${esc(m.name)}</div><div class="pips">${Array.from({length:D.maxStam},(_,i)=>`<i class="${i<m.stam?'on':''}"></i>`).join('')}</div></div>`;}).join('')+(st.pending&&st.pending.length?`<div class="mem" onclick="showRecruit()"><img src="${D.heroes[st.pending[0]].img}" alt="" style="border-color:#7fd0ff"><div style="color:#7fd0ff">等你</div></div>`:'');}
-function draw(){drawTop();drawMap();drawTeam();if(sel)drawSheet();}
+// ── 標題、選角
+function drawTitle(){$('tbg').style.backgroundImage=`url(${I}bg_guild.webp)`;const s=ls(RUNK);$('bCont').style.display=s&&s.screen!=='over'?'':'none';
+ $('tmem').textContent=meta.runs?`回憶 ${meta.memory}　·　下潛 ${meta.runs} 次　·　走完 ${(meta.wins.yy||0)+(meta.wins.cl||0)} 次`:'';}
+function drawPick(){$('pbg').style.backgroundImage=`url(${I}bg_station.webp)`;
+ $('chlist').innerHTML=Object.entries(D.chars).map(([k,c])=>`<div class="ch">${c.img?`<img src="${c.img}" alt="">`:`<div class="lamp"></div>`}<div><h3>${c.name}</h3><small>${c.title}・生命 ${c.hp}</small><p>${esc(c.desc)}</p><p style="color:var(--dim);font-size:13px">「${esc(c.line)}」</p><p class="relics"><img src="${D.relics[c.relic].ic}" alt=""> <small style="align-self:center">${D.relics[c.relic].n}：${D.relics[c.relic].d}</small></p><button class="main" onclick="startRun('${k}')">就是她</button></div></div>`).join('');}
+function startRun(k){st=C.newRun(D,(Date.now()%2147483647)>>>0,k,meta);save();talk(D.talk.start[k],()=>{drawMap();show('map');});}
+function contRun(){st=ls(RUNK);if(!st)return;route();}
+function route(){const s=st.screen;if(s==='map'){drawMap();show('map');}else if(s==='combat'){drawCombat();show('cb');}else{drawPage();show('pg');}}
 
-function pick(k){sel=(sel===k&&$('sheet').classList.contains('on'))?null:k;if(sel)drawSheet();else closeSheet();drawMap();}
-function closeSheet(){$('sheet').classList.remove('on');sel=null;drawMap();}
-function drawSheet(){const c=st.cells[sel];const sh=$('sheet');if(!c){closeSheet();return;}
- let h=`<button class="x" onclick="closeSheet()">×</button>`;
- if(!c.rev){h+=`<h2>迷霧</h2><p class="note">看不清楚的地方。派擅長探索的人去看看。</p>`;}
- else{const T=D.terrain[c.t];h+=`<h2><img src="${T.img}" alt="">${T.name}${c.b?'・'+D.buildings[c.b].name:''}</h2>`;
-  const notes=[];if(c.t==='town')notes.push('大家的家。污染漫進來，燈就熄了。');
-  if(c.nest)notes.push(`污染巢，還剩 ${c.nest}。派淨化強的人去削弱它，三座都拔除就能守住南門。`);
-  else if(c.taint)notes.push(`被污染了（${'●'.repeat(c.taint)}${'○'.repeat(3-c.taint)}）。${c.b?'建築停工中；污染到三格滿就會毀掉。':'不能蓋房子，也採不到東西。'}`);
-  if(T.gather&&!c.taint&&!c.b)notes.push('可以採集：'+Object.entries(T.gather).map(([k,v])=>D.res[k].name+' '+v).join('、')+'。');
-  if(c.b)notes.push(D.buildings[c.b].desc);
-  const f=H.forecast(D,st);const k=sel;if(f.front.has(k))notes.push('<span style="color:#ffab9c">今晚可能被污染。</span>');else if(f.P.has(k))notes.push('<span style="color:#9fd8ff">今晚被守住了。</span>');else if(f.lit.has(k))notes.push('<span style="color:#f3d27a">今晚有燈照著。</span>');
-  h+=`<p class="note">${notes.join('<br>')}</p>`;
-  const bo=H.buildOptions(D,st,sel);if(bo.length){h+=`<div class="sec"><h3>蓋</h3>`+bo.map(o=>`<button class="bopt" ${o.ok?'':'disabled'} onclick="build('${o.id}')"><img src="${o.B.ic}" alt=""><span class="t">${o.B.name}<small>${o.B.desc}</small></span>${costHtml(o.cost,st.res)}</button>`).join('')+`</div>`;}
-  else if(!c.b&&!c.taint&&T.build&&c.t!=='nest'&&!H.nb(st,c).some(n=>n.b||n.t==='town'))h+=`<p class="note">要蓋在南門或其他建築旁邊。</p>`;
-  if(c.b&&c.t!=='town')h+=`<div class="sec"><button onclick="demolish()">拆掉${D.buildings[c.b].name}</button></div>`;}
- const here=st.members.filter(m=>m.task&&m.task.cell===sel);
- if(here.length)h+=`<div class="sec"><h3>派在這裡</h3><div class="trow">`+here.map(m=>`<button class="ava" onclick="unassign('${m.id}')"><img src="${D.heroes[m.id].img}" alt="">${esc(m.name)}<b>${D.tasks[m.task.type].name}・取消</b></button>`).join('')+`</div></div>`;
- const to=H.taskOptions(D,st,sel);if(to.length){h+=`<div class="sec"><h3>派人</h3>`;
-  for(const t of to){const T=D.tasks[t];const free=st.members.filter(m=>!m.task&&m.stam>0).sort((a,b)=>D.heroes[b.id][T.stat]-D.heroes[a.id][T.stat]);
-   h+=`<div class="trow"><span class="tn">${T.name}</span>${free.length?free.map(m=>`<button class="ava" onclick="assign('${m.id}','${t}')"><img src="${D.heroes[m.id].img}" alt="">${esc(m.name)}<b>${'★'.repeat(D.heroes[m.id][T.stat])}</b></button>`).join(''):'<span class="note">今天沒有人有空。</span>'}</div><p class="note" style="margin:-4px 0 8px">${T.desc}</p>`;}
-  h+=`</div>`;}
- sh.innerHTML=h;sh.classList.add('on');}
-function build(b){const k=sel;if(act({type:'BUILD',cell:k,b})){popK=k;draw();}}
-function demolish(){if(!confirm('拆掉這座建築？不會退回材料。'))return;if(act({type:'DEMOLISH',cell:sel}))draw();}
-function assign(m,t){if(act({type:'ASSIGN',m,cell:sel,task:t}))draw();}
-function unassign(m){if(act({type:'UNASSIGN',m}))draw();}
+// ── 共用頂欄
+function topBar(){return `<span class="pill">${CH().name}</span><span class="pill" style="min-width:110px"><span style="flex:1">生命 ${Math.max(0,st.hp)}／${st.maxHp}</span></span><span class="pill"><img src="${I}i_coin.webp" alt="">${st.gold}</span><span class="relics">${st.relics.map(r=>`<img src="${D.relics[r].ic}" onclick="relicInfo('${r}')" alt="">`).join('')}</span><span style="flex:1"></span><button onclick="showDeck()">牌組 ${st.deck.length}</button>`;}
+function relicInfo(r){const R=D.relics[r];modal(`<div class="rel"><img src="${R.ic}" alt=""><div><b>${R.n}</b><small>${R.d}</small></div></div><p><button onclick="closeModal()">關閉</button></p>`);}
 
-function modal(h){$('mbox').innerHTML=h;$('modal').classList.remove('hide');}
-function closeModal(){$('modal').classList.add('hide');}
-function endDay(){if(st.result){showResult();return;}
- const idle=st.members.filter(m=>!m.task&&m.stam>0).length;
- if(idle&&!endDay._ok){modal(`<h2>結束這一天？</h2><p>還有 ${idle} 位成員今天沒事做（休息會多恢復 1 點體力）。</p><p><button class="main" onclick="endDay._ok=1;closeModal();endDay();endDay._ok=0">結束這一天</button> <button onclick="closeModal()">再想想</button></p>`);return;}
- const before=new Set(Object.keys(st.cells).filter(k=>st.cells[k].taint));
- closeSheet();const n=$('night');n.textContent=`第 ${st.day} 夜`;n.classList.remove('hide');n.style.animation='none';void n.offsetWidth;n.style.animation='';
- setTimeout(()=>{const r=act({type:'END_DAY'});n.classList.add('hide');if(!r)return;newT=new Set(Object.keys(st.cells).filter(k=>st.cells[k].taint&&!before.has(k)));draw();setTimeout(()=>{newT=new Set();},2600);showReport();},900);}
-function showReport(){const R=st.lastReport;if(!R)return;
- let h=`<h2>第 ${R.day} 夜</h2>`;const items=[...R.lines,...R.found];
- if(items.length)h+=`<ul class="rep">${items.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
- const g=Object.entries(R.gain).filter(([,v])=>v);if(g.length)h+=`<p class="note">收入</p><div class="gain">${g.map(([k,v])=>resChip(k,'+'+v)).join('')}</div>`;
- h+=`<p class="note">吃掉補給 ${R.eat}${R.oilUsed?`，燈塔燒掉燈油 ${R.oilUsed}`:''}。${R.newTaint.length?`<span class="lost">污染擴散了 ${R.newTaint.length} 格。</span>`:'今晚污染沒有擴散。'}</p>`;
- if(R.lost.length)h+=`<ul class="rep lost">${R.lost.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;
- if(R.morning)h+=`<p>天亮了。${esc(R.morning)}</p>`;
- h+=`<p><button class="main" onclick="closeModal();afterReport()">繼續</button></p>`;modal(h);}
-function afterReport(){if(st.result){showResult();return;}if(st.pending&&st.pending.length)showRecruit();}
-function showRecruit(){const id=st.pending&&st.pending[0];if(!id)return;const h=D.heroes[id];const full=st.members.length>=H.cap(D,st);
- modal(`<h2>有人在等你</h2><div class="recruit"><img src="${h.img}" alt=""><div><b>${esc(h.name)}</b><p class="note">「${esc(h.line)}」</p><p class="stat">探索 <b>${'★'.repeat(h.exp)}</b>　淨化 <b>${'★'.repeat(h.pur)}</b><br>採集 <b>${'★'.repeat(h.gat)}</b>　守夜 <b>${'★'.repeat(h.grd)}</b></p></div></div>
- <p class="note">招待要 ${D.recruitCost.food} 補給。住處：${st.members.length}／${H.cap(D,st)}${full?'（住不下了，先蓋宿舍）':''}</p>
- <p><button class="main" onclick="doRecruit()" ${full||st.res.food<D.recruitCost.food?'disabled':''}>留下來吧</button> <button onclick="closeModal()">晚點再說</button></p>`);}
-function doRecruit(){if(act({type:'RECRUIT'})){closeModal();draw();toast('新成員加入了');}}
-function showResult(){const R=st.result;modal(`<h2>${R.win?'守住了':'燈熄了'}</h2><p>${esc(R.txt)}</p><p class="note">撐了 ${st.day-1} 天 · 蓋了 ${st.stats.built} 座建築 · 打開 ${st.stats.explored} 格迷霧 · 淨化 ${st.stats.purified} 次</p><p><button class="main" onclick="newGame()">再來一次</button></p>`);}
-function memInfo(id){const m=st.members.find(x=>x.id===id);const h=D.heroes[id];modal(`<div class="recruit"><img src="${h.img}" alt=""><div><b>${esc(h.name)}</b><p class="note">「${esc(h.line)}」</p><p class="stat">探索 <b>${'★'.repeat(h.exp)}</b>　淨化 <b>${'★'.repeat(h.pur)}</b><br>採集 <b>${'★'.repeat(h.gat)}</b>　守夜 <b>${'★'.repeat(h.grd)}</b></p><p class="stat">體力 ${m.stam}／${D.maxStam}${m.task?`　今天：${D.tasks[m.task.type].name}`:''}</p></div></div><p><button onclick="closeModal()">關閉</button></p>`);}
-function showTeam(){modal(`<h2>成員 ${st.members.length}／${H.cap(D,st)}</h2><div class="mlist">${st.members.map(m=>{const h=D.heroes[m.id];return `<div class="m"><img src="${h.img}" alt=""><div><b>${esc(h.name)}</b>　<span class="stat">體力 ${m.stam}／${D.maxStam}${m.task?'・'+D.tasks[m.task.type].name:''}</span><div class="stat">探索 <b>${h.exp}</b>　淨化 <b>${h.pur}</b>　採集 <b>${h.gat}</b>　守夜 <b>${h.grd}</b></div></div></div>`;}).join('')}</div><p class="note">做事扣 1 體力；晚上做過事的恢復 1，休息的恢復 2，藥草園再多。補給不夠就不會恢復。</p><p><button onclick="closeModal()">關閉</button></p>`);}
-function toggleZoom(){const w=$('mapwrap');w.classList.toggle('zoom');$('zb').textContent=w.classList.contains('zoom')?'縮小':'放大';if(w.classList.contains('zoom')){w.scrollLeft=(w.scrollWidth-w.clientWidth)/2;w.scrollTop=(w.scrollHeight-w.clientHeight)/2;}}
-function showMenu(){modal(`<h2>選單</h2><p><button onclick="help()">怎麼玩</button></p><p><button onclick="showLog()">最近的紀錄</button></p><p><button onclick="if(confirm('放棄這一局，從頭開始？'))newGame()" style="border-color:#a84035;color:#ff9a8a">重新開始</button></p><p class="note">${D.version} · 試作版 · 紀錄只存在這台裝置</p><p><button onclick="closeModal()">關閉</button></p>`);}
-function showLog(){modal(`<h2>最近的紀錄</h2>${st.log.slice(-12).reverse().map(l=>`<p class="note">第 ${l.day} 天：${esc(l.txt)}</p>`).join('')}<p><button onclick="closeModal()">關閉</button></p>`);}
-function help(){modal(`<h2>怎麼玩</h2>
-<p><b>白天</b>：點格子。<br>・在南門或建築旁邊<b>蓋房子</b>：農田、伐木場、礦坑、油坊、藥草園、燈塔、結界碑、宿舍。<br>・<b>派成員</b>去探索迷霧、淨化污染、採集資源，或在危險的地方守夜。每人一天一件事。</p>
-<p><b>晚上</b>：按「結束這一天」。建築產出、大家吃飯、燈塔燒燈油，然後污染往外擴散。</p>
-<p><b>污染</b>：紫色的格子。紅框是今晚可能被污染的地方。燈塔照到的地方很難被污染、已經有的會退去；結界碑和守夜的人旁邊，污染完全進不來。建築被污染會停工，污染滿三格就毀掉。</p>
-<p><b>目標</b>：找到最外圈的三座污染巢，派淨化強的人把它們拔除。污染漫進南門就輸了。</p>
-<p class="note">探索廢墟可能撿到東西，也可能遇到願意加入的人。</p><p><button onclick="closeModal()">知道了</button></p>`);}
-function hint(t){const e=$('hint');if(!t){e.classList.add('hide');return;}e.innerHTML=t+'<div style="text-align:right;margin-top:6px"><button onclick="hint()">好</button></div>';e.classList.remove('hide');}
-function newGame(){const seed=(Date.now()%2147483647)>>>0;st=H.newGame(D,seed);save();sel=null;closeModal();draw();intro();}
-function intro(){modal(`<h2>燈火邊境</h2><p>白鐵礦城的南門外，迷霧一天比一天濃。霧裡藏著三座污染巢，紫黑色的污漬從那裡一圈一圈往外爬。</p><p>公會派你們守在南門。蓋起燈塔與農田，派人走進迷霧，在燈熄滅以前，把污染巢一座一座拔除。</p><p><button class="main" onclick="closeModal();hint('點地圖上的格子，可以<b>蓋房子</b>或<b>派人</b>。先在南門旁邊蓋農田和伐木場，再派鳶去探索迷霧。準備好了，按右下角「結束這一天」。')">出發</button></p>`);}
-(function(){$('bgimg').style.backgroundImage=`url('../../raven-guild/images/bg_village.webp')`;st=load();if(!st){st=H.newGame(D,(Date.now()%2147483647)>>>0);save();draw();intro();}else{draw();if(st.result)showResult();}})();
+// ── 卡牌樣子
+function cardHtml(c,extra,cls){const d=C.cardDef(D,c);const k=c.free?0:d.c;return `<div class="card ${d.t} ${cls||''}" ${extra||''}><div class="ci" style="background-image:url(${d.img})"></div>${d.t!=='x'?`<div class="cc">${k}</div>`:''}<div class="cn ${c.up?'up':''}">${esc(d.n)}</div><div class="cd">${esc(C.desc(D,c))}</div></div>`;}
+const TYPE={a:'攻擊',s:'技能',p:'能力',x:'詛咒'};
+
+// ── 地圖
+const NODE={fight:{n:'戰鬥',ic:I+'sk_bash.webp'},elite:{n:'菁英',ic:I+'st_fury.webp'},event:{n:'事件',ic:I+'st_echo.webp'},shop:{n:'商店',ic:I+'i_coin.webp'},rest:{n:'營火',ic:I+'i_torch.webp'},chest:{n:'寶箱',ic:I+'i_seal.webp'}};
+function drawMap(){const L=D.layers[st.layer];$('mbg').style.backgroundImage=`url(${L.bg})`;$('mbar').innerHTML=topBar();
+ $('mlg').innerHTML=`<b style="color:var(--gold);width:100%;text-align:center;font-size:15px">${L.n}</b>`+Object.values(NODE).map(n=>`<span><img src="${n.ic}" alt="">${n.n}</span>`).join('');
+ const map=st.maps[st.layer];const W=Math.min(innerWidth,420),cols=D.map.cols,rows=D.map.rows;const gx=W/(cols+1),gy=86,top=70;const H=top+gy*rows+40;
+ const pos=(r,c)=>({x:gx*(c+1),y:top+gy*(rows-1-r)+gy});
+ let lines='',nodes='';
+ for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const n=map.rows[r][c];const p=pos(r,c);if(r<rows-1)for(const e of n.e){const q=pos(r+1,e);const walked=st.row>r&&r===(st.row-1)&&c===st.prevCol;lines+=`<line x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}" stroke="#7a6446" stroke-width="2" stroke-dasharray="5 5" opacity=".7"/>`;}
+  else lines+=`<line x1="${p.x}" y1="${p.y}" x2="${W/2}" y2="${top-10}" stroke="#7a6446" stroke-width="2" stroke-dasharray="5 5" opacity=".7"/>`;}
+ for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const n=map.rows[r][c];const p=pos(r,c);const can=st.screen==='map'&&C.canMove(D,st,c)&&r===st.row+1;const here=st.row===r&&st.col===c;const done=r<st.row||(r===st.row&&!here);
+  nodes+=`<g class="node${can?' can':''}${here?' here':''}${done?' done':''}" transform="translate(${p.x},${p.y})" ${can?`onclick="go(${c})"`:''}><circle class="bg2" r="24"/><clipPath id="nc${r}${c}"><circle r="20"/></clipPath><image href="${NODE[n.t].ic}" x="-20" y="-20" width="40" height="40" clip-path="url(#nc${r}${c})" preserveAspectRatio="xMidYMid slice"/></g>`;}
+ const bcan=st.screen==='map'&&C.canMove(D,st,'boss');const B=D.enemies[L.boss];
+ nodes+=`<g class="node${bcan?' can':''}" transform="translate(${W/2},${top-26})" ${bcan?`onclick="go('boss')"`:''}><circle class="bg2" r="36"/><clipPath id="ncb"><circle r="32"/></clipPath><image href="${B.img}" x="-32" y="-32" width="64" height="64" clip-path="url(#ncb)" preserveAspectRatio="xMidYMin slice"/><text y="52" text-anchor="middle" fill="#e9c98a" font-size="13">${B.n}</text></g>`;
+ $('mwrap').innerHTML=`<svg width="${W}" height="${H+20}" viewBox="0 -20 ${W} ${H+20}">${lines}${nodes}</svg>`;
+ requestAnimationFrame(()=>{const w=$('mwrap');w.scrollTop=w.scrollHeight;if(st.row>=2)w.scrollTop=Math.max(0,top+gy*(rows-1-st.row)-120);});}
+function go(c){if(busy)return;const prev=st.col;const r=act({type:'MOVE',c});if(!r)return;st.prevCol=prev;
+ if(c==='boss'){const b=D.layers[st.layer].boss;const B=D.enemies[b];window._bl=[...(D.talk.boss[b]&&D.talk.boss[b][st.ch]||[])];modal(`<div style="text-align:center"><img src="${B.img}" style="width:70%;border-radius:10px" alt=""><h2 style="color:var(--red)">${B.n}</h2><p class="big">${esc(B.line)}</p><button class="main" onclick="closeModal();talk(window._bl,()=>{drawCombat();show('cb');banner('第 1 回合')})">迎戰</button></div>`);return;}
+ route();if(st.screen==='combat')banner('第 1 回合');}
+
+// ── 戰鬥畫面
+function intentHtml(e){const m=e.intent;const c=st.combat;const parts=[];const am=(D.enemies[e.id].boss||D.enemies[e.id].elite)?1:(D.layers[st.layer].atkMul||1);
+ if(m.a){const d=C.dmgCalc(Math.round(m.a*am),e,c);parts.push(`<img src="${I}st_fury.webp" alt="">${d}${m.h>1?'×'+m.h:''}`);}
+ if(m.b)parts.push(`<img src="${I}st_wall.webp" alt="">${m.b}`);
+ if(m.s)parts.push(`<img src="${D.status[m.s[0]]?D.status[m.s[0]].ic:I+'st_might.webp'}" alt="">強化`);
+ if(m.st)parts.push(`<img src="${D.status[m.st[0]].ic}" alt="">${D.status[m.st[0]].name}`);
+ if(m.heal)parts.push(`<img src="${I}st_regen.webp" alt="">回復`);
+ return `<div class="intent ${m.a?'atk':''}" onclick="event.stopPropagation();intentInfo('${e.uid}')">${parts.join(' ')}</div>`;}
+function intentInfo(uid){const e=st.combat.enemies.find(x=>x.uid===uid);const m=e.intent;flash(`${e.n}：${m.n}`);}
+function stsHtml(sts,ink){const out=Object.entries(sts).filter(([k,v])=>v&&D.status[k]).map(([k,v])=>`<span onclick="event.stopPropagation();stInfo('${k}')"><img src="${D.status[k].ic}" alt="">${v}</span>`);if(ink)out.push(`<span onclick="event.stopPropagation();stInfo('ink')"><img src="${D.status.ink.ic}" alt="">${ink}</span>`);return out.join('');}
+function stInfo(k){flash(D.status[k].name+'：'+D.status[k].desc);}
+function drawCombat(){const c=st.combat;if(!c)return;$('cbg').style.backgroundImage=`url(${D.layers[st.layer].bg})`;$('cbar').innerHTML=topBar();
+ const tgtMode=sel!=null&&C.needsTarget(D,c.hand[sel]);
+ $('foes').innerHTML=c.enemies.map(e=>`<div class="foe${e.hp<=0?' dead':''}${tgtMode&&e.hp>0?' tgt':''}" id="f_${e.uid}" onclick="tapFoe('${e.uid}')">${e.hp>0?intentHtml(e):''}<img class="art" src="${D.enemies[e.id].img}" alt=""><div class="nm">${esc(e.n)} ${e.block?`<span class="blk"><img src="${I}st_wall.webp" style="width:14px;height:14px;border-radius:50%" alt="">${e.block}</span>`:''}</div><div class="hpbar"><i style="width:${Math.max(0,e.hp/e.max*100)}%"></i></div><div class="hpt">${Math.max(0,e.hp)}／${e.max}</div><div class="sts">${stsHtml(e.st)}</div></div>`).join('');
+ $('me').innerHTML=`<div class="orb">${c.energy}</div><div class="info"><div class="row"><b>${CH().name}</b><span>生命 ${Math.max(0,st.hp)}／${st.maxHp}</span>${c.block?`<span class="blk"><img src="${I}st_wall.webp" style="width:16px;height:16px;border-radius:50%" alt="">格擋 ${c.block}</span>`:''}${st.ch==='cl'||c.ink?`<span class="inkb">墨 ${c.ink}</span>`:''}</div><div class="hpbar" style="margin:4px 0"><i style="width:${Math.max(0,st.hp/st.maxHp*100)}%"></i></div><div class="sts" style="justify-content:flex-start">${stsHtml(c.st)}${Object.entries(c.pw).map(([k,v])=>`<span onclick="flash('${esc(D.powers[k].replace('{n}',v))}')"><img src="${I}st_vow.webp" alt="">${v}</span>`).join('')}</div></div>`;
+ $('hand').innerHTML=c.hand.map((x,i)=>cardHtml(x,`onclick="tapCard(${i})"`,(i===sel?'sel ':'')+((C.cost(D,x)>c.energy||C.cost(D,x)<0)?'no':''))).join('');
+ $('pDraw').textContent=`抽牌堆 ${c.draw.length}`;$('pDisc').textContent=`棄牌堆 ${c.disc.length}`;
+ drawDetail();}
+function drawDetail(){const c=st.combat;const el=$('detail');if(sel==null||!c||!c.hand[sel]){el.classList.remove('on');$('hint').style.display='none';return;}
+ const x=c.hand[sel];const d=C.cardDef(D,x);const need=C.needsTarget(D,x);const k=C.cost(D,x);
+ el.innerHTML=`<h4>${esc(d.n)}　<small style="color:var(--dim)">${TYPE[d.t]}・${k<0?'不能打出':k+' 能量'}</small></h4><p>${esc(C.desc(D,x))}</p>${d.t==='x'?'':need&&C.alive(c).length>1?'<p style="color:#ffcdbf">點一個敵人打出</p>':`<button class="main" onclick="playSel()">打出</button>`} <button onclick="sel=null;drawCombat()">取消</button>`;el.classList.add('on');}
+function tapCard(i){if(busy)return;sel=sel===i?null:i;drawCombat();}
+function tapFoe(uid){if(busy||sel==null)return;const c=st.combat;if(!C.needsTarget(D,c.hand[sel]))return;doPlay(sel,uid);}
+function playSel(){if(sel==null)return;const c=st.combat;const a=C.alive(c);doPlay(sel,a.length===1?a[0].uid:null);}
+async function doPlay(i,uid){busy=true;const card=st.combat.hand[i];const before=snapshot();sel=null;const r=act({type:'PLAY',i,target:uid});if(!r){busy=false;drawCombat();return;}
+ await animate(r.events,before,card);busy=false;after(r);}
+function snapshot(){return st.combat?{en:st.combat.enemies.map(e=>({uid:e.uid,hp:e.hp})),hp:st.hp}:null;}
+const FX={a:I+'fx_slash.webp',pact:I+'fx_threads.webp',ink:I+'fx_erase.webp',judge:I+'fx_doom.webp',block:I+'fx_shieldglow.webp',heal:I+'fx_heal.webp',link:I+'fx_web.webp'};
+function pop(el,txt,cls){if(!el)return;const n=document.createElement('div');n.className='num '+(cls||'');n.textContent=txt;el.appendChild(n);setTimeout(()=>n.remove(),950);}
+function fxOn(el,img){if(!el||!img)return;const f=document.createElement('img');f.className='fxi';f.src=img;el.appendChild(f);setTimeout(()=>f.remove(),600);}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+async function animate(evs,before,card){
+ for(const e of evs){
+  if(e.t==='play'){const d=D.cards[e.id];if(d.t==='a'&&e.tg)fxOn($('f_'+e.tg),FX.a);if(d.fx.some(f=>f[0]==='pa'))(e.tg?[$('f_'+e.tg)]:document.querySelectorAll('.foe')).forEach(x=>fxOn(x,FX.pact));if(d.fx.some(f=>f[0]==='lk'))document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.link));if(d.fx.some(f=>f[0]==='da'))document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.a));}
+  else if(e.t==='hit'){const el=$('f_'+e.to);if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');pop(el,e.blocked?(e.n-e.blocked||'擋'):e.n);}await wait(110);}
+  else if(e.t==='judge'){document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.judge));await wait(250);}
+  else if(e.t==='inkUse'){fxOn($('me'),FX.ink);pop($('me'),'墨 -'+e.n,'p');}
+  else if(e.t==='block'){fxOn($('me'),FX.block);pop($('me'),'+'+e.n,'b');}
+  else if(e.t==='heal'){fxOn($('me'),FX.heal);pop($('me'),'+'+e.n,'h');}
+  else if(e.t==='kill'){const el=$('f_'+e.uid);if(el)el.classList.add('dead');await wait(250);}
+  else if(e.t==='relic'){toast(`<b>${D.relics[e.id].n}</b> 發動了`);}
+ }
+ drawCombatIf();await wait(160);}
+function drawCombatIf(){if(st.screen==='combat')drawCombat();}
+async function endTurn(){if(busy||st.screen!=='combat')return;busy=true;sel=null;$('detail').classList.remove('on');const r=act({type:'END_TURN'});if(!r){busy=false;return;}
+ banner('敵人回合');await wait(500);
+ for(const e of r.events){
+  if(e.t==='enemyAct'){const el=$('f_'+e.uid);if(el){el.style.transform='translateY(14px) scale(1.04)';setTimeout(()=>el.style.transform='',180);}{const en=(st.combat?st.combat.enemies:[]).find(x=>x.uid===e.uid);flash((en?en.n+'：':'')+e.n);}await wait(260);}
+  else if(e.t==='hurt'){const m=$('me');m.classList.remove('shake');void m.offsetWidth;m.classList.add('shake');pop(m,e.blocked&&e.n===e.blocked?'擋':'-'+(e.n-e.blocked));await wait(200);}
+  else if(e.t==='recoil'){const el=$('f_'+e.to);fxOn(el,FX.pact);pop(el,e.n,'p');await wait(200);}
+  else if(e.t==='relic')toast(`<b>${D.relics[e.id].n}</b> 發動了`);
+  else if(e.t==='kill'){const el=$('f_'+e.uid);if(el)el.classList.add('dead');}
+ }
+ busy=false;
+ if(st.screen==='combat'){drawCombat();banner('第 '+st.combat.turn+' 回合');}
+ after(r);}
+function banner(t){const b=$('turnBan');b.textContent=t;b.classList.remove('go');void b.offsetWidth;b.classList.add('go');}
+function after(r){if(!r)return;
+ if(st.screen==='combat'){drawCombat();return;}
+ if(st.screen==='over'){runEnd(r);return;}
+ if(r.events.some(e=>e.t==='win')){const w=r.events.find(e=>e.t==='win');setTimeout(()=>{drawPage();show('pg');},500);return;}
+ route();}
+
+// ── 各種頁面
+function drawPage(){const s=st.screen;const L=D.layers[st.layer]||D.layers[D.layers.length-1];$('gbg').style.backgroundImage=`url(${L.bg})`;$('gbar').innerHTML=topBar();let h='';
+ if(s==='reward'){const rw=st.reward;h=`<h2>勝利</h2><p class="big"><img src="${I}i_coin.webp" style="width:20px;vertical-align:middle;border-radius:50%" alt=""> 得到 ${rw.gold} 渡鴉幣</p>`;
+  if(rw.relic){const R=D.relics[rw.relic];h+=`<div class="rel"><img src="${R.ic}" alt=""><div><b>得到遺物：${R.n}</b><small>${R.d}</small></div></div>`;}
+  if(rw.relicChoice){h+=`<h3 style="color:var(--gold)">選一件遺物帶走</h3>`+rw.relicChoice.map((id,i)=>{const R=D.relics[id];return `<div class="rel" onclick="pickRelic(${i})"><img src="${R.ic}" alt=""><div><b>${R.n}</b><small>${R.d}</small></div></div>`;}).join('');}
+  if(rw.relicTaken){const R=D.relics[rw.relicTaken];h+=`<div class="rel"><img src="${R.ic}" alt=""><div><b>帶走了：${R.n}</b><small>${R.d}</small></div></div>`;}
+  if(!rw.cardTaken&&rw.cards.length){h+=`<h3 style="color:var(--gold)">選一張牌加入牌組</h3><div class="cards">${rw.cards.map((id,i)=>cardHtml({id,up:0},`onclick="pickCard(${i})"`)).join('')}</div><p style="text-align:center"><button onclick="skipCard()">不拿</button></p>`;}
+  else h+=`<p style="text-align:center;margin-top:18px"><button class="main" onclick="leave()" ${rw.relicChoice?'disabled':''}>繼續往下</button></p>`;}
+ else if(s==='rest'){h=`<h2>營火</h2><p class="big">火光很暖。可以在這裡歇一下。</p><button class="opt" onclick="rest()">休息<small>回復 ${Math.floor(st.maxHp*.3)+(st.relics.includes('teapot')?15:0)} 點生命</small></button><button class="opt" onclick="smith()">磨亮一張牌<small>選一張牌強化</small></button>`;}
+ else if(s==='chest'){const id=st.reward.chest;h=`<h2>寶箱</h2>`+(id?`<div class="rel"><img src="${D.relics[id].ic}" alt=""><div><b>${D.relics[id].n}</b><small>${D.relics[id].d}</small></div></div>`:`<p class="big">箱子裡只有 ${st.reward.gold} 枚渡鴉幣。</p>`)+`<p><button class="main" onclick="leave()">繼續往下</button></p>`;}
+ else if(s==='shop'){const sh=st.shop;h=`<h2>沒有臉的攤主</h2><p style="color:var(--dim)">「看看吧。用渡鴉幣就好。」</p><div class="cards">${sh.cards.map((it,i)=>`<div>${cardHtml({id:it.id,up:0},it.sold?'':`onclick="buyCard(${i})"`,it.sold?'no':'')}<span class="price">${it.sold?'已售出':it.price+' 幣'}</span></div>`).join('')}</div>
+  ${sh.relics.map((it,i)=>{const R=D.relics[it.id];return `<div class="rel" ${it.sold?'style="opacity:.4"':`onclick="buyRelic(${i})"`}><img src="${R.ic}" alt=""><div><b>${R.n}　${it.sold?'已售出':it.price+' 幣'}</b><small>${R.d}</small></div></div>`;}).join('')}
+  <button class="opt" onclick="pickDeck('remove')" ${sh.removed?'disabled':''}>請攤主收走一張牌<small>${sh.removed?'已經用過了':sh.removeCost+' 渡鴉幣'}</small></button><p><button class="main" onclick="leave()">離開</button></p>`;}
+ else if(s==='event'){const ev=D.events.find(e=>e.id===st.event.id);$('gbg').style.backgroundImage=`url(${ev.img})`;h=`<h2>${esc(ev.n)}</h2><p class="big">${esc(ev.txt)}</p>`;
+  if(st.pick){h+=pickHtml();}
+  else if(!st.event.done)h+=ev.opts.map((o,i)=>`<button class="opt" onclick="evPick(${i})" ${o.need&&o.need.gold&&st.gold<o.need.gold?'disabled':''}>${esc(o.t)}<small>${esc(o.d)}</small></button>`).join('');
+  else{const out=st.event.done.out||[];h+=`<p class="big">${esc(ev.opts[st.event.done.i].d)}。</p>`+out.map(o=>o.relic?`<div class="rel"><img src="${D.relics[o.relic].ic}" alt=""><div><b>${D.relics[o.relic].n}</b><small>${D.relics[o.relic].d}</small></div></div>`:o.card?`<p>得到：${D.cards[o.card].n}</p>`:o.upgraded?`<p>升級了：${D.cards[o.upgraded].n}</p>`:'').join('')+`<p><button class="main" onclick="leave()">繼續往下</button></p>`;}}
+ if(st.pick&&s!=='event')h+=pickHtml();
+ $('gpage').innerHTML=h;}
+function pickHtml(){const p=st.pick;if(p.mode==='choose')return `<h3 style="color:var(--gold)">選一張</h3><div class="cards">${p.cards.map((id,i)=>cardHtml({id,up:0},`onclick="chooseC(${i})"`)).join('')}</div><p style="text-align:center"><button onclick="chooseC(null)">都不要</button></p>`;
+ const t={remove:'選一張牌移除',transform:'選一張牌交換',upgrade:'選一張牌強化'}[p.mode];
+ return `<h3 style="color:var(--gold)">${t}</h3><div class="cards">${st.deck.filter(c=>p.mode!=='upgrade'||(!c.up&&D.cards[c.id].u)).map(c=>cardHtml(c,`onclick="deckPick(${c.uid})"`)).join('')}</div>`;}
+function pickCard(i){const r=act({type:'PICK_CARD',i});if(r){toast(`<b>${D.cards[r.events.find(e=>e.t==='gotCard').id].n}</b> 加入牌組`);drawPage();}}
+function skipCard(){if(act({type:'SKIP_CARD'}))drawPage();}
+function pickRelic(i){if(act({type:'PICK_RELIC',i}))drawPage();}
+function leave(){const lay=st.layer;const r=act({type:'LEAVE'});if(!r)return;if(st.screen==='over'){runEnd(r);return;}if(st.layer!==lay){toast(`進入 <b>${D.layers[st.layer].n}</b>`);}route();}
+function rest(){const r=act({type:'REST'});if(r){toast('休息了一下，回復生命');route();}}
+function smith(){st.pick={mode:'upgrade'};drawPage();}
+function buyCard(i){const r=act({type:'BUY_CARD',i});if(r){toast('買下了');drawPage();}}
+function buyRelic(i){const r=act({type:'BUY_RELIC',i});if(r){toast('買下了');drawPage();}}
+function pickDeck(mode){st.pick={mode,shop:true};drawPage();}
+function deckPick(uid){const p=st.pick;let r;
+ if(p.mode==='upgrade'){st.pick=null;r=act({type:'SMITH',uid});if(r){toast('牌被磨亮了');route();}return;}
+ if(p.mode==='remove'){if(p.shop){st.pick=null;}r=act({type:'REMOVE',uid});if(r){toast('那張牌被收走了');drawPage();}else drawPage();return;}
+ if(p.mode==='transform'){r=act({type:'TRANSFORM',uid});if(r){toast(`換成了 <b>${D.cards[r.events.find(e=>e.t==='transformed').id].n}</b>`);drawPage();}}}
+function chooseC(i){const r=act({type:'CHOOSE',i});if(r)drawPage();}
+function evPick(i){const r=act({type:'EVENT',i});if(r)drawPage();}
+
+// ── 牌組、牌堆
+function showDeck(){modal(`<h2 style="color:var(--gold);margin-top:0">牌組 ${st.deck.length} 張</h2><div class="cards">${st.deck.slice().sort((a,b)=>a.id<b.id?-1:1).map(c=>cardHtml(c)).join('')}</div><p><button onclick="closeModal()">關閉</button></p>`);}
+function showPile(k){const c=st.combat;const list=k==='draw'?c.draw.slice().sort((a,b)=>a.id<b.id?-1:1):c.disc;modal(`<h2 style="color:var(--gold);margin-top:0">${k==='draw'?'抽牌堆（順序看不到）':'棄牌堆'} ${list.length} 張</h2><div class="cards">${list.map(x=>cardHtml(x)).join('')||'<p>空的</p>'}</div><p><button onclick="closeModal()">關閉</button></p>`);}
+
+// ── 一局結束
+function runEnd(r){const ev=r.events.find(e=>e.t==='runEnd');const win=st.result&&st.result.win;const news=r.news||{unlocks:[]};
+ const lines=win?D.talk.win[st.ch]:D.talk.lose[st.ch];
+ talk(lines,()=>{const s=st.stats;let h=`<h2>${win?'回到地面了':'燈，暫時熄了'}</h2><p class="big">${win?'三層都走完了。':'走到了'+D.layers[st.layer].n+'。'}</p>
+  <div class="rel"><div><b>這一局</b><small>走了 ${s.floors} 步 · 打倒 ${s.kills} 隻 · 菁英 ${s.elites} · 首領 ${s.bosses}<br>一張牌最多打出 ${s.dmgMax} 點傷害 · 打出 ${s.cards} 張牌</small></div></div>
+  <div class="rel"><img src="${I}st_echo.webp" alt=""><div><b>得到回憶 ${ev?ev.memory:0}</b><small>累積 ${meta.memory}</small></div></div>`;
+  for(const id of news.unlocks){const u=D.unlocks.find(x=>x.id===id);h+=`<div class="rel" style="border-color:var(--gold)"><img src="${I}st_vow.webp" alt=""><div><b>解鎖！</b><small>${esc(u.t)}</small></div></div>`;}
+  const nx=D.unlocks.filter(u=>!meta.unlocked.includes(u.id)).sort((a,b)=>a.at-b.at)[0];if(nx)h+=`<p style="color:var(--dim)">再累積 ${nx.at-meta.memory} 回憶：${esc(nx.t)}</p>`;
+  h+=`<p><button class="main" onclick="ls(RUNK,null);st=null;show('title')">回到地面</button></p>`;
+  $('gbar').innerHTML='';$('gpage').innerHTML=h;show('pg');});}
+
+// ── 回憶之書、圖鑑、成就
+function openBook(){$('btitle').textContent='回憶之書';$('bbg').style.backgroundImage=`url(${I}bg_library.webp)`;
+ let h=`<p style="color:var(--dim)">回憶 ${meta.memory}。每一次下潛，不管走到哪裡，都會留下回憶。</p>`;
+ h+=D.unlocks.map(u=>{const got=meta.unlocked.includes(u.id);const st2=D.stories[u.id];return `<div class="rel" style="${got?'':'opacity:.5'}" ${got&&st2?`onclick="readStory('${u.id}')"`:''}><img src="${I}${got?'st_vow':'st_seal'}.webp" alt=""><div><b>${got?esc(u.t):'？？？'}</b><small>${got?(st2?'點一下閱讀':'已解鎖'):'累積 '+u.at+' 回憶'}</small></div></div>`;}).join('');
+ $('bpage').innerHTML=h;show('book');}
+function readStory(id){talk(D.stories[id].lines,()=>{});}
+function openCodex(){$('btitle').textContent='圖鑑';$('bbg').style.backgroundImage=`url(${I}bg_codex.webp)`;const ks=Object.keys(D.enemies);const n=ks.filter(k=>meta.codex[k]).length;
+ $('bpage').innerHTML=`<p style="color:var(--dim)">記錄了 ${n}／${ks.length} 種</p><div class="codex">${ks.map(k=>{const e=D.enemies[k];const got=meta.codex[k];return `<div class="${got?'':'no'}"><img src="${e.img}" alt="">${got?esc(e.n)+'<br>打倒 '+got:'？？？'}</div>`;}).join('')}</div>`;show('book');}
+function openAch(){$('btitle').textContent='成就';$('bbg').style.backgroundImage=`url(${I}bg_hall.webp)`;const n=meta.ach.length;
+ $('bpage').innerHTML=`<p style="color:var(--dim)">${n}／${D.achievements.length}</p>`+D.achievements.map(a=>{const g=meta.ach.includes(a.id);return `<div class="ach ${g?'got':''}"><i>${g?'✓':''}</i><div>${esc(a.n)}<small>${esc(a.d)}</small></div></div>`;}).join('');show('book');}
+
+// ── 開始
+meta=ls(METAK)||C.newMeta();
+(function(){const s=ls(RUNK);if(s&&s.v===1&&s.screen!=='over')st=s;drawTitle();})();
 </script>
 </body>
 </html>
