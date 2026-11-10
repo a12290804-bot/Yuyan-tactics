@@ -56,3 +56,20 @@
 - **音效（音樂大師已交）**：出場聲是 `sfx_mon_xian_appear`、`sfx_mon_eldritch_appear`、`sfx_mon_flesh_appear`。境界突破用 `sfx_breakthrough`，「？」被揭露用 `sfx_reveal`，零件被打掉用 `sfx_part_break`，縫回零件也用這個檔，playbackRate 調成 0.7。
 - 每隻敵人加 `fac` 欄位，值是 `xian`、`eldritch` 或 `flesh`，同時決定音效和濾鏡。
 - 名字和圖鑑文字由文字劇情大師改寫，機制和數值照這份。
+
+## 敵人 id 對照（照製圖大師的圖檔）
+| 敵人 | id | fac |
+|---|---|---|
+| 走屍道童 | jiangshi_boy | xian |
+| 燒香的老嫗 | incense_crone | xian |
+| 煉丹的師父 | alchemist | xian |
+| 紙紮童男童女 | paper_twins | xian |
+| 沒有臉的鄰居 | faceless | eldritch |
+| 數不完的手 | hands | eldritch |
+| 叫號機 | ticketer | eldritch |
+| 井底的眼 | welleye | eldritch |
+| 縫合工 | stitcher | flesh |
+| 心跳鐘 | heartclock | flesh |
+| 抽油的工人 | oilworker | flesh |
+| 鐵肺修女 | ironlung | flesh |
+圖檔是 `m_<id>`，鎮屍符的卡圖是 `card_x_talisman`。
