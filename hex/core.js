@@ -13,7 +13,7 @@ const TIMED=['vuln','weak','link','regen'];
 
 // ── 卡牌
 function cardDef(D,c){const b=D.cards[c.id];if(!c.up||!b.u)return b;return Object.assign({},b,b.u,{n:b.n+'+'});}
-function cost(D,c){if(c.free)return 0;return cardDef(D,c).c;}
+function cost(D,c){if(c.free)return 0;const k=cardDef(D,c).c;return k<0?k:k+(c.tax||0);}
 function needsTarget(D,c){return cardDef(D,c).fx.some(f=>(['d','jd','lk','px2','ep'].includes(f[0]))||((f[0]==='st'||f[0]==='pa')&&(f[f.length-1]==='t')));}
 function opText(D,f){const S=D.status;const sc=f[3];
  const scT=sc?(sc.startsWith('pact')?`，目標每有 1 層厄契多 ${sc.slice(4)}`:sc.startsWith('ink')?`，用掉所有墨，每 1 墨多 ${sc.slice(3)}`:''):'';
@@ -34,8 +34,9 @@ function opText(D,f){const S=D.status;const sc=f[3];
   case 'pw':return D.powers[f[1]].replace('{n}',f[2]);
   case 'px2':return `目標的厄契加倍`;
   case 'rw':return `丟掉所有手牌，再抽同樣的張數`;
+  case 'ka':return `這回合結束時，手上所有的牌都保留`;
  }return '';}
-function desc(D,c){const d=cardDef(D,c);if(d.t==='x')return '不能打出。';let s=d.fx.map(f=>opText(D,f).replace(/。$/,'')).join('。')+'。';if(d.keep)s+='保留。';if(d.ex)s+='消耗。';return s;}
+function desc(D,c){const d=cardDef(D,c);if(d.t==='x')return '不能打出。';if(!d.fx.length)return '沒有效果。'+(d.ex?'消耗。':'');let s=d.fx.map(f=>opText(D,f).replace(/。$/,'')).join('。')+'。';if(d.keep)s+='保留。';if(d.ex)s+='消耗。';return s;}
 
 // ── 開新的一局
 function newRun(D,seed,ch,meta){seed=seed>>>0||1;const C=D.chars[ch];
@@ -87,16 +88,24 @@ function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
  if(c.pw.strTurn)addSt(c,'str',c.pw.strTurn);
  if(has(st,'quill'))gainInk(st,c,1,E);
  if(c.pw.inkTurn)gainInk(st,c,c.pw.inkTurn,E);
+ if(has(st,'paperweight')&&c.ink>=5){c.energy++;E.push({t:'relic',id:'paperweight'});}
  draw(D,st,5+(c.turn===1&&has(st,'feather')?2:0)+(c.pw.drawTurn||0),E);
+ if(c.stealQ&&c.stealQ.length){for(const q of c.stealQ){const e=c.enemies.find(x=>x.uid===q.uid&&x.hp>0);if(!e)continue;e.stolen=e.stolen||[];for(let i=0;i<q.n&&c.hand.length;i++){const k=Math.floor(R(st)*c.hand.length);const x=c.hand.splice(k,1)[0];if(!x.temp)e.stolen.push({uid:x.uid,id:x.id,up:x.up});E.push({t:'steal',uid:e.uid,id:x.id});}}c.stealQ=[];}
+ if(c.taxNext){const can=c.hand.filter(x=>cardDef(D,x).c>=0);shuffle(st,can).slice(0,c.taxNext).forEach(x=>x.tax=1);E.push({t:'tax',n:Math.min(c.taxNext,can.length)});c.taxNext=0;}
  E.push({t:'turn',n:c.turn});}
 const alive=c=>c.enemies.filter(e=>e.hp>0);
 function dmgCalc(base,att,def){let d=base+(att.st.str||0);if(att.st.weak)d*=.75;if(def.st.vuln)d*=1.5;return Math.max(0,Math.floor(d));}
 function hitEnemy(D,st,e,amt,E,noLink){const c=st.combat;const b=Math.min(e.block,amt);e.block-=b;const real=amt-b;e.hp=Math.max(0,e.hp-real);E.push({t:'hit',to:e.uid,n:amt,blocked:b});
- if(!noLink&&e.st.link&&real>0)for(const o of alive(c))if(o!==e&&o.st.link)hitEnemy(D,st,o,Math.floor(real/2),E,true);
+ if(!noLink&&e.st.link&&real>0)for(const o of alive(c))if(o!==e&&o.st.link)hitEnemy(D,st,o,c.pw.linkFull?real:Math.floor(real/2),E,true);
+ splitCheck(D,st,e,E);
  return amt;}
-function hitPlayer(D,st,amt,E,src){const c=st.combat;const b=Math.min(c.block,amt);c.block-=b;const real=amt-b;st.hp-=real;c.hurt+=real;E.push({t:'hurt',n:amt,blocked:b,src});
+function splitCheck(D,st,e,E){const c=st.combat;const sp=D.enemies[e.id].split;if(!sp||e.split||e.hp<=0||e.hp>e.max*sp)return;e.split=1;const half=Math.floor(e.hp/2);if(half<1)return;
+ const n=mkEnemy(D,st,e.id,c.enemies.length);n.hp=n.max=half;e.hp=e.max=e.hp-half;n.split=1;n.st={};chooseIntent(D,st,n);chooseIntent(D,st,e);c.enemies.push(n);E.push({t:'split',uid:e.uid,nu:n.uid});}
+function hitPlayer(D,st,amt,E,src){const c=st.combat;if(src&&amt>0&&has(st,'lampshade')&&!c.shade){c.shade=1;amt=Math.floor(amt/2);E.push({t:'relic',id:'lampshade'});}const b=Math.min(c.block,amt);c.block-=b;const real=amt-b;st.hp-=real;c.hurt+=real;E.push({t:'hurt',n:amt,blocked:b,src});
  if(st.hp<=0&&has(st,'mirror')&&!st.flags.mirror){st.flags.mirror=1;st.hp=Math.ceil(st.maxHp*.3);E.push({t:'relic',id:'mirror'});}}
-function killCheck(D,st,E){const c=st.combat;for(const e of c.enemies)if(e.hp<=0&&!e.dead){e.dead=1;st.stats.kills++;E.push({t:'kill',id:e.id,uid:e.uid});}
+function killCheck(D,st,E){const c=st.combat;for(const e of c.enemies.slice())if(e.hp<=0&&!e.dead){e.dead=1;st.stats.kills++;E.push({t:'kill',id:e.id,uid:e.uid});
+  if(e.stolen&&e.stolen.length){c.disc.push(...e.stolen);E.push({t:'return',n:e.stolen.length});e.stolen=[];}
+  const od=D.enemies[e.id].onDeath;if(od)for(const id of od){const n=mkEnemy(D,st,id,c.enemies.length);chooseIntent(D,st,n);c.enemies.push(n);E.push({t:'spawn',uid:n.uid,id});}}
  if(!alive(c).length)winCombat(D,st,E);}
 
 function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)return 'no_card';const d=cardDef(D,card);if(d.t==='x'||d.c<0)return '這張牌不能打出';
@@ -108,7 +117,7 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
   switch(f[0]){
    case 'd':{const hits=f[2]||1;let bonus=0;const sc=f[3];
     if(sc&&sc.startsWith('pact'))bonus=(tg.st.pact||0)*(+sc.slice(4));
-    if(sc&&sc.startsWith('ink')){bonus=c.ink*(+sc.slice(3));if(c.ink)E.push({t:'inkUse',n:c.ink});c.ink=0;}
+    if(sc&&sc.startsWith('ink')){bonus=c.ink*(+sc.slice(3));if(c.ink)E.push({t:'inkUse',n:c.ink});if(c.ink>=5&&has(st,'inkstone'))c.inkDraw=1;c.ink=0;}
     for(let h=0;h<hits;h++){if(tg.hp<=0)break;total+=hitEnemy(D,st,tg,dmgCalc(f[1]+bonus,c,tg),E);}break;}
    case 'da':{const hits=f[2]||1;for(let h=0;h<hits;h++)for(const e of alive(c)){const bonus=f[3]?(e.st.pact||0)*(+f[3].slice(4)):0;total+=hitEnemy(D,st,e,dmgCalc(f[1]+bonus,c,e),E);}break;}
    case 'b':{const n=f[1]+(c.st.dex||0);c.block+=n;E.push({t:'block',n});break;}
@@ -116,35 +125,44 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
    case 'en':c.energy+=f[1];break;
    case 'ep':if(tg.st.pact)c.energy+=f[1];break;
    case 'st':{const who=f[3];if(who==='s')addSt(c,f[1],f[2]);else for(const e of (who==='a'?alive(c):[tg]))addSt(e,f[1],f[2]);break;}
-   case 'pa':for(const e of (f[2]==='a'?alive(c):[tg])){addSt(e,'pact',f[1]);if(e.st.pact>=20)E.push({t:'ach',id:'pact20'});}break;
+   case 'pa':{let bonus=0;if(has(st,'silkglove')&&!c.silk){c.silk=1;bonus=2;E.push({t:'relic',id:'silkglove'});}for(const e of (f[2]==='a'?alive(c):[tg])){addSt(e,'pact',f[1]+bonus);if(e.st.pact>=20)E.push({t:'ach',id:'pact20'});}break;}
    case 'ink':gainInk(st,c,f[1],E);break;
-   case 'jd':{const n=tg.st.pact||0;delete tg.st.pact;if(n){E.push({t:'judge',n});total+=hitEnemy(D,st,tg,dmgCalc(f[1]*n,c,tg),E);}break;}
-   case 'lk':{tg.st.link=Math.max(tg.st.link||0,2);for(const e of alive(c))if(e!==tg)e.st.link=Math.max(e.st.link||0,2);break;}
+   case 'jd':{const n=tg.st.pact||0;delete tg.st.pact;if(n){E.push({t:'judge',n});total+=hitEnemy(D,st,tg,dmgCalc(f[1]*n,c,tg),E);if(has(st,'knot')&&tg.hp>0)tg.st.pact=(tg.st.pact||0)+2;}break;}
+   case 'lk':{tg.st.link=Math.max(tg.st.link||0,2);for(const e of alive(c))if(e!==tg)e.st.link=Math.max(e.st.link||0,2);if(has(st,'needle'))for(const e of alive(c))addSt(e,'pact',1);break;}
+   case 'ka':c.keepAll=1;break;
    case 'hp':st.hp=Math.min(st.maxHp,st.hp+f[1]);E.push({t:'heal',n:f[1]});break;
    case 'cp':{const others=c.hand.filter(x=>D.cards[x.id].t!=='x');if(others.length&&c.hand.length<10){const o=pick(st,others);c.hand.push({uid:'t'+st.uid++,id:o.id,up:o.up,free:1,temp:1});}break;}
-   case 'pw':c.pw[f[1]]=(c.pw[f[1]]||0)+f[2];E.push({t:'power',id:f[1]});break;
+   case 'pw':c.pw[f[1]]=(c.pw[f[1]]||0)+f[2];E.push({t:'power',id:f[1]});if(has(st,'blackfeather')){c.block+=4;E.push({t:'block',n:4});}break;
    case 'px2':if(tg.st.pact){tg.st.pact*=2;if(tg.st.pact>=20)E.push({t:'ach',id:'pact20'});}break;
    case 'rw':{const n=c.hand.length;c.disc.push(...c.hand.filter(x=>!x.temp));c.hand=[];draw(D,st,n,E);break;}
   }
   if(!alive(c).length)break;}
  if(total>st.stats.dmgMax)st.stats.dmgMax=total;if(total>=30)E.push({t:'ach',id:'big30'});
  if(d.t==='a'){c.atkN++;if(c.atkN===3&&has(st,'bell'))draw(D,st,1,E);}
+ if(c.inkDraw){c.inkDraw=0;draw(D,st,1,E);E.push({t:'relic',id:'inkstone'});}
  if(d.t!=='p'&&!card.temp){(d.ex?c.exh:c.disc).push({uid:card.uid,id:card.id,up:card.up});}
  killCheck(D,st,E);return null;}
 
 function endTurn(D,st,E){const c=st.combat;
  if(has(st,'candle')&&c.energy>0){c.block+=4*c.energy;E.push({t:'block',n:4*c.energy});}
- const keep=c.hand.filter(x=>cardDef(D,x).keep);c.disc.push(...c.hand.filter(x=>!cardDef(D,x).keep&&!x.temp).map(x=>({uid:x.uid,id:x.id,up:x.up})));c.hand=keep;
+ const kp=x=>c.keepAll?!x.temp:cardDef(D,x).keep;const keep=c.hand.filter(kp).map(x=>{delete x.tax;delete x.free;return x;});c.disc.push(...c.hand.filter(x=>!kp(x)&&!x.temp).map(x=>({uid:x.uid,id:x.id,up:x.up})));c.hand=keep;c.keepAll=0;
+ if(keep.length&&c.pw.keepInk)gainInk(st,c,keep.length*c.pw.keepInk,E);
+ if(keep.length&&has(st,'redbookmark')){c.block+=3;E.push({t:'block',n:3});}
  // 敵人回合
  for(const e of alive(c)){e.block=0;}
  for(const e of c.enemies){if(e.hp<=0)continue;const m=e.intent;E.push({t:'enemyAct',uid:e.uid,n:m.n});
   if(m.a){const hits=m.h||1;const am=(D.enemies[e.id].boss||D.enemies[e.id].elite)?1:((D.layers[st.layer]||{}).atkMul||1);for(let h=0;h<hits;h++){hitPlayer(D,st,dmgCalc(Math.round(m.a*am),e,c),E,e.uid);if(st.hp<=0)break;}
-   if(e.st.pact){const n=e.st.pact+(has(st,'redring')?1:0);e.hp=Math.max(0,e.hp-n);E.push({t:'recoil',to:e.uid,n});}
+   if(e.st.pact){const n=e.st.pact+(has(st,'redring')?1:0);e.hp=Math.max(0,e.hp-n);E.push({t:'recoil',to:e.uid,n});if(e.hp<=0&&has(st,'ledger')){st.gold+=8;E.push({t:'relic',id:'ledger'});}}
    if(c.pw.pactThorn)addSt(e,'pact',c.pw.pactThorn);}
   if(m.b)e.block+=m.b;
   if(m.s)addSt(e,m.s[0],m.s[1]);
   if(m.st)addSt(c,m.st[0],m.st[1]);
   if(m.heal)e.hp=Math.min(e.max,e.hp+m.heal);
+  if(m.tax)c.taxNext=(c.taxNext||0)+m.tax;
+  if(m.clr==='pact'&&e.st.pact){e.block+=e.st.pact;delete e.st.pact;E.push({t:'clr',uid:e.uid});}
+  if(m.drainInk&&c.ink){const n=Math.min(c.ink,m.drainInk);c.ink-=n;E.push({t:'drain',n});}
+  if(m.addCard)for(let i=0;i<m.addCard[1];i++)c.disc.push({uid:'x'+st.uid++,id:m.addCard[0],up:0});
+  if(m.steal)(c.stealQ=c.stealQ||[]).push({uid:e.uid,n:m.steal});
   if(st.hp<=0)break;}
  if(st.hp<=0){loseRun(D,st,E);return;}
  killCheck(D,st,E);if(st.screen!=='combat')return;
@@ -153,7 +171,7 @@ function endTurn(D,st,E){const c=st.combat;
  for(const e of alive(c))chooseIntent(D,st,e);
  startTurn(D,st,E);}
 
-function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
+function winCombat(D,st,E){const c=st.combat;const kind=c.kind;if(has(st,'blotter')&&c.ink>=2){st.hp=Math.min(st.maxHp,st.hp+Math.floor(c.ink/2));}
  if(c.hurt===0)E.push({t:'ach',id:'nohit'});
  E.push({t:'ach',id:'first_win'});if(kind==='elite'){st.stats.elites++;E.push({t:'ach',id:'first_elite'});}
  if(has(st,'bandage'))st.hp=Math.min(st.maxHp,st.hp+6);

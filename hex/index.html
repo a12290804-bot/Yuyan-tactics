@@ -92,6 +92,10 @@ button.main{background:#5a4426;border-color:var(--gold);color:#fff3d6}
 #hand{display:flex;gap:6px;overflow-x:auto;padding:10px 10px 6px;min-height:178px;align-items:flex-end;scroll-snap-type:x proximity}
 .card{flex:0 0 auto;width:112px;height:162px;border-radius:10px;background:#211a14;border:2px solid #6b5537;position:relative;overflow:hidden;transition:transform .15s;scroll-snap-align:center;box-shadow:0 3px 8px #0008}
 .card.a{border-color:#9c4a3c}.card.s{border-color:#3f6a8f}.card.p{border-color:#8a6ab0}.card.x{border-color:#444;filter:grayscale(1)}
+.card.ch_yy{background:linear-gradient(#2a1418,#1d1214)}.card.ch_cl{background:linear-gradient(#1a1a22,#16140f)}.card.ch_any{background:linear-gradient(#202022,#18171a)}
+.card.r1{box-shadow:0 3px 8px #0008,inset 0 0 0 1px #c0c0c055}.card.r2{box-shadow:0 3px 8px #0008,inset 0 0 0 1px #c0c0c088,inset 0 0 0 3px #0006,inset 0 0 0 4px #c0c0c044}.card.r3{box-shadow:0 0 12px #e8c46a77,inset 0 0 0 1px #e8c46a99}
+.card.ch_yy .cn{background:#3a0f1888}.card.ch_cl .cn{background:#1a160888}
+.card.taxed .cc{background:#d06a4a;color:#fff}
 .card .ci{position:absolute;left:0;right:0;top:0;height:74px;background:center/cover no-repeat}
 .card .cc{position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#e4b75e;color:#2a1a05;font-weight:bold;display:flex;align-items:center;justify-content:center;font-size:15px;border:2px solid #1d1408}
 .card .cn{position:absolute;left:0;right:0;top:74px;text-align:center;font-size:13px;padding:2px;background:#0008;color:#f3e3c2}
@@ -150,6 +154,7 @@ button.main{background:#5a4426;border-color:var(--gold);color:#fff3d6}
   <button onclick="openBook()">回憶之書</button>
   <button onclick="openCodex()">圖鑑</button>
   <button onclick="openAch()">成就</button>
+  <button onclick="soundMenu()">聲音</button>
  </div>
  <p id="tmem" style="margin-top:14px;font-size:13px"></p>
 </section>
@@ -190,7 +195,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 let st=null,meta=null,sel=null,busy=false;
 function ls(k,v){try{if(v===undefined){const s=localStorage.getItem(k);return s?JSON.parse(s):null;}if(v===null)localStorage.removeItem(k);else localStorage.setItem(k,JSON.stringify(v));}catch(e){return null;}}
 function save(){ls(RUNK,st&&st.screen!=='over'?st:null);ls(METAK,meta);}
-function show(id){document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));$('detail').classList.remove('on');$('hint').style.display='none';if(id==='title')drawTitle();if(id==='pick')drawPick();}
+function sceneOf(id){if(id==='title'||id==='pick'||id==='book')return 'title';if(id==='map')return 'map';if(id==='cb')return st&&st.combat?(st.combat.kind==='boss'?'boss':st.combat.kind==='elite'?'elite':(D.audio.bgm['bgm_battle_'+(st.layer+1)]?'bgm_battle_'+(st.layer+1):'battle')):'battle';if(id==='pg')return st&&['rest','shop','event','chest'].includes(st.screen)?'rest':null;return null;}
+function show(id){const sc=sceneOf(id);if(sc&&typeof bgm==='function')bgm(sc);document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('on',s.id===id));$('detail').classList.remove('on');$('hint').style.display='none';if(id==='title')drawTitle();if(id==='pick')drawPick();}
 function toast(h){const e=document.createElement('div');e.className='toast';e.innerHTML=h;$('toasts').appendChild(e);setTimeout(()=>e.remove(),3100);}
 function modal(h){$('mbox').innerHTML=h;$('modal').classList.add('on');}
 function closeModal(){$('modal').classList.remove('on');}
@@ -207,10 +213,12 @@ function flash(t){const h=$('hint');h.textContent=t;h.style.display='block';clea
 // ── 對話
 let TQ=[],TCB=null;
 function talk(lines,cb){TQ=lines.slice();TCB=cb||null;const L=st&&D.layers[Math.min(st.layer,D.layers.length-1)];$('talk').style.backgroundImage=`url(${L?L.bg:I+'bg_guild.webp'})`;$('talk').classList.add('on');talkNext();}
-function talkNext(){if(!TQ.length){$('talk').classList.remove('on');const cb=TCB;TCB=null;cb&&cb();return;}
- const [who,ex,txt]=TQ.shift();const yy=D.chars.yy;const yimg=(ex&&yy.ex[ex])||yy.img;
- const yOn=who==='yy';
- $('talk').innerHTML=`<img class="por l ${yOn?'':'dim'}" src="${yimg}" alt=""><div class="lampP" style="opacity:${yOn?.35:1}"></div>
+let TEX={yy:null,cl:null};
+function talkNext(){if(!TQ.length){$('talk').classList.remove('on');const cb=TCB;TCB=null;TEX={yy:null,cl:null};cb&&cb();return;}
+ const [who,ex,txt]=TQ.shift();if(ex)TEX[who]=ex;const yy=D.chars.yy,cl=D.chars.cl;
+ const yimg=(TEX.yy&&yy.ex[TEX.yy])||yy.img,cimg=(TEX.cl&&cl.ex&&cl.ex[TEX.cl])||cl.img;
+ const yOn=who==='yy';sfx('sfx_button');
+ $('talk').innerHTML=`<img class="por l ${yOn?'':'dim'}" src="${yimg}" alt="">${cimg?`<img class="por r ${yOn?'dim':''}" src="${cimg}" alt="">`:`<div class="lampP" style="opacity:${yOn?.35:1}"></div>`}
  <div class="box"><div class="who">${who==='yy'?'語嫣':'克勞德'}</div><div class="say">${esc(txt)}</div><div class="tap">點一下繼續</div></div>`;}
 
 // ── 標題、選角
@@ -223,11 +231,11 @@ function contRun(){st=ls(RUNK);if(!st)return;route();}
 function route(){const s=st.screen;if(s==='map'){drawMap();show('map');}else if(s==='combat'){drawCombat();show('cb');}else{drawPage();show('pg');}}
 
 // ── 共用頂欄
-function topBar(){return `<span class="pill">${CH().name}</span><span class="pill" style="min-width:110px"><span style="flex:1">生命 ${Math.max(0,st.hp)}／${st.maxHp}</span></span><span class="pill"><img src="${I}i_coin.webp" alt="">${st.gold}</span><span class="relics">${st.relics.map(r=>`<img src="${D.relics[r].ic}" onclick="relicInfo('${r}')" alt="">`).join('')}</span><span style="flex:1"></span><button onclick="showDeck()">牌組 ${st.deck.length}</button>`;}
+function topBar(){return `<span class="pill">${CH().name}</span><span class="pill" style="min-width:110px"><span style="flex:1">生命 ${Math.max(0,st.hp)}／${st.maxHp}</span></span><span class="pill"><img src="${I}i_coin.webp" alt="">${st.gold}</span><span class="relics">${st.relics.map(r=>`<img src="${D.relics[r].ic}" onclick="relicInfo('${r}')" alt="">`).join('')}</span><span style="flex:1"></span><button onclick="soundMenu()" aria-label="聲音">♪</button><button onclick="showDeck()">牌組 ${st.deck.length}</button>`;}
 function relicInfo(r){const R=D.relics[r];modal(`<div class="rel"><img src="${R.ic}" alt=""><div><b>${R.n}</b><small>${R.d}</small></div></div><p><button onclick="closeModal()">關閉</button></p>`);}
 
 // ── 卡牌樣子
-function cardHtml(c,extra,cls){const d=C.cardDef(D,c);const k=c.free?0:d.c;return `<div class="card ${d.t} ${cls||''}" ${extra||''}><div class="ci" style="background-image:url(${d.img})"></div>${d.t!=='x'?`<div class="cc">${k}</div>`:''}<div class="cn ${c.up?'up':''}">${esc(d.n)}</div><div class="cd">${esc(C.desc(D,c))}</div></div>`;}
+function cardHtml(c,extra,cls){const d=C.cardDef(D,c);const k=C.cost(D,c);return `<div class="card ${d.t} ch_${d.ch} r${d.r} ${c.tax?'taxed':''} ${cls||''}" ${extra||''}><div class="ci" style="background-image:url(${d.img})"></div>${d.t!=='x'?`<div class="cc">${k}</div>`:''}<div class="cn ${c.up?'up':''}">${esc(d.n)}</div><div class="cd">${esc(C.desc(D,c))}</div></div>`;}
 const TYPE={a:'攻擊',s:'技能',p:'能力',x:'詛咒'};
 
 // ── 地圖
@@ -247,7 +255,8 @@ function drawMap(){const L=D.layers[st.layer];$('mbg').style.backgroundImage=`ur
  requestAnimationFrame(()=>{const w=$('mwrap');w.scrollTop=w.scrollHeight;if(st.row>=2)w.scrollTop=Math.max(0,top+gy*(rows-1-st.row)-120);});}
 function go(c){if(busy)return;const prev=st.col;const r=act({type:'MOVE',c});if(!r)return;st.prevCol=prev;
  if(c==='boss'){const b=D.layers[st.layer].boss;const B=D.enemies[b];window._bl=[...(D.talk.boss[b]&&D.talk.boss[b][st.ch]||[])];modal(`<div style="text-align:center"><img src="${B.img}" style="width:70%;border-radius:10px" alt=""><h2 style="color:var(--red)">${B.n}</h2><p class="big">${esc(B.line)}</p><button class="main" onclick="closeModal();talk(window._bl,()=>{drawCombat();show('cb');banner('第 1 回合')})">迎戰</button></div>`);return;}
- route();if(st.screen==='combat')banner('第 1 回合');}
+ route();if(st.screen==='combat'){const lines=meetLines();if(lines.length)talk(lines,()=>banner('第 1 回合'));else banner('第 1 回合');}}
+function meetLines(){const out=[];meta.met=meta.met||[];for(const e of st.combat.enemies){const m=D.talk.meet&&D.talk.meet[e.id];if(!meta.met.includes(e.id)){meta.met.push(e.id);if(m&&m[st.ch])out.push(m[st.ch]);}}save();return out;}
 
 // ── 戰鬥畫面
 function intentHtml(e){const m=e.intent;const c=st.combat;const parts=[];const am=(D.enemies[e.id].boss||D.enemies[e.id].elite)?1:(D.layers[st.layer].atkMul||1);
@@ -256,6 +265,11 @@ function intentHtml(e){const m=e.intent;const c=st.combat;const parts=[];const a
  if(m.s)parts.push(`<img src="${D.status[m.s[0]]?D.status[m.s[0]].ic:I+'st_might.webp'}" alt="">強化`);
  if(m.st)parts.push(`<img src="${D.status[m.st[0]].ic}" alt="">${D.status[m.st[0]].name}`);
  if(m.heal)parts.push(`<img src="${I}st_regen.webp" alt="">回復`);
+ if(m.tax)parts.push(`<img src="${I}i_coin.webp" alt="">加價`);
+ if(m.steal)parts.push(`<img src="${I}st_hide.webp" alt="">偷牌`);
+ if(m.clr)parts.push(`<img src="${I}st_pure.webp" alt="">解約`);
+ if(m.drainInk)parts.push(`<img src="${I}st_erase.webp" alt="">吸墨`);
+ if(m.addCard)parts.push(`<img src="${I}st_slow.webp" alt="">疲勞`);
  return `<div class="intent ${m.a?'atk':''}" onclick="event.stopPropagation();intentInfo('${e.uid}')">${parts.join(' ')}</div>`;}
 function intentInfo(uid){const e=st.combat.enemies.find(x=>x.uid===uid);const m=e.intent;flash(`${e.n}：${m.n}`);}
 function stsHtml(sts,ink){const out=Object.entries(sts).filter(([k,v])=>v&&D.status[k]).map(([k,v])=>`<span onclick="event.stopPropagation();stInfo('${k}')"><img src="${D.status[k].ic}" alt="">${v}</span>`);if(ink)out.push(`<span onclick="event.stopPropagation();stInfo('ink')"><img src="${D.status.ink.ic}" alt="">${ink}</span>`);return out.join('');}
@@ -282,14 +296,17 @@ function fxOn(el,img){if(!el||!img)return;const f=document.createElement('img');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function animate(evs,before,card){
  for(const e of evs){
-  if(e.t==='play'){const d=D.cards[e.id];if(d.t==='a'&&e.tg)fxOn($('f_'+e.tg),FX.a);if(d.fx.some(f=>f[0]==='pa'))(e.tg?[$('f_'+e.tg)]:document.querySelectorAll('.foe')).forEach(x=>fxOn(x,FX.pact));if(d.fx.some(f=>f[0]==='lk'))document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.link));if(d.fx.some(f=>f[0]==='da'))document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.a));}
-  else if(e.t==='hit'){const el=$('f_'+e.to);if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');pop(el,e.blocked?(e.n-e.blocked||'擋'):e.n);}await wait(110);}
-  else if(e.t==='judge'){document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.judge));await wait(250);}
-  else if(e.t==='inkUse'){fxOn($('me'),FX.ink);pop($('me'),'墨 -'+e.n,'p');}
-  else if(e.t==='block'){fxOn($('me'),FX.block);pop($('me'),'+'+e.n,'b');}
+  if(e.t==='play'){const d=D.cards[e.id];sfx('sfx_card_play');if(d.fx.some(f=>f[0]==='pa'||f[0]==='lk'))sfx('sfx_pact');if(d.fx.some(f=>f[0]==='ink'))sfx('sfx_ink');if(d.t==='a'&&e.tg)fxOn($('f_'+e.tg),FX.a);if(d.fx.some(f=>f[0]==='pa'))(e.tg?[$('f_'+e.tg)]:document.querySelectorAll('.foe')).forEach(x=>fxOn(x,FX.pact));if(d.fx.some(f=>f[0]==='lk'))document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.link));if(d.fx.some(f=>f[0]==='da'))document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.a));}
+  else if(e.t==='hit'){sfx('sfx_hit');const el=$('f_'+e.to);if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');pop(el,e.blocked?(e.n-e.blocked||'擋'):e.n);}await wait(110);}
+  else if(e.t==='judge'){sfx('sfx_judge');document.querySelectorAll('.foe').forEach(x=>fxOn(x,FX.judge));await wait(250);}
+  else if(e.t==='inkUse'){sfx('sfx_stroke');fxOn($('me'),FX.ink);pop($('me'),'墨 -'+e.n,'p');}
+  else if(e.t==='block'){sfx('sfx_block');fxOn($('me'),FX.block);pop($('me'),'+'+e.n,'b');}
   else if(e.t==='heal'){fxOn($('me'),FX.heal);pop($('me'),'+'+e.n,'h');}
   else if(e.t==='kill'){const el=$('f_'+e.uid);if(el)el.classList.add('dead');await wait(250);}
   else if(e.t==='relic'){toast(`<b>${D.relics[e.id].n}</b> 發動了`);}
+  else if(e.t==='shuffle')sfx('sfx_shuffle');
+  else if(e.t==='spawn'||e.t==='split'){flash(e.t==='spawn'?'拆出了新的敵人':'牠分裂了');await wait(200);}
+  else if(e.t==='return')toast('被叼走的牌回來了');
  }
  drawCombatIf();await wait(160);}
 function drawCombatIf(){if(st.screen==='combat')drawCombat();}
@@ -297,7 +314,13 @@ async function endTurn(){if(busy||st.screen!=='combat')return;busy=true;sel=null
  banner('敵人回合');await wait(500);
  for(const e of r.events){
   if(e.t==='enemyAct'){const el=$('f_'+e.uid);if(el){el.style.transform='translateY(14px) scale(1.04)';setTimeout(()=>el.style.transform='',180);}{const en=(st.combat?st.combat.enemies:[]).find(x=>x.uid===e.uid);flash((en?en.n+'：':'')+e.n);}await wait(260);}
-  else if(e.t==='hurt'){const m=$('me');m.classList.remove('shake');void m.offsetWidth;m.classList.add('shake');pop(m,e.blocked&&e.n===e.blocked?'擋':'-'+(e.n-e.blocked));await wait(200);}
+  else if(e.t==='steal'){toast(`<b>${esc(D.cards[e.id].n)}</b> 被叼走了`);await wait(200);}
+  else if(e.t==='drain'){flash('墨被吸走了 '+e.n);await wait(200);}
+  else if(e.t==='tax'){toast(`手上 ${e.n} 張牌這回合 <b>費用 +1</b>`);}
+  else if(e.t==='clr'){flash('厄契被解除了');await wait(200);}
+  else if(e.t==='turn'){sfx('sfx_draw');}
+  else if(e.t==='shuffle')sfx('sfx_shuffle');
+  else if(e.t==='hurt'){sfx('sfx_hit');const m=$('me');m.classList.remove('shake');void m.offsetWidth;m.classList.add('shake');pop(m,e.blocked&&e.n===e.blocked?'擋':'-'+(e.n-e.blocked));await wait(200);}
   else if(e.t==='recoil'){const el=$('f_'+e.to);fxOn(el,FX.pact);pop(el,e.n,'p');await wait(200);}
   else if(e.t==='relic')toast(`<b>${D.relics[e.id].n}</b> 發動了`);
   else if(e.t==='kill'){const el=$('f_'+e.uid);if(el)el.classList.add('dead');}
@@ -314,7 +337,7 @@ function after(r){if(!r)return;
 
 // ── 各種頁面
 function drawPage(){const s=st.screen;const L=D.layers[st.layer]||D.layers[D.layers.length-1];$('gbg').style.backgroundImage=`url(${L.bg})`;$('gbar').innerHTML=topBar();let h='';
- if(s==='reward'){const rw=st.reward;h=`<h2>勝利</h2><p class="big"><img src="${I}i_coin.webp" style="width:20px;vertical-align:middle;border-radius:50%" alt=""> 得到 ${rw.gold} 渡鴉幣</p>`;
+ if(s==='reward'){const rw=st.reward;if(!rw._coin){rw._coin=1;sfx('sfx_coin');}h=`<h2>勝利</h2><p class="big"><img src="${I}i_coin.webp" style="width:20px;vertical-align:middle;border-radius:50%" alt=""> 得到 ${rw.gold} 渡鴉幣</p>`;
   if(rw.relic){const R=D.relics[rw.relic];h+=`<div class="rel"><img src="${R.ic}" alt=""><div><b>得到遺物：${R.n}</b><small>${R.d}</small></div></div>`;}
   if(rw.relicChoice){h+=`<h3 style="color:var(--gold)">選一件遺物帶走</h3>`+rw.relicChoice.map((id,i)=>{const R=D.relics[id];return `<div class="rel" onclick="pickRelic(${i})"><img src="${R.ic}" alt=""><div><b>${R.n}</b><small>${R.d}</small></div></div>`;}).join('');}
   if(rw.relicTaken){const R=D.relics[rw.relicTaken];h+=`<div class="rel"><img src="${R.ic}" alt=""><div><b>帶走了：${R.n}</b><small>${R.d}</small></div></div>`;}
@@ -338,13 +361,14 @@ function pickCard(i){const r=act({type:'PICK_CARD',i});if(r){toast(`<b>${D.cards
 function skipCard(){if(act({type:'SKIP_CARD'}))drawPage();}
 function pickRelic(i){if(act({type:'PICK_RELIC',i}))drawPage();}
 function leave(){const lay=st.layer;const r=act({type:'LEAVE'});if(!r)return;if(st.screen==='over'){runEnd(r);return;}if(st.layer!==lay){toast(`進入 <b>${D.layers[st.layer].n}</b>`);}route();}
-function rest(){const r=act({type:'REST'});if(r){toast('休息了一下，回復生命');route();}}
+function campTalk(cb){const L=D.talk.rest;if(L&&L.length)talk(L[Math.floor(Math.random()*L.length)],cb);else cb();}
+function rest(){const r=act({type:'REST'});if(r){sfx('sfx_block');toast('休息了一下，回復生命');campTalk(route);}}
 function smith(){st.pick={mode:'upgrade'};drawPage();}
-function buyCard(i){const r=act({type:'BUY_CARD',i});if(r){toast('買下了');drawPage();}}
-function buyRelic(i){const r=act({type:'BUY_RELIC',i});if(r){toast('買下了');drawPage();}}
+function buyCard(i){const r=act({type:'BUY_CARD',i});if(r){sfx('sfx_coin');toast('買下了');drawPage();}}
+function buyRelic(i){const r=act({type:'BUY_RELIC',i});if(r){sfx('sfx_coin');toast('買下了');drawPage();}}
 function pickDeck(mode){st.pick={mode,shop:true};drawPage();}
 function deckPick(uid){const p=st.pick;let r;
- if(p.mode==='upgrade'){st.pick=null;r=act({type:'SMITH',uid});if(r){toast('牌被磨亮了');route();}return;}
+ if(p.mode==='upgrade'){st.pick=null;r=act({type:'SMITH',uid});if(r){toast('牌被磨亮了');campTalk(route);}return;}
  if(p.mode==='remove'){if(p.shop){st.pick=null;}r=act({type:'REMOVE',uid});if(r){toast('那張牌被收走了');drawPage();}else drawPage();return;}
  if(p.mode==='transform'){r=act({type:'TRANSFORM',uid});if(r){toast(`換成了 <b>${D.cards[r.events.find(e=>e.t==='transformed').id].n}</b>`);drawPage();}}}
 function chooseC(i){const r=act({type:'CHOOSE',i});if(r)drawPage();}
@@ -356,7 +380,7 @@ function showPile(k){const c=st.combat;const list=k==='draw'?c.draw.slice().sort
 
 // ── 一局結束
 function runEnd(r){const ev=r.events.find(e=>e.t==='runEnd');const win=st.result&&st.result.win;const news=r.news||{unlocks:[]};
- const lines=win?D.talk.win[st.ch]:D.talk.lose[st.ch];
+ const pool=[win?D.talk.win[st.ch]:D.talk.lose[st.ch],...((win?D.talk.winMore:D.talk.loseMore)||{})[st.ch]||[]];const lines=pool[Math.floor(Math.random()*pool.length)];playJingle(win?'jingle_clear':'jingle_lose');
  talk(lines,()=>{const s=st.stats;let h=`<h2>${win?'回到地面了':'燈，暫時熄了'}</h2><p class="big">${win?'三層都走完了。':'走到了'+D.layers[st.layer].n+'。'}</p>
   <div class="rel"><div><b>這一局</b><small>走了 ${s.floors} 步 · 打倒 ${s.kills} 隻 · 菁英 ${s.elites} · 首領 ${s.bosses}<br>一張牌最多打出 ${s.dmgMax} 點傷害 · 打出 ${s.cards} 張牌</small></div></div>
   <div class="rel"><img src="${I}st_echo.webp" alt=""><div><b>得到回憶 ${ev?ev.memory:0}</b><small>累積 ${meta.memory}</small></div></div>`;
@@ -372,9 +396,31 @@ function openBook(){$('btitle').textContent='回憶之書';$('bbg').style.backgr
  $('bpage').innerHTML=h;show('book');}
 function readStory(id){talk(D.stories[id].lines,()=>{});}
 function openCodex(){$('btitle').textContent='圖鑑';$('bbg').style.backgroundImage=`url(${I}bg_codex.webp)`;const ks=Object.keys(D.enemies);const n=ks.filter(k=>meta.codex[k]).length;
- $('bpage').innerHTML=`<p style="color:var(--dim)">記錄了 ${n}／${ks.length} 種</p><div class="codex">${ks.map(k=>{const e=D.enemies[k];const got=meta.codex[k];return `<div class="${got?'':'no'}"><img src="${e.img}" alt="">${got?esc(e.n)+'<br>打倒 '+got:'？？？'}</div>`;}).join('')}</div>`;show('book');}
+ $('bpage').innerHTML=`<p style="color:var(--dim)">記錄了 ${n}／${ks.length} 種</p><div class="codex">${ks.map(k=>{const e=D.enemies[k];const got=meta.codex[k];return `<div class="${got?'':'no'}" ${got?`onclick="codexInfo('${k}')"`:''}><img src="${e.img}" alt="">${got?esc(e.n)+'<br>打倒 '+got:'？？？'}</div>`;}).join('')}</div>`;show('book');}
+function codexInfo(k){const e=D.enemies[k];modal(`<div style="text-align:center"><img src="${e.img}" style="width:70%;border-radius:10px" alt=""><h2 style="color:var(--gold)">${esc(e.n)}</h2><p class="big">${esc(((D.codex||{})[k]||'').replace(/^[^：]*：/,''))}</p><p style="color:var(--dim)">打倒 ${meta.codex[k]} 次</p><button onclick="closeModal()">關閉</button></div>`);}
 function openAch(){$('btitle').textContent='成就';$('bbg').style.backgroundImage=`url(${I}bg_hall.webp)`;const n=meta.ach.length;
  $('bpage').innerHTML=`<p style="color:var(--dim)">${n}／${D.achievements.length}</p>`+D.achievements.map(a=>{const g=meta.ach.includes(a.id);return `<div class="ach ${g?'got':''}"><i>${g?'✓':''}</i><div>${esc(a.n)}<small>${esc(a.d)}</small></div></div>`;}).join('');show('book');}
+
+
+// ── 聲音：Web Audio（第一次點擊後才會出聲）
+const AU={ctx:null,buf:{},cur:null,curName:null,want:null,opt:{music:true,sfx:true}};
+try{const o=JSON.parse(localStorage.getItem('dive_audio')||'null');if(o)AU.opt=o;}catch(e){}
+function auSave(){try{localStorage.setItem('dive_audio',JSON.stringify(AU.opt));}catch(e){}}
+const AD=D.audio||{dir:'',bgm:{},jingle:[],sfx:[],scene:{}};
+const haveBgm=n=>!!(AD.bgm&&AD.bgm[n]);
+function auInit(){if(AU.ctx)return;try{AU.ctx=new (window.AudioContext||window.webkitAudioContext)();AU.master=AU.ctx.createGain();AU.master.connect(AU.ctx.destination);
+ AD.sfx.forEach(n=>load(n));if(AU.want)bgm(AU.want,true);}catch(e){AU.ctx=null;}}
+['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,()=>{auInit();if(AU.ctx&&AU.ctx.state==='suspended')AU.ctx.resume();},{passive:true}));
+function load(n){if(AU.buf[n])return AU.buf[n];AU.buf[n]=fetch(AD.dir+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer();}).then(b=>new Promise((ok,no)=>AU.ctx.decodeAudioData(b,ok,no))).catch(()=>null);return AU.buf[n];}
+function sfx(n){if(!AU.ctx||!AU.opt.sfx||!AD.sfx.includes(n))return;load(n).then(b=>{if(!b)return;const s=AU.ctx.createBufferSource();s.buffer=b;const g=AU.ctx.createGain();g.gain.value=.7;s.connect(g);g.connect(AU.master);s.start();});}
+function bgm(scene,force){let n=AD.scene[scene]||scene;if(!haveBgm(n))n=AD.fallback;AU.want=scene;if(!AU.ctx||!n)return;if(!force&&AU.curName===n&&AU.cur)return;
+ const old=AU.cur;AU.cur=null;AU.curName=n;if(old){const t=AU.ctx.currentTime;old.g.gain.cancelScheduledValues(t);old.g.gain.setValueAtTime(old.g.gain.value,t);old.g.gain.linearRampToValueAtTime(0,t+.8);setTimeout(()=>{try{old.s.stop();}catch(e){}},900);}
+ if(!AU.opt.music)return;load(n).then(b=>{if(!b||AU.curName!==n||AU.cur)return;const s=AU.ctx.createBufferSource();s.buffer=b;s.loop=true;const cfg=AD.bgm[n]||{};s.loopStart=cfg.loopStart||0;s.loopEnd=Math.min(cfg.loopEnd||b.duration,b.duration);
+  const g=AU.ctx.createGain();g.gain.value=0;s.connect(g);g.connect(AU.master);s.start();g.gain.linearRampToValueAtTime(.55,AU.ctx.currentTime+.8);AU.cur={s,g};});}
+function playJingle(n){if(!AU.ctx||!AD.jingle.includes(n))return;if(AU.cur){const t=AU.ctx.currentTime;AU.cur.g.gain.linearRampToValueAtTime(0,t+.4);const o=AU.cur;setTimeout(()=>{try{o.s.stop();}catch(e){}},500);AU.cur=null;AU.curName=null;}
+ if(!AU.opt.music)return;load(n).then(b=>{if(!b)return;const s=AU.ctx.createBufferSource();s.buffer=b;const g=AU.ctx.createGain();g.gain.value=.7;s.connect(g);g.connect(AU.master);s.start();});}
+function soundMenu(){modal(`<h2 style="color:var(--gold);margin-top:0">聲音</h2><button class="opt" onclick="AU.opt.music=!AU.opt.music;auSave();if(!AU.opt.music&&AU.cur){try{AU.cur.s.stop();}catch(e){}AU.cur=null;AU.curName=null;}else bgm(AU.want||'title',true);soundMenu()">音樂：${AU.opt.music?'開':'關'}</button><button class="opt" onclick="AU.opt.sfx=!AU.opt.sfx;auSave();soundMenu()">音效：${AU.opt.sfx?'開':'關'}</button><p><button onclick="closeModal()">關閉</button></p>`);}
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('button'))sfx('sfx_button');},true);
 
 // ── 開始
 meta=ls(METAK)||C.newMeta();
