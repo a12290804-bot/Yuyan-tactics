@@ -53,4 +53,6 @@
 - **新的 enemy 欄位**：`realm`（境界）、`hidden:true`（看不清）、`parts:[{id,fx}]`（零件）、`stare:5`（直視）。行為都用文字描述，程式照這份實作。
 - **新詛咒 `x_talisman` 鎮屍符**：`{n:'鎮屍符',t:'x',fx:{lockAtk:1},purge:1}`，在手上時鎖住攻擊牌，花 1 能量撕掉。
 - **製圖大師**：每一系要有 4 張敵人圖，圖檔照 `m_<id>`。修仙要詭異不要仙氣，不可名狀要「看不清楚」比「看得很清楚」更可怕，血肉機械不畫內臟特寫，用縫線、鐵管和金屬嵌進肉裡的接縫表現。
-- **音樂大師**：每系一種出場聲，修仙用銅鈴和誦經，不可名狀用倒放的人聲，血肉機械用齒輪和濕濕的心跳。
+- **音效（音樂大師已交）**：出場聲是 `sfx_mon_xian_appear`、`sfx_mon_eldritch_appear`、`sfx_mon_flesh_appear`。境界突破用 `sfx_breakthrough`，「？」被揭露用 `sfx_reveal`，零件被打掉用 `sfx_part_break`，縫回零件也用這個檔，playbackRate 調成 0.7。
+- 每隻敵人加 `fac` 欄位，值是 `xian`、`eldritch` 或 `flesh`，同時決定音效和濾鏡。
+- 名字和圖鑑文字由文字劇情大師改寫，機制和數值照這份。
