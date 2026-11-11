@@ -3,7 +3,7 @@
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.9',
+ version:'v0.10',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -486,8 +486,138 @@ for(const k in DATA.talents)DATA.talents[k].id=k;
 DATA.pasName={firstAtkPact1:'狐火',pactGrow1:'纏',linkPlus1:'張網',judgeKillHeal3:'尾針',keepBlock2:'紙',ink6Double:'墨',hatch:'孵化',script:'劇本',brideLink:'紅線',phylactery:'命匣',leech:'吸血',coral:'骨花',jelly:'麻痺',vine:'寄生',mimicFirst:'千相',sacrifice:'獻祭',molt3:'蛻皮',lure:'誘燈'};
 for(const k in DATA.origins){const o=DATA.origins[k];o.cut=o.half||o.img;}
 
+// ── v0.10（團隊回覆 v0.8：五源契牌、補齊本源、混合變相、牌局固定關卡、天賦中段、個性選項、慾望貨物）
+// 先套用文字 v0.4.1 的新版對話與故事（舊版有幾句語嫣叫「爸爸」，新版已改）
+Object.assign(DATA.talk.boss,TX.TALK_BOSS);Object.assign(DATA.talk.meet,TX.TALK_MEET);DATA.talk.winMore=TX.TALK_WIN_MORE;DATA.talk.loseMore=TX.TALK_LOSE_MORE;DATA.talk.rest=TX.TALK_REST;
+for(const [k,v] of Object.entries(TX.NEW_STORIES))DATA.stories[k]=Object.assign({},DATA.stories[k],v);
+for(const ev of TX.NEW_EVENTS){const i=DATA.events.findIndex(e=>e.id===ev.id);if(i>=0)DATA.events[i]=Object.assign({},DATA.events[i],ev,{opts:DATA.events[i].opts.map((o,k)=>Object.assign({},o,{t:(ev.opts[k]||o).t,d:(ev.opts[k]||o).d}))});}
+// 本源補齊
+Object.assign(DATA.origins,{
+ yy_B09:{n:'克蘇魯',passive:'whisper',d:'抽牌堆頂 3 張永遠翻開。每回合一次，可以失去 2 生命，交換頂牌與第三張的位置。'},
+ yy_B11:{n:'渡鴉',passive:'pactSwap',unlockWin:1,d:'每場戰鬥一次：把一張手牌「簽給」一個敵人（那張牌消耗）。牠要攻擊的話，妳得到等量的格擋；不攻擊的話，妳抽 2 張。牠這回合都會停手。'},
+ cl_line:{n:'線',passive:'tether',d:'生命低於一半時，每回合回復 2 生命。'},
+ cl_mirror:{n:'鏡',passive:'reflect',d:'每場戰鬥，敵人第一次偷牌、加費或塞詛咒，沒有效果。'},
+ cl_voice:{n:'聲',passive:'call',d:'每回合第一張技能牌，抽 1 張。'}
+});
+for(const k of ['yy_B09','yy_B11','cl_line','cl_mirror','cl_voice']){const o=DATA.origins[k];const [ch,id]=k.split('_');Object.assign(o,{id,ch,unlock:o.unlockWin?0:120,swap:null,skin:ch==='yy'?'y_skin_'+id:'cl_skin_'+id});const has=n=>DATA.haveArt.includes(n);o.img=has(o.skin)?DATA.inbox+o.skin+'.webp':DATA.chars[ch].img;if(ch==='yy'){o.half=has('y_'+id+'_half')?DATA.inbox+'y_'+id+'_half.webp':null;o.full=has('y_'+id+'_full')?DATA.inbox+'y_'+id+'_full.webp':null;}}
+Object.assign(DATA.borrow,{B09:['y_deep','y_tent_r','y_ult'],B11:['y_crowqueen','y_redwing','y_ultq']});
+for(const id of ['B09','B11']){const o=DATA.origins['yy_'+id];const a=DATA.borrow[id];if(o.img===DATA.chars.yy.img)o.img=I+a[0]+'.webp';if(!o.half)o.half=I+a[1]+'.webp';if(!o.full)o.full=I+a[2]+'.webp';}
+Object.assign(DATA.pasName,{whisper:'低語',pactSwap:'簽契',tether:'線',reflect:'鏡',call:'聲',window:'窗',shop20:'交易',hand12:'觸手',swarm:'蟲群',slime:'黏液',moth:'撲火'});
+// 五源契牌（r 只決定在獎勵裡出現的機率；牌框一律是「契」）
+const bl=(o)=>o;
+Object.assign(DATA.cards,{
+ b_b01_foxfire:{n:'狐火',c:1,t:'a',r:1,ch:'yy',bl:'B01',img:sk('hex'),fx:[['d',6],['pa',1,'t']],u:{fx:[['d',9],['pa',1,'t']]},ph:{half:{fx:[['d',8],['pa',1,'t'],['dr',1]]},full:{fx:[['d',15],['pa',2,'t'],['lie',1]]}}},
+ b_b01_mirage:{n:'幻影',c:1,t:'s',r:1,ch:'yy',bl:'B01',img:sk('vanish'),fx:[['b',6],['mirage',0]],u:{fx:[['b',9],['mirage',0]]},ph:{half:{fx:[['b',6],['mirage',0],['dr',1]]},full:{fx:[['b',10],['mirage',1],['st','weak',1,'t']]}}},
+ b_b01_tails:{n:'搖尾',c:0,t:'s',r:1,ch:'yy',bl:'B01',img:sk('tie'),ex:1,fx:[['tails',2]],u:{fx:[['tails',3]]},ph:{half:{fx:[['tails',3],['dr',1]]},full:{fx:[['tails',4,1]]}}},
+ b_b01_lie:{n:'謊言',c:1,t:'s',r:2,ch:'yy',bl:'B01',img:sk('rotcurse'),fx:[['lie',0]],u:{c:0},ph:{half:{fx:[['lie',0],['dr',1]]},full:{fx:[['lie',1]]}}},
+ b_b01_nine:{n:'九尾',c:2,t:'p',r:2,ch:'yy',bl:'B01',img:sk('chain'),fx:[['pw','nine',1]],u:{c:1},ph:{full:{fx:[['pw','nine',1],['pw','nineAll',1]]}}},
+ b_b01_mask:{n:'換一張臉',c:2,t:'s',r:1,ch:'yy',bl:'B01',img:sk('vanish'),fx:[['mask',0]],u:{c:1},ph:{full:{fx:[['mask',1]]}}},
+ b_b01_feast:{n:'宴席上的笑',c:1,t:'a',r:1,ch:'yy',bl:'B01',img:sk('snap'),fx:[['d',4],['firstPa',2]],u:{fx:[['d',7],['firstPa',2]]}},
+ b_m01_fang:{n:'毒牙',c:1,t:'a',r:1,ch:'yy',bl:'M01',img:sk('pierce'),fx:[['d',4],['pa',3,'t']],u:{fx:[['d',6],['pa',4,'t']]}},
+ b_m01_venom:{n:'涎',c:0,t:'s',r:1,ch:'yy',bl:'M01',img:sk('rotcurse'),fx:[['paIf',2,5,2]],u:{fx:[['paIf',3,5,2]]}},
+ b_m01_shed:{n:'蛻鱗',c:1,t:'s',r:1,ch:'yy',bl:'M01',img:sk('mend'),fx:[['cleanse'],['b',5],['pa',1,'a']],u:{fx:[['cleanse'],['b',8],['pa',1,'a']]}},
+ b_m01_constrict:{n:'勒緊',c:2,t:'a',r:2,ch:'yy',bl:'M01',img:sk('garrote'),fx:[['constrict',2]],u:{c:1},ph:{half:{fx:[['constrict',2],['dr',1]]},full:{fx:[['constrict',3],['st','weak',1,'t']]}}},
+ b_m01_hiss:{n:'吐信',c:1,t:'p',r:2,ch:'yy',bl:'M01',img:sk('hex'),fx:[['pw','hiss',1]],u:{c:0},ph:{full:{fx:[['pw','hiss',1],['pw','hissMax',1]]}}},
+ b_m01_nest:{n:'蛇窩',c:2,t:'s',r:2,ch:'yy',bl:'M01',img:sk('web'),fx:[['pa',3,'a'],['b',8]],u:{fx:[['pa',4,'a'],['b',10]]}},
+ b_m02_pinch:{n:'鉗',c:1,t:'a',r:1,ch:'yy',bl:'M02',img:sk('snap'),fx:[['d',7],['ifPaSt','vuln',1]],u:{fx:[['d',10],['ifPaSt','vuln',1]]}},
+ b_m02_wait:{n:'伏',c:1,t:'s',r:1,ch:'yy',bl:'M02',img:sk('brace'),fx:[['b',8],['wait']],u:{fx:[['b',11],['wait']]}},
+ b_m02_needle:{n:'補一針',c:0,t:'a',r:1,ch:'yy',bl:'M02',img:sk('pierce'),ex:1,fx:[['needle',3,3]],u:{fx:[['needle',5,3]]}},
+ b_m02_tail:{n:'毒尾',c:2,t:'a',r:2,ch:'yy',bl:'M02',img:sk('chain'),fx:[['d',8],['pa',2,'t'],['killHeal',3]],u:{fx:[['d',11],['pa',2,'t'],['killHeal',3]]}},
+ b_m02_shell:{n:'甲',c:1,t:'p',r:2,ch:'yy',bl:'M02',img:sk('brace'),fx:[['pw','shell',1]],u:{c:0}},
+ b_m02_drive:{n:'深入',c:2,t:'p',r:2,ch:'yy',bl:'M02',img:sk('thrust'),fx:[['pw','drive',1]],u:{c:1}},
+ b_m03_silk:{n:'吐絲',c:1,t:'s',r:1,ch:'yy',bl:'M03',img:sk('web'),fx:[['lk1'],['b',6]],u:{fx:[['lk1'],['b',9]]},ph:{half:{fx:[['lk1'],['b',6],['dr',1]]},full:{fx:[['lk1'],['b',10],['stun']]}}},
+ b_m03_dew:{n:'網露',c:0,t:'s',r:1,ch:'yy',bl:'M03',img:sk('mend'),fx:[['dr',1],['ifLinkB',3]],u:{fx:[['dr',1],['ifLinkB',5]]}},
+ b_m03_wrap:{n:'裹',c:1,t:'a',r:1,ch:'yy',bl:'M03',img:sk('tie'),fx:[['wrap',6]],u:{fx:[['wrap',9]]}},
+ b_m03_pull:{n:'收網',c:1,t:'a',r:1,ch:'yy',bl:'M03',img:sk('garrote'),fx:[['dLinked',5]],u:{fx:[['dLinked',8]]}},
+ b_m03_cocoon:{n:'結繭',c:2,t:'s',r:2,ch:'yy',bl:'M03',img:sk('web'),fx:[['stun'],['pa',3,'t']],u:{c:1}},
+ b_m03_center:{n:'坐在網心',c:2,t:'p',r:2,ch:'yy',bl:'M03',img:sk('chain'),fx:[['pw','center',1]],u:{c:1}},
+ b_m04_latch:{n:'吸附',c:1,t:'a',r:1,ch:'yy',bl:'M04',img:sk('pierce'),fx:[['d',6],['heal',2]],u:{fx:[['d',9],['heal',3]]},ph:{half:{fx:[['d',10],['heal',3],['dr',1]]},full:{fx:[['d',16],['heal',6],['stun']]}}},
+ b_m04_taste:{n:'聞血',c:0,t:'s',r:1,ch:'yy',bl:'M04',img:sk('hex'),fx:[['taste',3]],u:{fx:[['taste',5]]}},
+ b_m04_pool:{n:'血泊',c:1,t:'s',r:1,ch:'yy',bl:'M04',img:sk('mend'),fx:[['b',5],['pool']],u:{fx:[['b',8],['pool']]}},
+ b_m04_drain:{n:'抽血',c:2,t:'a',r:2,ch:'yy',bl:'M04',img:sk('thrust'),fx:[['d',8],['drainH',.5]],u:{fx:[['d',12],['drainH',.5]]}},
+ b_m04_young:{n:'幼蛭',c:1,t:'p',r:2,ch:'yy',bl:'M04',img:sk('rotcurse'),fx:[['pw','young',1]],u:{c:0},ph:{full:{fx:[['pw','young',1],['pw','youngFull',1]]}}},
+ b_m04_feed:{n:'飽',c:2,t:'s',r:2,ch:'yy',bl:'M04',img:sk('mend'),fx:[['heal',8],['al',15]],u:{fx:[['heal',11],['al',15]]},ph:{full:{fx:[['heal',12],['st','weak',1,'a']]}}},
+ b_m04_host:{n:'換宿主',c:2,t:'a',r:2,ch:'yy',bl:'M04',img:sk('snap'),fx:[['d',10],['ifHealedA',4]],u:{fx:[['d',14],['ifHealedA',5]]}}
+});
+DATA.cards.b_sting.ph={full:{fx:[['d',10,1,'pact3'],['st','vuln',1,'t']]}};
+DATA.cards.b_web.ph={full:{fx:[['lk'],['b',8],['noAtkLinked']]}};
+for(const k of ['b_sting','b_web','b_coil'])DATA.cards[k].r=1; // 起始換牌也可以在獎勵裡再出現
+Object.assign(DATA.powers,{nine:'每打出一張攻擊牌，隨機一個敵人獲得 {n} 層厄契。',nineAll:'（完全非人：改成所有敵人各 1 層）',hiss:'敵人獲得厄契時，如果已經有 3 層以上，再 +1（每回合每隻一次）。',hissMax:'（完全非人：每回合每隻可以觸發兩次）',shell:'用裁定打倒敵人時，獲得 6 格擋。',drive:'本源攻擊牌對有厄契的敵人，傷害 +{n}×2。',center:'被命線連住的敵人受到傷害時，妳回復 1 生命（每回合最多 5）。',young:'每回合第一次攻擊傷害的回復，從 20% 變成 35%。',youngFull:'（完全非人：變成 50%）',draft:'每回合第一次打出的牌，費用 -1。'});
+// 牌局：五場固定關卡與獎勵
+DATA.trials=[{id:'t1',n:'第一場牌局',d:'連打五場固定的關卡，中間不進商店、不拿獎勵，每場打完回 15% 生命。打完五場，從三張牌局專屬的牌裡選一張。',heal:.15,memory:10,
+ stages:[{id:'t1s1',n:'退件窗口',l:0,k:'fight',ids:['jiangshi_boy','incense_crone'],rule:'talisman',rd:'開場手上多一張「鎮屍符」。'},
+  {id:'t1s2',n:'丹火旁座',l:0,k:'elite',ids:['alchemist','jiangshi_boy'],rule:'heal2',rd:'敵人每回復一次生命，妳受到 2 傷害。'},
+  {id:'t1s3',n:'看不清的走廊',l:1,k:'fight',ids:['faceless','hands'],rule:'hidden',rd:'兩隻開場都看不清，打中才看得見意圖。'},
+  {id:'t1s4',n:'井底對坐',l:1,k:'elite',ids:['welleye'],rule:'well',rd:'「凝視」多 5 傷害；閉眼的時候給不了厄契。'},
+  {id:'t1s5',n:'不再往下',l:2,k:'boss',ids:['deepdrill'],rule:'drill',rd:'不能送回。每過一回合，牠力量 +1。'}],
+ prize:['t_key','t_feather','t_bowl','t_draft','t_lamp','t_page']}];
+Object.assign(DATA.cards,{
+ t_key:{n:'鐵柵鑰匙',c:0,t:'s',r:3,ch:'any',g:1,img:sk('vanish'),keep:1,fx:[['dd',2,1]],u:{fx:[['dd',3,1]]}},
+ t_feather:{n:'終局的羽筆',c:1,t:'a',r:3,ch:'any',g:1,img:sk('thrust'),fx:[['dIfN',8,5,16]],u:{fx:[['dIfN',11,5,22]]}},
+ t_bowl:{n:'多出來的那一副',c:1,t:'s',r:3,ch:'any',g:1,img:sk('incense'),ex:1,fx:[['stop']],u:{c:0}},
+ t_draft:{n:'織命底稿',c:1,t:'p',r:3,ch:'any',g:1,img:sk('chain'),fx:[['pw','draft',1]],u:{c:0}},
+ t_lamp:{n:'還亮著',c:0,t:'s',r:3,ch:'any',g:1,img:sk('mend'),fx:[['b',8],['ifLowDr']],u:{fx:[['b',11],['ifLowDr']]}},
+ t_page:{n:'錯序的一頁',c:2,t:'s',r:3,ch:'any',g:1,img:sk('vanish'),fx:[['stackTop']],u:{c:1}}
+});
+// 天賦：補中段，點數制（下潛結束 +1、通關再 +1；1／2／3 點）
+DATA.talents.yy_greed2.d='每回合一次，可以花 30 渡鴉幣換 1 點能量。';
+Object.assign(DATA.talents,{
+ yy_greed1b:{ch:'yy',line:'貪',n:'討價',need:'yy_greed1',d:'商店價錢 -10%（和莉莉絲的 8 折可以疊，最低五折）。'},
+ yy_grudge1b:{ch:'yy',line:'記仇',n:'記下名字',need:'yy_grudge1',d:'這一局打過她的敵人種類，再遇到時開場帶 1 層厄契。'},
+ yy_guard1b:{ch:'yy',line:'護短',n:'擋在前面',need:'yy_guard1',d:'每場戰鬥開始得到 3 格擋。'},
+ cl_lamp1b:{ch:'cl',line:'守燈',n:'還亮',need:'cl_lamp1',d:'燈芯燒完、發動「燈照」時，多得 1 點燈火。'},
+ cl_write1b:{ch:'cl',line:'寫字',n:'夾著書籤',need:'cl_write1',d:'每場戰鬥一次，可以把一張手牌留到下回合。'},
+ cl_pain1b:{ch:'cl',line:'不肯說痛',n:'先撐住',need:'cl_pain1',d:'每場戰鬥第一次自己失去生命時，少失 2 點（至少仍失 1）。'}
+});
+for(const [a,b] of [['yy_greed2','yy_greed1b'],['yy_grudge2','yy_grudge1b'],['yy_guard2','yy_guard1b'],['cl_lamp2','cl_lamp1b'],['cl_write2','cl_write1b'],['cl_pain2','cl_pain1b']])DATA.talents[a].need=b;
+DATA.talents.yy_guard2.d+='（只有語嫣自己的局有效）';
+DATA.talentSay={yy_greed1:['呵呵，掉在地上的，就是我的。','姐姐，至少數一數再收。'],yy_greed1b:['這種價錢？再讓一下。我笑著等。','她一笑，攤主就先動手改價碼。'],yy_greed2:['二十五不夠。三十。能量，現在就要。','姐姐，幣會用完的。……我幫妳看著袋口。'],yy_grudge1:['先記一筆。誰動手，我都記得。','姐姐把名字寫得很端正。這一筆，不會塗掉。'],yy_grudge1b:['換了臉也沒用。我認得它走路的樣子。','同一種步伐，她比我先聽見。'],yy_grudge2:['第三次了。這筆，連本帶利。','三次就夠了。再打下去，是牠不應該。'],yy_guard1:['還不能倒。妹妹還在後面。','姐姐，我靠過來一點。妳不用一個人擋。'],yy_guard1b:['要打，先過我這關。','嗯。我站妳旁邊。'],yy_guard2:['……誰准我倒下的？','姐姐，回來。燈還在，我還在。'],cl_lamp1:['燈芯省一點。她提著的那盞，比看起來重。','少燒一點就好。路，還是看得到。'],cl_lamp1b:['燒完也不准滅。聽見沒有？','燈照過的地方，我多記住一個名字。'],cl_lamp2:['連那種東西也要送回去？……哼，隨妳。','只剩一成了。你也可以回去。我送你。'],cl_write1:['羽筆又濕了。她一下井就這樣。','先點一滴。寫得下去，就還沒走丟。'],cl_write1b:['夾一張書籤也好。別把句子弄丟。','這頁先留著。下一回合再寫完。'],cl_write2:['改那麼多次，是怕寫錯我的名字嗎？','留在手上的句子，會自己變輕。'],cl_pain1:['別撐著臉給我看。痛就說。','還可以。格擋先夠就好。'],cl_pain1b:['第一次我准妳少疼一點。第二次不行。','先撐住。這一下，我還站得住。'],cl_pain2:['畫面不要紅。她不喜歡別人看見。','還站著。這樣就夠了。']};
+for(const k in DATA.talents){const t=DATA.talents[k];t.id=k;t.cost=/2$/.test(k)?3:/1b$/.test(k)?2:1;}
+// 個性：事件裡多一個選項
+const addOpt=(ev,o)=>{const e=DATA.events.find(x=>x.id===ev);if(e)e.opts.splice(e.opts.length-1,0,o);};
+addOpt('lunchbox',{per:'lazy',t:'先坐下來，讓它自己涼一點再吃',d:'回復 10 生命，下一場戰鬥開場少抽 1 張',r:[{heal:10},{next:{drawLess:1}}]});
+addOpt('lanternshop',{per:'queen',t:'「這盞，按我的價錢。」',d:'花 15 渡鴉幣得到「舊提燈」；付不起的話，異化值 +8，被請出去',r:[{queen:1}]});
+addOpt('lostglove',{per:'sly',t:'「這隻手套，登記簿寫錯名字了。」',d:'七成：得到一件遺物，不拿詛咒。三成被拆穿：失去 40 渡鴉幣（不夠就失去 8 生命）',r:[{sly:1}]});
+addOpt('canary',{per:'doting',t:'「一定要帶回去給他。」',d:'這一局通關的話，回家多一句話；下一局開場多 15 渡鴉幣',r:[{dot:1}]});
+addOpt('scale',{per:'petty',t:'「把上次打我的那個，放上去秤。」',d:'曾經打倒她的敵人，下一場再少一成生命；沒有的話，下一場開場有 8 格擋',r:[{petty:1}]});
+addOpt('canary',{per:'gentle',t:'把籠子連牠一起帶走，送到有風的地方',d:'得到 1 點燈火，回復 6 生命',r:[{flame:1},{heal:6}]});
+addOpt('knock',{per:'firm',t:'「妳們在門後等。我開。」',d:'失去 6 生命，得到一張稀有的牌',r:[{hurt:6},{cardRare:1}]});
+addOpt('runcart',{per:'stubborn',t:'不跳車，也不喊停。走在旁邊跟到底',d:'失去 4 生命，移除一張牌',r:[{hurt:4},{removePick:1}]});
+addOpt('echo',{per:'calm',t:'不喊名字。只問「你少了哪一頁」',d:'從三張牌裡選一張',r:[{cardPick:1}]});
+DATA.evX={curious:{per:'curious',t:'翻開看看',d:'七成：從三張牌裡選一張。三成：異化值 +10',r:[{curious:1}]},earnest:{per:'earnest',t:'留下字條',d:'得到 1 點燈火，下一場戰鬥開場多抽 1 張',r:[{flame:1},{next:{draw:1}}]}};
+Object.assign(DATA.personas,{curious:{id:'curious',ch:'yy',n:'好奇',d:'什麼都想翻開看一眼。',fx:'每個事件多一個「翻開看看」：七成從三張牌選一，三成異化值 +10'},earnest:{id:'earnest',ch:'cl',n:'把每封信寫完',d:'走過的地方，都要留一句話。',fx:'每個事件多一個「留下字條」：得到 1 點燈火，下一場開場多抽 1 張'}});
+// 慾望：新增兩種，商店多一句話、多一件貨
+Object.assign(DATA.desires,{sloth:{id:'sloth',ch:'yy',n:'怠',d:'能躺著，就不站著。',good:'每場戰鬥第一回合，所有手牌費用 -1',bad:'每場戰鬥開始少抽 1 張',sfx:'sfx_pact_greed'},dread:{id:'dread',ch:'yy',n:'懼',d:'她第一次承認自己也會怕。',good:'每場戰鬥開始，所有敵人獲得 1 層虛弱',bad:'自己也獲得 1 層虛弱；地圖上的菁英不能走進去',sfx:'sfx_pact_grudge'}});
+DATA.shopX={
+ greed:{n:'加鎖的盒子',price:40,say:'您眼光真好。這件，只賣給肯加錢的人。',d:'立刻換掉兩件還沒賣出的商品'},
+ glutton:{n:'還沒冷的點心',price:15,say:'還熱著。不吃，也會有別的東西替妳吃。',d:'回復 10 生命'},
+ grudge:{n:'未完成的叉',price:20,say:'帳本我這兒也有。……您那本，比較厚。',d:'下一場敵人開場帶 1 層厄契'},
+ obsess:{n:'解不開的線頭',price:25,say:'看中了就不要放。放了，會自己走回來。',d:'下一場第二張打出的牌，回合結束也回到手上一次'},
+ vanity:{n:'小鏡子',price:30,say:'在這兒照過的人，出去以後都會回頭看自己。',d:'商店多擺一件商品（異化值 40 以上她不肯照）'},
+ envy:{n:'剛被退貨的東西',price:Math.round(150*.8),say:'別人手上那件，其實也可以是您的。',d:'隨機一件遺物'},
+ wrath:{n:'砸壞的秤',price:0,say:'這家店，今天不用付錢。——把桌子留下。',d:'立刻離開，店裡的東西全部沒了；下一場力量 +2'},
+ home:{n:'回家的路條',price:0,say:'這件不能賣。帶回去的路，會比較輕。',d:'這一層結束時多回 5 生命'},
+ letter:{n:'未貼郵票的信封',price:10,say:'信箱在後面。貼不夠的，我先幫妳墊。',d:'下一場開場多抽 1 張'},
+ guard:{n:'備用燈罩',price:20,say:'盾牌我有。可是您的燈，不能放在櫃上。',d:'下一場第一次受到的攻擊傷害 -3'},
+ remember:{n:'空白名冊',price:15,say:'賣給您的每一樣，我都會寫進簿子裡。',d:'下一場每次送回，多得 1 點燈火'}
+};
+DATA.shopSay={pride:'價錢不能少。能少的，不夠資格放上這張桌。'};
+// 回憶之書：三則新的（正文待寫）
+DATA.bookX=[{id:'bx1',t:'九條影子',cond:'用語嫣・九尾妖狐通關，而且這一局大部分時間是人形'},{id:'bx2',t:'咬住的那口',cond:'用毒蛇通關，而且這一局立了「執」或「怨」'},{id:'bx3',t:'少了一頁的晚餐',cond:'任何角色通關，而且牌組裡有「第四副碗筷」'}];
+
 // ── 公告（新的放最上面）
 DATA.notes=[
+ {ver:'v0.10',lines:[
+  '九尾、毒蛇、蠍子、蜘蛛、血蛭五個本源，各有自己的一組契牌：九尾騙人、毒蛇纏著拖、蠍子一擊收掉、蜘蛛一張網打全部、血蛭靠吸血撐下去。',
+  '新本源：克蘇魯（看得見牌堆頂）、渡鴉（通關一次後解鎖，把牌簽給敵人）；克勞德多了線、鏡、聲三個面貌。',
+  '有副本源時變相，會變成「主＋副」的混合型態，維持兩回合，依兩個本源的組合多一種效果。',
+  '牌局改成五場固定的關卡，每一場有自己的特別規則。打完五場，從三張只有牌局才拿得到的牌裡選一張。',
+  '天賦改成點數：用誰下潛，結束時就得 1 點，通關再 1 點。每條線多了中間一格，越後面越貴。學的時候她們會說一句話。',
+  '個性有了自己的事件選項；新增個性「好奇」（語嫣）和「把每封信寫完」（克勞德）。',
+  '立了慾望契進商店，攤主會說不一樣的話，還多一件只有她買得到的東西。新增慾望「怠」和「懼」。',
+  '回憶之書多了三則要特定條件才看得到的回憶。',
+  '修正：幾段舊對話裡語嫣叫渡鴉「爸爸」，已改成新版文字。'
+ ]},
  {ver:'v0.9',lines:[
   '副本源：出發時除了主本源，可以再選一個副本源。它的專屬牌會出現在獎勵裡；它的被動，語嫣要到半妖以上才會醒，克勞德要到每場的第 3 回合。',
   '本源發動時會閃過她那個本源的樣子，不同本源看到的畫面不一樣。',

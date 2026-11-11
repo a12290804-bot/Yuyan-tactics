@@ -129,7 +129,7 @@ body.quake #cb{animation:quake .28s}
 @keyframes lampP{50%{box-shadow:0 0 24px #fff0c0;transform:scale(1.08)}}
 .foe.hid .art{filter:blur(2.5px) brightness(.75)}
 .foe.gone{opacity:0;transform:translateY(-20px);transition:all .6s}
-#cut{position:fixed;left:0;right:0;top:30%;height:110px;z-index:62;pointer-events:none;opacity:0;background:#000 center 22%/cover no-repeat;border-top:1px solid #e05a63;border-bottom:1px solid #e05a63;box-shadow:0 0 30px #000;display:flex;align-items:flex-end;justify-content:flex-end}
+#cut{position:fixed;left:0;right:0;top:30%;height:110px;z-index:62;pointer-events:none;opacity:0;background:#000 center top/cover no-repeat;border-top:1px solid #e05a63;border-bottom:1px solid #e05a63;box-shadow:0 0 30px #000;display:flex;align-items:flex-end;justify-content:flex-end}
 #cut.on{animation:cutIn .9s ease-out}
 #cut b{margin:0 14px 8px;padding:2px 10px;background:#000b;color:#ffd0d0;border-radius:8px;font-size:15px;letter-spacing:2px}
 @keyframes cutIn{0%{opacity:0;transform:translateX(-40px) scaleY(.4)}18%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateX(30px)}}
@@ -1366,7 +1366,7 @@ if(typeof module!=='undefined')module.exports=T;else root.CARD_TEXT=T;
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.9',
+ version:'v0.10',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -1849,8 +1849,138 @@ for(const k in DATA.talents)DATA.talents[k].id=k;
 DATA.pasName={firstAtkPact1:'狐火',pactGrow1:'纏',linkPlus1:'張網',judgeKillHeal3:'尾針',keepBlock2:'紙',ink6Double:'墨',hatch:'孵化',script:'劇本',brideLink:'紅線',phylactery:'命匣',leech:'吸血',coral:'骨花',jelly:'麻痺',vine:'寄生',mimicFirst:'千相',sacrifice:'獻祭',molt3:'蛻皮',lure:'誘燈'};
 for(const k in DATA.origins){const o=DATA.origins[k];o.cut=o.half||o.img;}
 
+// ── v0.10（團隊回覆 v0.8：五源契牌、補齊本源、混合變相、牌局固定關卡、天賦中段、個性選項、慾望貨物）
+// 先套用文字 v0.4.1 的新版對話與故事（舊版有幾句語嫣叫「爸爸」，新版已改）
+Object.assign(DATA.talk.boss,TX.TALK_BOSS);Object.assign(DATA.talk.meet,TX.TALK_MEET);DATA.talk.winMore=TX.TALK_WIN_MORE;DATA.talk.loseMore=TX.TALK_LOSE_MORE;DATA.talk.rest=TX.TALK_REST;
+for(const [k,v] of Object.entries(TX.NEW_STORIES))DATA.stories[k]=Object.assign({},DATA.stories[k],v);
+for(const ev of TX.NEW_EVENTS){const i=DATA.events.findIndex(e=>e.id===ev.id);if(i>=0)DATA.events[i]=Object.assign({},DATA.events[i],ev,{opts:DATA.events[i].opts.map((o,k)=>Object.assign({},o,{t:(ev.opts[k]||o).t,d:(ev.opts[k]||o).d}))});}
+// 本源補齊
+Object.assign(DATA.origins,{
+ yy_B09:{n:'克蘇魯',passive:'whisper',d:'抽牌堆頂 3 張永遠翻開。每回合一次，可以失去 2 生命，交換頂牌與第三張的位置。'},
+ yy_B11:{n:'渡鴉',passive:'pactSwap',unlockWin:1,d:'每場戰鬥一次：把一張手牌「簽給」一個敵人（那張牌消耗）。牠要攻擊的話，妳得到等量的格擋；不攻擊的話，妳抽 2 張。牠這回合都會停手。'},
+ cl_line:{n:'線',passive:'tether',d:'生命低於一半時，每回合回復 2 生命。'},
+ cl_mirror:{n:'鏡',passive:'reflect',d:'每場戰鬥，敵人第一次偷牌、加費或塞詛咒，沒有效果。'},
+ cl_voice:{n:'聲',passive:'call',d:'每回合第一張技能牌，抽 1 張。'}
+});
+for(const k of ['yy_B09','yy_B11','cl_line','cl_mirror','cl_voice']){const o=DATA.origins[k];const [ch,id]=k.split('_');Object.assign(o,{id,ch,unlock:o.unlockWin?0:120,swap:null,skin:ch==='yy'?'y_skin_'+id:'cl_skin_'+id});const has=n=>DATA.haveArt.includes(n);o.img=has(o.skin)?DATA.inbox+o.skin+'.webp':DATA.chars[ch].img;if(ch==='yy'){o.half=has('y_'+id+'_half')?DATA.inbox+'y_'+id+'_half.webp':null;o.full=has('y_'+id+'_full')?DATA.inbox+'y_'+id+'_full.webp':null;}}
+Object.assign(DATA.borrow,{B09:['y_deep','y_tent_r','y_ult'],B11:['y_crowqueen','y_redwing','y_ultq']});
+for(const id of ['B09','B11']){const o=DATA.origins['yy_'+id];const a=DATA.borrow[id];if(o.img===DATA.chars.yy.img)o.img=I+a[0]+'.webp';if(!o.half)o.half=I+a[1]+'.webp';if(!o.full)o.full=I+a[2]+'.webp';}
+Object.assign(DATA.pasName,{whisper:'低語',pactSwap:'簽契',tether:'線',reflect:'鏡',call:'聲',window:'窗',shop20:'交易',hand12:'觸手',swarm:'蟲群',slime:'黏液',moth:'撲火'});
+// 五源契牌（r 只決定在獎勵裡出現的機率；牌框一律是「契」）
+const bl=(o)=>o;
+Object.assign(DATA.cards,{
+ b_b01_foxfire:{n:'狐火',c:1,t:'a',r:1,ch:'yy',bl:'B01',img:sk('hex'),fx:[['d',6],['pa',1,'t']],u:{fx:[['d',9],['pa',1,'t']]},ph:{half:{fx:[['d',8],['pa',1,'t'],['dr',1]]},full:{fx:[['d',15],['pa',2,'t'],['lie',1]]}}},
+ b_b01_mirage:{n:'幻影',c:1,t:'s',r:1,ch:'yy',bl:'B01',img:sk('vanish'),fx:[['b',6],['mirage',0]],u:{fx:[['b',9],['mirage',0]]},ph:{half:{fx:[['b',6],['mirage',0],['dr',1]]},full:{fx:[['b',10],['mirage',1],['st','weak',1,'t']]}}},
+ b_b01_tails:{n:'搖尾',c:0,t:'s',r:1,ch:'yy',bl:'B01',img:sk('tie'),ex:1,fx:[['tails',2]],u:{fx:[['tails',3]]},ph:{half:{fx:[['tails',3],['dr',1]]},full:{fx:[['tails',4,1]]}}},
+ b_b01_lie:{n:'謊言',c:1,t:'s',r:2,ch:'yy',bl:'B01',img:sk('rotcurse'),fx:[['lie',0]],u:{c:0},ph:{half:{fx:[['lie',0],['dr',1]]},full:{fx:[['lie',1]]}}},
+ b_b01_nine:{n:'九尾',c:2,t:'p',r:2,ch:'yy',bl:'B01',img:sk('chain'),fx:[['pw','nine',1]],u:{c:1},ph:{full:{fx:[['pw','nine',1],['pw','nineAll',1]]}}},
+ b_b01_mask:{n:'換一張臉',c:2,t:'s',r:1,ch:'yy',bl:'B01',img:sk('vanish'),fx:[['mask',0]],u:{c:1},ph:{full:{fx:[['mask',1]]}}},
+ b_b01_feast:{n:'宴席上的笑',c:1,t:'a',r:1,ch:'yy',bl:'B01',img:sk('snap'),fx:[['d',4],['firstPa',2]],u:{fx:[['d',7],['firstPa',2]]}},
+ b_m01_fang:{n:'毒牙',c:1,t:'a',r:1,ch:'yy',bl:'M01',img:sk('pierce'),fx:[['d',4],['pa',3,'t']],u:{fx:[['d',6],['pa',4,'t']]}},
+ b_m01_venom:{n:'涎',c:0,t:'s',r:1,ch:'yy',bl:'M01',img:sk('rotcurse'),fx:[['paIf',2,5,2]],u:{fx:[['paIf',3,5,2]]}},
+ b_m01_shed:{n:'蛻鱗',c:1,t:'s',r:1,ch:'yy',bl:'M01',img:sk('mend'),fx:[['cleanse'],['b',5],['pa',1,'a']],u:{fx:[['cleanse'],['b',8],['pa',1,'a']]}},
+ b_m01_constrict:{n:'勒緊',c:2,t:'a',r:2,ch:'yy',bl:'M01',img:sk('garrote'),fx:[['constrict',2]],u:{c:1},ph:{half:{fx:[['constrict',2],['dr',1]]},full:{fx:[['constrict',3],['st','weak',1,'t']]}}},
+ b_m01_hiss:{n:'吐信',c:1,t:'p',r:2,ch:'yy',bl:'M01',img:sk('hex'),fx:[['pw','hiss',1]],u:{c:0},ph:{full:{fx:[['pw','hiss',1],['pw','hissMax',1]]}}},
+ b_m01_nest:{n:'蛇窩',c:2,t:'s',r:2,ch:'yy',bl:'M01',img:sk('web'),fx:[['pa',3,'a'],['b',8]],u:{fx:[['pa',4,'a'],['b',10]]}},
+ b_m02_pinch:{n:'鉗',c:1,t:'a',r:1,ch:'yy',bl:'M02',img:sk('snap'),fx:[['d',7],['ifPaSt','vuln',1]],u:{fx:[['d',10],['ifPaSt','vuln',1]]}},
+ b_m02_wait:{n:'伏',c:1,t:'s',r:1,ch:'yy',bl:'M02',img:sk('brace'),fx:[['b',8],['wait']],u:{fx:[['b',11],['wait']]}},
+ b_m02_needle:{n:'補一針',c:0,t:'a',r:1,ch:'yy',bl:'M02',img:sk('pierce'),ex:1,fx:[['needle',3,3]],u:{fx:[['needle',5,3]]}},
+ b_m02_tail:{n:'毒尾',c:2,t:'a',r:2,ch:'yy',bl:'M02',img:sk('chain'),fx:[['d',8],['pa',2,'t'],['killHeal',3]],u:{fx:[['d',11],['pa',2,'t'],['killHeal',3]]}},
+ b_m02_shell:{n:'甲',c:1,t:'p',r:2,ch:'yy',bl:'M02',img:sk('brace'),fx:[['pw','shell',1]],u:{c:0}},
+ b_m02_drive:{n:'深入',c:2,t:'p',r:2,ch:'yy',bl:'M02',img:sk('thrust'),fx:[['pw','drive',1]],u:{c:1}},
+ b_m03_silk:{n:'吐絲',c:1,t:'s',r:1,ch:'yy',bl:'M03',img:sk('web'),fx:[['lk1'],['b',6]],u:{fx:[['lk1'],['b',9]]},ph:{half:{fx:[['lk1'],['b',6],['dr',1]]},full:{fx:[['lk1'],['b',10],['stun']]}}},
+ b_m03_dew:{n:'網露',c:0,t:'s',r:1,ch:'yy',bl:'M03',img:sk('mend'),fx:[['dr',1],['ifLinkB',3]],u:{fx:[['dr',1],['ifLinkB',5]]}},
+ b_m03_wrap:{n:'裹',c:1,t:'a',r:1,ch:'yy',bl:'M03',img:sk('tie'),fx:[['wrap',6]],u:{fx:[['wrap',9]]}},
+ b_m03_pull:{n:'收網',c:1,t:'a',r:1,ch:'yy',bl:'M03',img:sk('garrote'),fx:[['dLinked',5]],u:{fx:[['dLinked',8]]}},
+ b_m03_cocoon:{n:'結繭',c:2,t:'s',r:2,ch:'yy',bl:'M03',img:sk('web'),fx:[['stun'],['pa',3,'t']],u:{c:1}},
+ b_m03_center:{n:'坐在網心',c:2,t:'p',r:2,ch:'yy',bl:'M03',img:sk('chain'),fx:[['pw','center',1]],u:{c:1}},
+ b_m04_latch:{n:'吸附',c:1,t:'a',r:1,ch:'yy',bl:'M04',img:sk('pierce'),fx:[['d',6],['heal',2]],u:{fx:[['d',9],['heal',3]]},ph:{half:{fx:[['d',10],['heal',3],['dr',1]]},full:{fx:[['d',16],['heal',6],['stun']]}}},
+ b_m04_taste:{n:'聞血',c:0,t:'s',r:1,ch:'yy',bl:'M04',img:sk('hex'),fx:[['taste',3]],u:{fx:[['taste',5]]}},
+ b_m04_pool:{n:'血泊',c:1,t:'s',r:1,ch:'yy',bl:'M04',img:sk('mend'),fx:[['b',5],['pool']],u:{fx:[['b',8],['pool']]}},
+ b_m04_drain:{n:'抽血',c:2,t:'a',r:2,ch:'yy',bl:'M04',img:sk('thrust'),fx:[['d',8],['drainH',.5]],u:{fx:[['d',12],['drainH',.5]]}},
+ b_m04_young:{n:'幼蛭',c:1,t:'p',r:2,ch:'yy',bl:'M04',img:sk('rotcurse'),fx:[['pw','young',1]],u:{c:0},ph:{full:{fx:[['pw','young',1],['pw','youngFull',1]]}}},
+ b_m04_feed:{n:'飽',c:2,t:'s',r:2,ch:'yy',bl:'M04',img:sk('mend'),fx:[['heal',8],['al',15]],u:{fx:[['heal',11],['al',15]]},ph:{full:{fx:[['heal',12],['st','weak',1,'a']]}}},
+ b_m04_host:{n:'換宿主',c:2,t:'a',r:2,ch:'yy',bl:'M04',img:sk('snap'),fx:[['d',10],['ifHealedA',4]],u:{fx:[['d',14],['ifHealedA',5]]}}
+});
+DATA.cards.b_sting.ph={full:{fx:[['d',10,1,'pact3'],['st','vuln',1,'t']]}};
+DATA.cards.b_web.ph={full:{fx:[['lk'],['b',8],['noAtkLinked']]}};
+for(const k of ['b_sting','b_web','b_coil'])DATA.cards[k].r=1; // 起始換牌也可以在獎勵裡再出現
+Object.assign(DATA.powers,{nine:'每打出一張攻擊牌，隨機一個敵人獲得 {n} 層厄契。',nineAll:'（完全非人：改成所有敵人各 1 層）',hiss:'敵人獲得厄契時，如果已經有 3 層以上，再 +1（每回合每隻一次）。',hissMax:'（完全非人：每回合每隻可以觸發兩次）',shell:'用裁定打倒敵人時，獲得 6 格擋。',drive:'本源攻擊牌對有厄契的敵人，傷害 +{n}×2。',center:'被命線連住的敵人受到傷害時，妳回復 1 生命（每回合最多 5）。',young:'每回合第一次攻擊傷害的回復，從 20% 變成 35%。',youngFull:'（完全非人：變成 50%）',draft:'每回合第一次打出的牌，費用 -1。'});
+// 牌局：五場固定關卡與獎勵
+DATA.trials=[{id:'t1',n:'第一場牌局',d:'連打五場固定的關卡，中間不進商店、不拿獎勵，每場打完回 15% 生命。打完五場，從三張牌局專屬的牌裡選一張。',heal:.15,memory:10,
+ stages:[{id:'t1s1',n:'退件窗口',l:0,k:'fight',ids:['jiangshi_boy','incense_crone'],rule:'talisman',rd:'開場手上多一張「鎮屍符」。'},
+  {id:'t1s2',n:'丹火旁座',l:0,k:'elite',ids:['alchemist','jiangshi_boy'],rule:'heal2',rd:'敵人每回復一次生命，妳受到 2 傷害。'},
+  {id:'t1s3',n:'看不清的走廊',l:1,k:'fight',ids:['faceless','hands'],rule:'hidden',rd:'兩隻開場都看不清，打中才看得見意圖。'},
+  {id:'t1s4',n:'井底對坐',l:1,k:'elite',ids:['welleye'],rule:'well',rd:'「凝視」多 5 傷害；閉眼的時候給不了厄契。'},
+  {id:'t1s5',n:'不再往下',l:2,k:'boss',ids:['deepdrill'],rule:'drill',rd:'不能送回。每過一回合，牠力量 +1。'}],
+ prize:['t_key','t_feather','t_bowl','t_draft','t_lamp','t_page']}];
+Object.assign(DATA.cards,{
+ t_key:{n:'鐵柵鑰匙',c:0,t:'s',r:3,ch:'any',g:1,img:sk('vanish'),keep:1,fx:[['dd',2,1]],u:{fx:[['dd',3,1]]}},
+ t_feather:{n:'終局的羽筆',c:1,t:'a',r:3,ch:'any',g:1,img:sk('thrust'),fx:[['dIfN',8,5,16]],u:{fx:[['dIfN',11,5,22]]}},
+ t_bowl:{n:'多出來的那一副',c:1,t:'s',r:3,ch:'any',g:1,img:sk('incense'),ex:1,fx:[['stop']],u:{c:0}},
+ t_draft:{n:'織命底稿',c:1,t:'p',r:3,ch:'any',g:1,img:sk('chain'),fx:[['pw','draft',1]],u:{c:0}},
+ t_lamp:{n:'還亮著',c:0,t:'s',r:3,ch:'any',g:1,img:sk('mend'),fx:[['b',8],['ifLowDr']],u:{fx:[['b',11],['ifLowDr']]}},
+ t_page:{n:'錯序的一頁',c:2,t:'s',r:3,ch:'any',g:1,img:sk('vanish'),fx:[['stackTop']],u:{c:1}}
+});
+// 天賦：補中段，點數制（下潛結束 +1、通關再 +1；1／2／3 點）
+DATA.talents.yy_greed2.d='每回合一次，可以花 30 渡鴉幣換 1 點能量。';
+Object.assign(DATA.talents,{
+ yy_greed1b:{ch:'yy',line:'貪',n:'討價',need:'yy_greed1',d:'商店價錢 -10%（和莉莉絲的 8 折可以疊，最低五折）。'},
+ yy_grudge1b:{ch:'yy',line:'記仇',n:'記下名字',need:'yy_grudge1',d:'這一局打過她的敵人種類，再遇到時開場帶 1 層厄契。'},
+ yy_guard1b:{ch:'yy',line:'護短',n:'擋在前面',need:'yy_guard1',d:'每場戰鬥開始得到 3 格擋。'},
+ cl_lamp1b:{ch:'cl',line:'守燈',n:'還亮',need:'cl_lamp1',d:'燈芯燒完、發動「燈照」時，多得 1 點燈火。'},
+ cl_write1b:{ch:'cl',line:'寫字',n:'夾著書籤',need:'cl_write1',d:'每場戰鬥一次，可以把一張手牌留到下回合。'},
+ cl_pain1b:{ch:'cl',line:'不肯說痛',n:'先撐住',need:'cl_pain1',d:'每場戰鬥第一次自己失去生命時，少失 2 點（至少仍失 1）。'}
+});
+for(const [a,b] of [['yy_greed2','yy_greed1b'],['yy_grudge2','yy_grudge1b'],['yy_guard2','yy_guard1b'],['cl_lamp2','cl_lamp1b'],['cl_write2','cl_write1b'],['cl_pain2','cl_pain1b']])DATA.talents[a].need=b;
+DATA.talents.yy_guard2.d+='（只有語嫣自己的局有效）';
+DATA.talentSay={yy_greed1:['呵呵，掉在地上的，就是我的。','姐姐，至少數一數再收。'],yy_greed1b:['這種價錢？再讓一下。我笑著等。','她一笑，攤主就先動手改價碼。'],yy_greed2:['二十五不夠。三十。能量，現在就要。','姐姐，幣會用完的。……我幫妳看著袋口。'],yy_grudge1:['先記一筆。誰動手，我都記得。','姐姐把名字寫得很端正。這一筆，不會塗掉。'],yy_grudge1b:['換了臉也沒用。我認得它走路的樣子。','同一種步伐，她比我先聽見。'],yy_grudge2:['第三次了。這筆，連本帶利。','三次就夠了。再打下去，是牠不應該。'],yy_guard1:['還不能倒。妹妹還在後面。','姐姐，我靠過來一點。妳不用一個人擋。'],yy_guard1b:['要打，先過我這關。','嗯。我站妳旁邊。'],yy_guard2:['……誰准我倒下的？','姐姐，回來。燈還在，我還在。'],cl_lamp1:['燈芯省一點。她提著的那盞，比看起來重。','少燒一點就好。路，還是看得到。'],cl_lamp1b:['燒完也不准滅。聽見沒有？','燈照過的地方，我多記住一個名字。'],cl_lamp2:['連那種東西也要送回去？……哼，隨妳。','只剩一成了。你也可以回去。我送你。'],cl_write1:['羽筆又濕了。她一下井就這樣。','先點一滴。寫得下去，就還沒走丟。'],cl_write1b:['夾一張書籤也好。別把句子弄丟。','這頁先留著。下一回合再寫完。'],cl_write2:['改那麼多次，是怕寫錯我的名字嗎？','留在手上的句子，會自己變輕。'],cl_pain1:['別撐著臉給我看。痛就說。','還可以。格擋先夠就好。'],cl_pain1b:['第一次我准妳少疼一點。第二次不行。','先撐住。這一下，我還站得住。'],cl_pain2:['畫面不要紅。她不喜歡別人看見。','還站著。這樣就夠了。']};
+for(const k in DATA.talents){const t=DATA.talents[k];t.id=k;t.cost=/2$/.test(k)?3:/1b$/.test(k)?2:1;}
+// 個性：事件裡多一個選項
+const addOpt=(ev,o)=>{const e=DATA.events.find(x=>x.id===ev);if(e)e.opts.splice(e.opts.length-1,0,o);};
+addOpt('lunchbox',{per:'lazy',t:'先坐下來，讓它自己涼一點再吃',d:'回復 10 生命，下一場戰鬥開場少抽 1 張',r:[{heal:10},{next:{drawLess:1}}]});
+addOpt('lanternshop',{per:'queen',t:'「這盞，按我的價錢。」',d:'花 15 渡鴉幣得到「舊提燈」；付不起的話，異化值 +8，被請出去',r:[{queen:1}]});
+addOpt('lostglove',{per:'sly',t:'「這隻手套，登記簿寫錯名字了。」',d:'七成：得到一件遺物，不拿詛咒。三成被拆穿：失去 40 渡鴉幣（不夠就失去 8 生命）',r:[{sly:1}]});
+addOpt('canary',{per:'doting',t:'「一定要帶回去給他。」',d:'這一局通關的話，回家多一句話；下一局開場多 15 渡鴉幣',r:[{dot:1}]});
+addOpt('scale',{per:'petty',t:'「把上次打我的那個，放上去秤。」',d:'曾經打倒她的敵人，下一場再少一成生命；沒有的話，下一場開場有 8 格擋',r:[{petty:1}]});
+addOpt('canary',{per:'gentle',t:'把籠子連牠一起帶走，送到有風的地方',d:'得到 1 點燈火，回復 6 生命',r:[{flame:1},{heal:6}]});
+addOpt('knock',{per:'firm',t:'「妳們在門後等。我開。」',d:'失去 6 生命，得到一張稀有的牌',r:[{hurt:6},{cardRare:1}]});
+addOpt('runcart',{per:'stubborn',t:'不跳車，也不喊停。走在旁邊跟到底',d:'失去 4 生命，移除一張牌',r:[{hurt:4},{removePick:1}]});
+addOpt('echo',{per:'calm',t:'不喊名字。只問「你少了哪一頁」',d:'從三張牌裡選一張',r:[{cardPick:1}]});
+DATA.evX={curious:{per:'curious',t:'翻開看看',d:'七成：從三張牌裡選一張。三成：異化值 +10',r:[{curious:1}]},earnest:{per:'earnest',t:'留下字條',d:'得到 1 點燈火，下一場戰鬥開場多抽 1 張',r:[{flame:1},{next:{draw:1}}]}};
+Object.assign(DATA.personas,{curious:{id:'curious',ch:'yy',n:'好奇',d:'什麼都想翻開看一眼。',fx:'每個事件多一個「翻開看看」：七成從三張牌選一，三成異化值 +10'},earnest:{id:'earnest',ch:'cl',n:'把每封信寫完',d:'走過的地方，都要留一句話。',fx:'每個事件多一個「留下字條」：得到 1 點燈火，下一場開場多抽 1 張'}});
+// 慾望：新增兩種，商店多一句話、多一件貨
+Object.assign(DATA.desires,{sloth:{id:'sloth',ch:'yy',n:'怠',d:'能躺著，就不站著。',good:'每場戰鬥第一回合，所有手牌費用 -1',bad:'每場戰鬥開始少抽 1 張',sfx:'sfx_pact_greed'},dread:{id:'dread',ch:'yy',n:'懼',d:'她第一次承認自己也會怕。',good:'每場戰鬥開始，所有敵人獲得 1 層虛弱',bad:'自己也獲得 1 層虛弱；地圖上的菁英不能走進去',sfx:'sfx_pact_grudge'}});
+DATA.shopX={
+ greed:{n:'加鎖的盒子',price:40,say:'您眼光真好。這件，只賣給肯加錢的人。',d:'立刻換掉兩件還沒賣出的商品'},
+ glutton:{n:'還沒冷的點心',price:15,say:'還熱著。不吃，也會有別的東西替妳吃。',d:'回復 10 生命'},
+ grudge:{n:'未完成的叉',price:20,say:'帳本我這兒也有。……您那本，比較厚。',d:'下一場敵人開場帶 1 層厄契'},
+ obsess:{n:'解不開的線頭',price:25,say:'看中了就不要放。放了，會自己走回來。',d:'下一場第二張打出的牌，回合結束也回到手上一次'},
+ vanity:{n:'小鏡子',price:30,say:'在這兒照過的人，出去以後都會回頭看自己。',d:'商店多擺一件商品（異化值 40 以上她不肯照）'},
+ envy:{n:'剛被退貨的東西',price:Math.round(150*.8),say:'別人手上那件，其實也可以是您的。',d:'隨機一件遺物'},
+ wrath:{n:'砸壞的秤',price:0,say:'這家店，今天不用付錢。——把桌子留下。',d:'立刻離開，店裡的東西全部沒了；下一場力量 +2'},
+ home:{n:'回家的路條',price:0,say:'這件不能賣。帶回去的路，會比較輕。',d:'這一層結束時多回 5 生命'},
+ letter:{n:'未貼郵票的信封',price:10,say:'信箱在後面。貼不夠的，我先幫妳墊。',d:'下一場開場多抽 1 張'},
+ guard:{n:'備用燈罩',price:20,say:'盾牌我有。可是您的燈，不能放在櫃上。',d:'下一場第一次受到的攻擊傷害 -3'},
+ remember:{n:'空白名冊',price:15,say:'賣給您的每一樣，我都會寫進簿子裡。',d:'下一場每次送回，多得 1 點燈火'}
+};
+DATA.shopSay={pride:'價錢不能少。能少的，不夠資格放上這張桌。'};
+// 回憶之書：三則新的（正文待寫）
+DATA.bookX=[{id:'bx1',t:'九條影子',cond:'用語嫣・九尾妖狐通關，而且這一局大部分時間是人形'},{id:'bx2',t:'咬住的那口',cond:'用毒蛇通關，而且這一局立了「執」或「怨」'},{id:'bx3',t:'少了一頁的晚餐',cond:'任何角色通關，而且牌組裡有「第四副碗筷」'}];
+
 // ── 公告（新的放最上面）
 DATA.notes=[
+ {ver:'v0.10',lines:[
+  '九尾、毒蛇、蠍子、蜘蛛、血蛭五個本源，各有自己的一組契牌：九尾騙人、毒蛇纏著拖、蠍子一擊收掉、蜘蛛一張網打全部、血蛭靠吸血撐下去。',
+  '新本源：克蘇魯（看得見牌堆頂）、渡鴉（通關一次後解鎖，把牌簽給敵人）；克勞德多了線、鏡、聲三個面貌。',
+  '有副本源時變相，會變成「主＋副」的混合型態，維持兩回合，依兩個本源的組合多一種效果。',
+  '牌局改成五場固定的關卡，每一場有自己的特別規則。打完五場，從三張只有牌局才拿得到的牌裡選一張。',
+  '天賦改成點數：用誰下潛，結束時就得 1 點，通關再 1 點。每條線多了中間一格，越後面越貴。學的時候她們會說一句話。',
+  '個性有了自己的事件選項；新增個性「好奇」（語嫣）和「把每封信寫完」（克勞德）。',
+  '立了慾望契進商店，攤主會說不一樣的話，還多一件只有她買得到的東西。新增慾望「怠」和「懼」。',
+  '回憶之書多了三則要特定條件才看得到的回憶。',
+  '修正：幾段舊對話裡語嫣叫渡鴉「爸爸」，已改成新版文字。'
+ ]},
  {ver:'v0.9',lines:[
   '副本源：出發時除了主本源，可以再選一個副本源。它的專屬牌會出現在獎勵裡；它的被動，語嫣要到半妖以上才會醒，克勞德要到每場的第 3 回合。',
   '本源發動時會閃過她那個本源的樣子，不同本源看到的畫面不一樣。',
@@ -1944,31 +2074,32 @@ const TIMED=['vuln','weak','link','regen'];
 
 // ── 卡牌
 // 專屬牌（有 bl）的三相：沒有另外寫 ph 的，用「纏頸」模板——半妖 ×1.6 加抽 1；完全非人 ×2.6 加「目標這回合不能行動」
-function phFx(fx,ph){const m=ph==='full'?2.6:1.6;const out=fx.map(f=>{const g=f.slice();if(['d','da','b','pa','ink'].includes(g[0])&&typeof g[1]==='number')g[1]=Math.round(g[1]*m);return g;});out.push(ph==='half'?['dr',1]:['stun']);return out;}
+function phFx(fx,ph){const m=ph==='full'?2.6:1.6;const out=fx.map(f=>{const g=f.slice();if(['d','da','b','pa','ink','heal','dLinked'].includes(g[0])&&typeof g[1]==='number')g[1]=Math.round(g[1]*m);return g;});out.push(ph==='half'?['dr',1]:['stun']);return out;}
 const scarB=c=>Math.min(4,Math.floor((c.scar||0)/3));
 function cardDef(D,c,ph){const b=D.cards[c.id];let d=(!c.up||!b.u)?b:Object.assign({},b,b.u,{n:b.n+'+'});
  if(c.scar>=9&&D.scarNames&&D.scarNames[c.id])d=Object.assign({},d,{n:D.scarNames[c.id]+(c.up&&b.u?'+':'')});
  if(c.left)d=Object.assign({},d,{n:'她留下的'+d.n});
- if(d.bl&&ph&&ph!=='h'){const o=(b.ph&&b.ph[ph])||{};d=Object.assign({},d,{fx:o.fx||phFx(d.fx,ph)},o.img?{img:o.img}:{});}return d;}
+ if(d.bl&&ph&&ph!=='h'){const P=ph==='mix'?'full':ph;const o=(b.ph&&b.ph[P])||{};d=Object.assign({},d,{fx:o.fx||phFx(d.fx,P)},o.img?{img:o.img}:{});}return d;}
 function cost(D,c,ph){if(c.free)return 0;const k=cardDef(D,c).c;return k<0?k:ph==='full'?0:Math.max(0,k+(c.tax||0)+(c.oil||0)-(c.kd||0));}
 const isYY=st=>st.ch==='yy'||st.ch==='yx';
 const baseCh=st=>st.ch==='yx'?'yy':st.ch;
 // 慾望契／心願（st.desire）、個性（st.persona）、癖好（st.hobby）
 const M=(st,k)=>st.desire===k||st.persona===k||st.hobby===k;
 const handMax=(D,st)=>10+(pas(D,st,'hand12')?2:0)-(M(st,'letter')?1:0);
-function phaseOf(st){if(!st||!isYY(st))return 'h';if(st.combat&&st.combat.full)return 'full';return (st.alien||0)>=40?'half':'h';}
+function phaseOf(st){if(!st||!isYY(st))return 'h';if(st.combat&&st.combat.full)return st.combat.mix?'mix':'full';return (st.alien||0)>=40?'half':'h';}
 function originOf(D,st){return (D.origins||{})[baseCh(st)+'_'+st.origin]||{};}
 function subOf(D,st){return st.sub?((D.origins||{})[baseCh(st)+'_'+st.sub]||{}):{};}
-function subOn(D,st){if(!st.sub)return false;if(isYY(st))return phaseOf(st)!=='h';return !!(st.combat&&st.combat.turn>=3);}
+function subOn(D,st){if(!st.sub)return false;if(isYY(st))return phaseOf(st)!=='h';if(st.combat&&st.combat.clMix)return true;return !!(st.combat&&st.combat.turn>=3);}
 const pas=(D,st,k)=>originOf(D,st).passive===k||(st.sub&&subOf(D,st).passive===k&&subOn(D,st));
 const pe=(E,k)=>{E&&E.push({t:'pas',k});};
-const TL=(st,k)=>!!(st.tal&&st.tal.includes(k));
+const TL=(st,k)=>!!(st.tal&&st.tal.includes(k))&&!(k==='yy_guard2'&&st.ch!=='yy');
+const catOf=id=>id?id[0]:'';
 function addAlien(D,st,n,E){if(!isYY(st)||!n)return;const a0=st.alien||0;const a=Math.max(st.ch==='yx'?40:0,Math.min(100,a0+n));if(st.ch==='yx'&&a===40&&a0>40&&st.combat)st.combat.drawLess=(st.combat.drawLess||0)+2;if(a===a0)return;st.alien=a;E&&E.push({t:'alien',n:a-a0,v:a});
  if(a0<40&&a>=40)E&&E.push({t:'phase',to:'half'});if(a0>=40&&a<40&&!(st.combat&&st.combat.full))E&&E.push({t:'phase',to:'h'});
  if(a0<60&&a>=60&&!st.flags.yx){st.flags.yx=1;E&&E.push({t:'yxWake'});}
  if(a>=100&&st.combat&&!st.combat.full&&!st.combat.fullNext){st.combat.fullNext=1;E&&E.push({t:'fullSoon'});if(st.combat.yx)E&&E.push({t:'unlockYx'});}}
-function needsTarget(D,c,ph){return (cardDef(D,c,ph).fx||[]).some(f=>(['d','jd','lk','px2','ep','stun'].includes(f[0]))||((f[0]==='st'||f[0]==='pa')&&(f[f.length-1]==='t')));}
-function opText(D,f){const S=D.status;const sc=f[3];
+function needsTarget(D,c,ph){return (cardDef(D,c,ph).fx||[]).some(f=>(['d','jd','lk','px2','ep','stun','lk1','wrap','tails','lie','constrict','needle','taste','sign','paIf'].includes(f[0])||(f[0]==='st'&&f[3]==='t'))||((f[0]==='st'||f[0]==='pa')&&(f[f.length-1]==='t')));}
+function opText(D,f){const S=D.status;const sc=typeof f[3]==='string'?f[3]:null;
  const scT=sc?(sc.startsWith('pact')?`，目標每有 1 層厄契多 ${sc.slice(4)}`:sc.startsWith('ink')?`，用掉所有墨，每 1 墨多 ${sc.slice(3)}`:''):'';
  switch(f[0]){
   case 'd':return `造成 ${f[1]} 點傷害${f[2]>1?` ${f[2]} 次`:''}${scT}`;
@@ -1983,6 +2114,32 @@ function opText(D,f){const S=D.status;const sc=f[3];
   case 'jd':return `用掉目標所有厄契，每層造成 ${f[1]} 點傷害`;
   case 'lk':return `用命線連住目標和其他敵人 2 回合`;
   case 'dd':return `抽 ${f[1]} 張牌，再棄 ${f[2]} 張`;
+  case 'mirage':return f[1]>=1?'本回合下一張攻擊再結算一次（全額）':'本回合下一張攻擊再結算一次，第二次只造成一半傷害';
+  case 'tails':return f[2]?`所有敵人這回合傷害 -3，並獲得 ${f[1]} 層厄契`:`目標這回合造成的傷害 -3，並給予 ${f[1]} 層厄契`;
+  case 'lie':return f[1]?'把目標的意圖改成「停手」':'把目標的意圖改成「防禦」';
+  case 'mask':return f[1]?'手上多一張手牌中費用最高的攻擊的複製（這回合用），再抽 1 張':'手上多一張「打擊」的複製（這回合用），再抽 1 張';
+  case 'firstPa':return `如果這是本回合第一張攻擊，再給予 ${f[1]} 層厄契並抽 1 張`;
+  case 'paIf':return `給予 ${f[1]} 層厄契；目標已有 ${f[2]} 層以上時，再給予 ${f[3]} 層`;
+  case 'cleanse':return '清除自己的虛弱與易傷';
+  case 'constrict':return `造成「目標厄契 ×${f[1]}」點傷害（不消耗厄契）`;
+  case 'ifPaSt':return `如果目標有厄契，再給予 ${f[2]} 層${S[f[1]].name}`;
+  case 'wait':return '下回合第一張攻擊費用 -1、傷害 +3';
+  case 'needle':return `對有厄契的敵人造成 ${f[1]} 傷害（不消耗厄契）；牠生命低於 20% 時，改為裁定一次`;
+  case 'killHeal':return `如果這張牌打倒敵人，回復 ${f[1]} 生命`;
+  case 'lk1':return `命線連住目標 2 回合`;
+  case 'ifLinkB':return `如果場上有被命線連住的敵人，再獲得 ${f[1]} 格擋`;
+  case 'wrap':return `造成 ${f[1]} 傷害並命線連住目標；牠已被連住時，改為 ${f[1]} 傷害、給予 2 層厄契並抽 1 張`;
+  case 'dLinked':return `對所有被命線連住的敵人造成 ${f[1]} 傷害`;
+  case 'heal':return `回復 ${f[1]} 生命`;
+  case 'taste':return `看穿目標的意圖；如果牠下一步是攻擊，回復 ${f[1]} 生命`;
+  case 'pool':return '本回合每回復 1 生命，再獲得 1 格擋';
+  case 'drainH':return `回復造成傷害的 ${Math.round(f[1]*100)}%`;
+  case 'ifHealedA':return `如果本回合已經回復過生命，再對所有敵人造成 ${f[1]} 傷害`;
+  case 'stop':return '所有敵人停手 1 回合';
+  case 'dIfN':return `本場已打出 ${f[2]} 張牌以上時，傷害改為 ${f[3]}`;
+  case 'ifLowDr':return '生命低於一半時，再抽 1 張';
+  case 'stackTop':return '把抽牌堆頂 5 張排成最好的順序，然後抽 2 張';
+  case 'noAtkLinked':return '被命線連住的敵人這回合不能攻擊';
   case 'rc':return `從棄牌堆拿最上面的一張牌回手上`;
   case 'dos':return `這場戰鬥，卷宗暫時 +${f[1]}`;
   case 'seize':return `拿走目標 1 層力量`;
@@ -2009,6 +2166,8 @@ function newRun(D,seed,ch,meta,opt){seed=seed>>>0||1;const C=D.chars[ch];opt=opt
  st.sub=(opt.sub&&opt.sub!==opt.origin)?opt.sub:null;st.tal=((meta&&meta.prof&&meta.prof[ch==='yx'?'yy':ch]||{}).spent||[]).slice();
  st.desire=opt.desire||null;st.persona=opt.persona||null;st.hobby=opt.hobby||null;st.shards=0;st.marks=0;
  if(meta&&meta.letter){st.gold+=meta.letter;st.flags.gotLetter=meta.letter;}
+ if(meta&&meta.dotGold){st.gold+=meta.dotGold;st.flags.gotDot=meta.dotGold;}
+ if(meta&&meta.grudges)st.grudgeList=meta.grudges.slice();
  if(opt.persona==='petty'&&meta&&meta.grudges)st.grudges=meta.grudges.slice();
  st.hob=(meta&&meta.hobbies||[]).slice();
  if(meta&&(meta.runs||0)>=2&&(meta.fourth||0)<9){addCard(st,'x_fourth');st.fourthN=meta.fourth||0;}
@@ -2041,11 +2200,14 @@ function relicPool(D,st){return Object.keys(D.relics).filter(k=>!D.relics[k].sta
 
 // ── 牌池
 function pool(D,st,minR){return Object.keys(D.cards).filter(k=>{const c=D.cards[k];if(c.r<1||c.t==='x')return false;if(c.bl&&c.bl!==st.origin&&c.bl!==st.sub)return false;if(c.g&&st.mode!=='g')return false;if(c.ch!==baseCh(st)&&c.ch!==st.ch&&c.ch!=='any')return false;if(st.ch==='yx'&&k==='yy_restrain')return false;if(c.lock&&!st.unlocked.includes(c.lock))return false;if(minR&&c.r<minR)return false;return true;});}
+function subRoll(D,st){if(!st.sub||R(st)>=.4)return null;const P=pool(D,st);const a=P.filter(k=>D.cards[k].bl===st.origin),b=P.filter(k=>D.cards[k].bl===st.sub),n=P.filter(k=>!D.cards[k].bl);if(!a.length||!b.length||!n.length)return null;const out=[pick(st,a),pick(st,b),pick(st,n)];return M(st,'obsess')?out.slice(0,2):out;}
 function rollCards(D,st,n,elite){const out=[];let guard=0;while(out.length<n&&guard++<200){const v=R(st);const r=v<(elite?.12:.05)?3:v<(elite?.5:.37)?2:1;const p=pool(D,st).filter(k=>D.cards[k].r===r&&!out.includes(k));if(p.length)out.push(pick(st,p));}return out;}
 
 // ── 戰鬥
 function mkEnemy(D,st,id,i){const E=D.enemies[id];const L=D.layers[st.layer]||{};const hp=Math.round(ri(st,E.hp[0],E.hp[1])*(E.boss?1:E.elite?(1+((L.hpMul||1)-1)*.35):(L.hpMul||1)));const e={uid:'e'+i+'_'+st.n,id,n:E.n,hp,max:hp,block:0,st:{},mi:-1,last:[],intent:null};
  if(st.grudges&&st.grudges.includes(id)){e.hp=e.max=Math.max(1,Math.round(hp*.8));}
+ if(st.pettyNext&&st.grudges&&st.grudges.includes(id)){e.hp=e.max=Math.max(1,Math.round(e.max*.9));}
+ if(TL(st,'yy_grudge1b')&&st.hitBy&&st.hitBy.includes(id))e.st.pact=(e.st.pact||0)+1;
  if(E.realm)e.realm=0;if(E.parts){e.parts=E.parts.map(p=>p.id);e.pd=0;}if(E.cd)e.cd=E.cd;if(E.call)e.num=0;return e;}
 const hasPart=(e,id)=>!!(e.parts&&e.parts.includes(id));
 function breakthrough(D,st,e,E){e.realm=0;e.hp=Math.min(e.max,e.hp+Math.round(e.max*.3));addSt(e,'str',3);E.push({t:'breakthrough',uid:e.uid});}
@@ -2061,6 +2223,12 @@ function startCombat(D,st,ids,kind){const ens=ids.map((id,i)=>mkEnemy(D,st,id,i)
  st.combat=c;st.screen='combat';const E=[];
  if(isYY(st)&&st.flags.yx&&R(st)<.15)c.yxAt=2+Math.floor(R(st)*3);
  if(pas(D,st,'lure'))c.lure=10;
+ if(M(st,'sloth'))c.extraDraw0=-1;
+ if(M(st,'dread')){for(const e of c.enemies)addSt(e,'weak',1);addSt(c,'weak',1);}
+ if(TL(st,'yy_guard1b'))c.block+=3;
+ if(st.next){const n=st.next;if(n.drawLess)c.drawLessT1=(c.drawLessT1||0)+n.drawLess;if(n.draw)c.extraDraw0=(c.extraDraw0||0)+n.draw;if(n.pact)for(const e of c.enemies)addSt(e,'pact',n.pact);if(n.block)c.block+=n.block;if(n.str)addSt(c,'str',n.str);if(n.shade)c.shade=n.shade;if(n.flame)c.flame2=1;if(n.obs)c.obs2=1;st.next=null;}
+ if(st.ch==='cl'&&st.sub)c.clMix=0;
+ if(st.mode==='g'&&st.tRule){c.rule=st.tRule;if(c.rule==='talisman')c.handQ=['x_talisman'];if(c.rule==='hidden')for(const e of c.enemies)e.hid=1;if(c.rule==='well')for(const e of c.enemies)e.shutNoPact=1;}
  if(TL(st,'cl_write1'))c.ink+=1;
  if(M(st,'glutton'))selfHurt(D,st,3,E,true,true);
  if(M(st,'grudge'))c.pw.grudge=(c.pw.grudge||0)+1;
@@ -2079,11 +2247,16 @@ function startCombat(D,st,ids,kind){const ens=ids.map((id,i)=>mkEnemy(D,st,id,i)
  if(pas(D,st,'moth'))for(const e of c.enemies)e.hid=0;
  if(M(st,'envy')){const b=c.enemies.find(e=>e.st.str);if(b)addSt(c,'str',b.st.str);}
  startTurn(D,st,E);return E;}
-function addSt(u,k,n){u.st[k]=(u.st[k]||0)+n;if(u.st[k]<=0)delete u.st[k];}
+let CUR=null;
+function addSt(u,k,n){const c=CUR&&CUR.combat;if(k==='pact'&&n>0&&c&&u!==c){if(u.shutNoPact&&u.intent&&u.intent.shut)return;if(c.pw.hiss&&(u.st.pact||0)>=3&&(u.hissN||0)<(c.pw.hissMax?2:1)){u.hissN=(u.hissN||0)+1;n+=1;}}
+ u.st[k]=(u.st[k]||0)+n;if(u.st[k]<=0)delete u.st[k];}
+function healP(st,n,E){const c=st.combat;const h=Math.min(n,st.maxHp-st.hp);if(h<=0)return 0;st.hp+=h;E&&E.push({t:'heal',n:h});if(c){c.healedT=1;if(c.pool){c.block+=h;E&&E.push({t:'block',n:h});}}return h;}
 function gainInk(st,c,n,E){c.ink+=n;if(c.pw.inkBlock)c.block+=c.pw.inkBlock*n;if(c.ink>=10)E.push({t:'ach',id:'ink10'});}
 function draw(D,st,n,E){const c=st.combat;for(let i=0;i<n;i++){if(c.hand.length>=handMax(D,st))break;if(!c.draw.length){if(!c.disc.length)break;c.draw=shuffle(st,c.disc);c.disc=[];E&&E.push({t:'shuffle'});}const x=c.draw.pop();c.hand.push(x);const xd=D.cards[x.id];if(xd&&xd.t==='x'&&E)addAlien(D,st,5,E);if(xd&&xd.onDraw&&xd.onDraw[0]==='hurt'&&E)selfHurt(D,st,xd.onDraw[1],E);}}
 function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
- c.seqT='';c.sacN=0;c.leeched=0;c.firstCard=0;c.skillN=0;c.jelly=0;
+ c.seqT='';c.sacN=0;c.voiced=0;c.healedT=0;c.pool=0;c.centerN=0;c.p1b=c.p1b||0;for(const e of c.enemies){delete e.minus3;delete e.hissN;}
+ if(c.waitNext){c.waitNext=0;c.waitOn=1;}else c.waitOn=0;
+ if(pas(D,st,'tether')&&st.hp<st.maxHp/2&&st.hp>0){pe(E,'tether');healP(st,2,E);}c.leeched=0;c.firstCard=0;c.skillN=0;c.jelly=0;
  if(pas(D,st,'coral')){c.hard=Math.min(c.hard||0,c.block);c.block=c.hard;}
  else if(pas(D,st,'slime'))c.block=Math.floor(c.block/2);
  else if(!(c.turn===2&&has(st,'anchor')))c.block=0;
@@ -2095,11 +2268,11 @@ function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
  if(st.ch==='gu'&&c.draw.length<5)c.guE=1;else c.guE=0;
  if(c.keptB){c.block+=c.keptB;E.push({t:'block',n:c.keptB});c.keptB=0;}
  if(isYY(st)){if(st.hp<st.maxHp/2)addAlien(D,st,5,E);
-  if(c.fullNext){c.fullNext=0;c.full=1;E.push({t:'transform',origin:st.origin});}
+  if(c.fullNext){c.fullNext=0;c.full=1;if(st.sub&&st.ch==='yy'){c.mix=1;c.mixT=2;const a=catOf(st.origin),b=catOf(st.sub);c.pair=a==='B'&&b==='B'?'BB':a==='M'&&b==='M'?'MM':'BM';}E.push({t:'transform',origin:st.origin,mix:c.mix?st.sub:null,pair:c.pair});}
   c.yx=(c.yxAt===c.turn&&!c.full)?1:0;if(c.yx)E.push({t:'yxTurn'});
   const ph=phaseOf(st);st.stats.ph[ph]=(st.stats.ph[ph]||0)+1;
   if(ph==='half'){selfHurt(D,st,1,E,true,true);}}
- c.energy=c.maxE+(c.turn===1&&has(st,'lantern')?1:0);
+ c.energy=c.maxE+(c.turn===1&&has(st,'lantern')?1:0);if(c.mix)c.energy++;
  if(c.pw.pactTurn)for(const e of alive(c))addSt(e,'pact',c.pw.pactTurn);
  if(c.pw.strTurn)addSt(c,'str',c.pw.strTurn);
  if(has(st,'quill'))gainInk(st,c,1,E);
@@ -2107,9 +2280,11 @@ function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
  if(has(st,'paperweight')&&c.ink>=5){c.energy++;E.push({t:'relic',id:'paperweight'});}
  if(M(st,'stubborn')&&st.hp<st.maxHp*.3)c.energy++;
  if(c.guE)c.energy++;
- draw(D,st,Math.max(0,5-(c.drawLess||0))+(pas(D,st,'hand12')?1:0)+(c.turn===1?(c.extraDraw||0):0)+(phaseOf(st)==='half'?1:0)+(c.turn===1&&has(st,'feather')?2:0)+(c.turn===1&&has(st,'tornphoto')?3:0)+(c.pw.drawTurn||0),E);
+ if(M(st,'sloth')&&c.turn===1)c.slothT=1;
+ draw(D,st,Math.max(0,5-(c.drawLess||0)-(c.turn===1?(c.drawLessT1||0):0))+(pas(D,st,'hand12')?1:0)+(c.turn===1?(c.extraDraw||0)+(c.extraDraw0||0):0)+(phaseOf(st)==='half'?1:0)+(c.turn===1&&has(st,'feather')?2:0)+(c.turn===1&&has(st,'tornphoto')?3:0)+(c.pw.drawTurn||0),E);
  if(c.stealQ&&c.stealQ.length){for(const q of c.stealQ){const e=c.enemies.find(x=>x.uid===q.uid&&x.hp>0);if(!e)continue;e.stolen=e.stolen||[];for(let i=0;i<q.n&&c.hand.length;i++){const k=Math.floor(R(st)*c.hand.length);const x=c.hand.splice(k,1)[0];if(!x.temp)e.stolen.push(strip(x));E.push({t:'steal',uid:e.uid,id:x.id});}}c.stealQ=[];}
  c.drawLess=0;
+ if(c.slothT){c.slothT=0;for(const x of c.hand)x.kd=(x.kd||0)+1;c.slothClear=1;}
  for(const x of c.hand)delete x.ring;
  if(st.ch==='yy'&&(st.alien||0)>=60&&!c.yx&&!c.full){const can=c.hand.filter(x=>D.cards[x.id].t!=='x');if(can.length){pick(st,can).ring=1;E.push({t:'ring'});}}
  if(c.dumpNext){c.dumpNext=0;c.disc.push(...c.hand.filter(x=>!x.temp).map(strip));c.hand=[];E.push({t:'dump'});}
@@ -2125,6 +2300,7 @@ function hitEnemy(D,st,e,amt,E,noLink){const c=st.combat;if(e.intent&&e.intent.s
  if(e.realm>0&&amt>=10){e.realm--;E.push({t:'realmBreak',uid:e.uid,v:e.realm});}
  if(e.parts&&amt>0){e.pd+=amt;while(e.pd>=12&&e.parts.length){e.pd-=12;const pid=e.parts.shift();E.push({t:'partBreak',uid:e.uid,id:pid});}
   if(e.cd!=null&&!hasPart(e,'spring')){e.cdd=(e.cdd||0)+amt;while(e.cdd>=10){e.cdd-=10;e.cd++;E.push({t:'cdUp',uid:e.uid});}if(e.intent&&e.intent.tick)e.intent.n='倒數 '+(e.cd-1);}}
+ if(e.st&&e.st.link&&c.pw.center&&amt>0&&(c.centerN||0)<(c.centerMax||5)){c.centerN=(c.centerN||0)+1;st.hp=Math.min(st.maxHp,st.hp+1);c.healedT=1;}
  const b=Math.min(e.block,amt);e.block-=b;const real=amt-b;e.hp=Math.max(0,e.hp-real);E.push({t:'hit',to:e.uid,n:amt,blocked:b});
  if(!noLink&&e.st.link&&real>0)for(const o of alive(c))if(o!==e&&o.st.link)hitEnemy(D,st,o,c.pw.linkFull?real:Math.floor(real/2),E,true);
  splitCheck(D,st,e,E);
@@ -2136,12 +2312,12 @@ function lossHook(D,st,n,E){const c=st.combat;if(n<=0)return;
  if(st.ch==='yx'&&c){const a=alive(c);if(a.length)hitEnemy(D,st,pick(st,a),n,E,true);}
  if(st.hp<=0&&TL(st,'yy_guard2')&&!st.flags.clSave){st.flags.clSave=1;st.hp=Math.ceil(st.maxHp*.25);E.push({t:'clSave'});}
  if(st.hp<=0&&pas(D,st,'phylactery')&&!st.flags.phyl){pe(E,'phylactery');st.flags.phyl=1;st.hp=Math.ceil(st.maxHp*.3);E.push({t:'revive'});}}
-function selfHurt(D,st,n,E,floor1,noAl){const c=st.combat;if(!noAl)addAlien(D,st,n*2,E);st.hp-=n;lossHook(D,st,n,E);
+function selfHurt(D,st,n,E,floor1,noAl){const c=st.combat;if(c&&TL(st,'cl_pain1b')&&!c.p1b){c.p1b=1;n=Math.max(1,n-2);}if(!noAl)addAlien(D,st,n*2,E);st.hp-=n;lossHook(D,st,n,E);
  if(c)for(const e of alive(c))if(hasPart(e,'lung')){e.hp=Math.min(e.max,e.hp+n);E.push({t:'lungHeal',uid:e.uid,n});}if(floor1&&st.hp<1)st.hp=1;if(c)c.hurt+=n;E.push({t:'selfHurt',n});lowCheck(D,st,E);
  if(st.hp<=0&&has(st,'mirror')&&!st.flags.mirror){st.flags.mirror=1;st.hp=Math.ceil(st.maxHp*.3);E.push({t:'relic',id:'mirror'});}}
 function lowCheck(D,st,E){const c=st.combat;if(!c||c.fox||!has(st,'foxhair')||st.hp<=0||st.hp>=st.maxHp/2)return;c.fox=1;st.hp=Math.min(st.maxHp,st.hp+10);for(const e of alive(c))addSt(e,'pact',3);E.push({t:'relic',id:'foxhair'});}
 function hitPlayer(D,st,amt,E,src){const c=st.combat;if(src&&amt>0&&has(st,'lampshade')&&!c.shade){c.shade=1;amt=Math.floor(amt/2);E.push({t:'relic',id:'lampshade'});}if(src&&c.lure>0&&amt>0){const t=Math.min(c.lure,amt);c.lure-=t;amt-=t;E.push({t:'lure',n:t,left:c.lure});if(c.lure<=0){E.push({t:'lureBreak'});for(const e of alive(c))hitEnemy(D,st,e,8,E,true);}}
- const b=Math.min(c.block,amt);c.block-=b;const real=amt-b;st.hp-=real;c.hurt+=real;lossHook(D,st,real,E);E.push({t:'hurt',n:amt,blocked:b,src});if(src){c.lastSrc=src;const a=c.enemies.find(x=>x.uid===src);if(a&&real>0){a.hitMe=1;a.hits=(a.hits||0)+1;
+ const b=Math.min(c.block,amt);c.block-=b;const real=amt-b;st.hp-=real;c.hurt+=real;lossHook(D,st,real,E);E.push({t:'hurt',n:amt,blocked:b,src});if(src){c.lastSrc=src;const a=c.enemies.find(x=>x.uid===src);if(a&&real>0){a.hitMe=1;a.hits=(a.hits||0)+1;st.hitBy=st.hitBy||[];if(!st.hitBy.includes(a.id))st.hitBy.push(a.id);
   if(TL(st,'yy_grudge1')&&!c.g1){c.g1=1;addSt(a,'pact',2);E.push({t:'tal',k:'yy_grudge1'});}
   if(TL(st,'yy_grudge2')&&a.hits===3&&a.st.pact){const n=a.st.pact;delete a.st.pact;E.push({t:'tal',k:'yy_grudge2'});E.push({t:'judge',n});hitEnemy(D,st,a,n*3,E);}}}if(real>0&&st.hp>0)lowCheck(D,st,E);
  if(st.hp<=0&&has(st,'mirror')&&!st.flags.mirror){st.flags.mirror=1;st.hp=Math.ceil(st.maxHp*.3);E.push({t:'relic',id:'mirror'});}}
@@ -2161,21 +2337,26 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  if(d.t==='x'||d.c<0)return '這張牌不能打出';
  if(card.lock&&c.enemies.some(e=>e.uid===card.lock&&e.hp>0))return '這張牌被抓住了';
  if(d.t==='a'&&c.hand.some(x=>(D.cards[x.id].lockAtk)))return '被鎮屍符鎮住了，先撕掉它';
- let k=cost(D,card,ph);if(pas(D,st,'script')&&c.seqT==='as'&&d.t==='p'){k=0;pe(E,'script');}if(k>c.energy)return '能量不夠';
+ let k=cost(D,card,ph);if(d.t==='a'&&c.waitOn)k=Math.max(0,k-1);if(c.pw.draft&&!c.firstCard)k=Math.max(0,k-1);if(c.mix&&c.pair==='BB'&&d.bl)k=Math.max(0,k-1);if(pas(D,st,'script')&&c.seqT==='as'&&d.t==='p'){k=0;pe(E,'script');}if(k>c.energy)return '能量不夠';
  let tg=null;if(needsTarget(D,card,ph)){tg=c.enemies.find(e=>e.uid===target&&e.hp>0);if(!tg){const a=alive(c);if(a.length===1)tg=a[0];else return '請選一個目標';}}
  c.energy-=k;c.hand.splice(i,1);st.stats.cards++;E.push({t:'play',id:card.id,up:card.up,tg:tg&&tg.uid});
  let total=0,gk=(d.fx.find(f=>f[0]==='gk')||[0,0])[1];
  const hasDmg=d.fx.some(f=>f[0]==='d'||f[0]==='da');const sb=isYY(st)?scarB(card):0;let scarN=0;
  const FX=card.ring?d.fx.concat(d.fx.filter(f=>!['hurt','hurtq','mhp','al','ep','en'].includes(f[0]))):d.fx;
  const dos=st.ch==='gu'?((c.tmpDos||0)+(tg?(st.dossier[D.enemies[tg.id].fac]||0):0)):0;
- const atk=d.t==='a';const van=M(st,'vanity')?((st.alien||0)<40?2:-1):0;const phB=((atk&&ph==='half')?1:0)+van-(atk&&M(st,'guard')?1:0)+(hasDmg?sb:0)+(atk?dos:0);const wr=(c.yx&&M(st,'wrath'))?2:1;const gr=e=>(M(st,'grudge')&&e.hitMe?2:0);const dbl=(atk&&pas(D,st,'ink6Double')&&c.ink>=6)?2:1;
+ const firstAtkT=d.t==='a'&&c.atkN===0;c.nPlay=(c.nPlay||0)+1;
+ const echoM=(d.t==='a'&&c.echo)?c.echo:0;if(echoM)c.echo=0;
+ let waitB=0;if(d.t==='a'&&c.waitOn){c.waitOn=0;waitB=3;}
+ const atk=d.t==='a';const van=M(st,'vanity')?((st.alien||0)<40?2:-1):0;const phB=((atk&&ph==='half')?1:0)+van-(atk&&M(st,'guard')?1:0)+(hasDmg?sb:0)+(atk?dos:0)+waitB+(atk&&c.pw.drive&&d.bl&&tg&&tg.st.pact?2*c.pw.drive:0);const wr=(c.yx&&M(st,'wrath'))?2:1;const gr=e=>(M(st,'grudge')&&e.hitMe?2:0);const dbl=(atk&&pas(D,st,'ink6Double')&&c.ink>=6)?2:1;
  if(atk&&!c.firstAtk){c.firstAtk=1;if(pas(D,st,'firstAtkPact1')){pe(E,'firstAtkPact1');for(const e of (tg?[tg]:alive(c)))addSt(e,'pact',1);}}
+ const bonusOf=()=>phB+((d.t==='a'&&c.pw.beast&&st.hp<st.maxHp/2)?c.pw.beast:0);
  for(const f of FX){
   switch(f[0]){
    case 'd':{const hits=f[2]||1;let bonus=(hits>1&&pas(D,st,'swarm')?1:0)+phB+((d.t==='a'&&c.pw.beast&&st.hp<st.maxHp/2)?c.pw.beast:0);const sc=f[3];
     if(sc&&sc.startsWith('pact'))bonus+=(tg.st.pact||0)*(+sc.slice(4));
     if(sc&&sc.startsWith('ink')){bonus+=c.ink*(+sc.slice(3));if(c.ink)E.push({t:'inkUse',n:c.ink});if(c.ink>=5&&has(st,'inkstone'))c.inkDraw=1;c.ink=0;}
-    for(let h=0;h<hits;h++){if(tg.hp<=0)break;total+=hitEnemy(D,st,tg,dmgCalc((f[1]+bonus+gr(tg))*dbl*wr,c,tg),E);}break;}
+    for(let h=0;h<hits;h++){if(tg.hp<=0)break;total+=hitEnemy(D,st,tg,dmgCalc((f[1]+bonus+gr(tg))*dbl*wr,c,tg),E);}
+    if(echoM&&tg.hp>0)for(let h=0;h<hits;h++)total+=hitEnemy(D,st,tg,Math.max(1,Math.floor(dmgCalc((f[1]+bonus+gr(tg))*dbl*wr,c,tg)*echoM)),E);break;}
    case 'da':{const hits=f[2]||1;for(let h=0;h<hits;h++)for(const e of alive(c)){const bonus=phB+(f[3]?(e.st.pact||0)*(+f[3].slice(4)):0)+((d.t==='a'&&c.pw.beast&&st.hp<st.maxHp/2)?c.pw.beast:0);total+=hitEnemy(D,st,e,dmgCalc((f[1]+bonus+gr(e))*dbl*wr,c,e),E);}break;}
    case 'b':{const n=Math.max(0,(TL(st,'cl_pain1')&&st.hp<st.maxHp/2?2:0)+f[1]+(hasDmg?0:sb)+(c.st.dex||0)+(M(st,'guard')?2:0)-(M(st,'envy')&&alive(c).some(e=>e.st.str)?2:0));c.block+=n;E.push({t:'block',n});break;}
    case 'dr':draw(D,st,f[1],E);break;
@@ -2184,11 +2365,37 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
    case 'st':{const who=f[3];if(who==='s')addSt(c,f[1],f[2]);else for(const e of (who==='a'?alive(c):[tg]))addSt(e,f[1],f[2]);break;}
    case 'pa':{let bonus=0;if(has(st,'silkglove')&&!c.silk){c.silk=1;bonus=2;E.push({t:'relic',id:'silkglove'});}for(const e of (f[2]==='a'?alive(c):[tg])){addSt(e,'pact',f[1]+bonus);if(pas(D,st,'vine'))addSt(e,'vine',1);if(e.st.pact>=20)E.push({t:'ach',id:'pact20'});}break;}
    case 'ink':gainInk(st,c,f[1],E);break;
-   case 'jd':{const n=tg.st.pact||0;delete tg.st.pact;if(n){E.push({t:'judge',n});total+=hitEnemy(D,st,tg,dmgCalc(f[1]*n,c,tg),E);if(has(st,'knot')&&tg.hp>0)tg.st.pact=(tg.st.pact||0)+2;if(tg.hp<=0&&pas(D,st,'judgeKillHeal3')){pe(E,'judgeKillHeal3');st.hp=Math.min(st.maxHp,st.hp+3);E.push({t:'heal',n:3});}}break;}
+   case 'jd':{const n=tg.st.pact||0;delete tg.st.pact;if(n){E.push({t:'judge',n});total+=hitEnemy(D,st,tg,dmgCalc(f[1]*n,c,tg),E);if(has(st,'knot')&&tg.hp>0)tg.st.pact=(tg.st.pact||0)+2;if(tg.hp<=0&&c.pw.shell){c.block+=6;E.push({t:'block',n:6});}if(tg.hp<=0&&pas(D,st,'judgeKillHeal3')){pe(E,'judgeKillHeal3');st.hp=Math.min(st.maxHp,st.hp+3);E.push({t:'heal',n:3});}}break;}
    case 'lk':{const ln=2+(pas(D,st,'linkPlus1')?1:0)+(M(st,'embroider')?1:0);tg.st.link=Math.max(tg.st.link||0,ln);for(const e of alive(c))if(e!==tg)e.st.link=Math.max(e.st.link||0,ln);if(has(st,'needle'))for(const e of alive(c))addSt(e,'pact',1);break;}
    case 'ka':c.keepAll=1;break;
    case 'hurt':selfHurt(D,st,f[1],E);scarN+=f[1];break;
    case 'dos':c.tmpDos=(c.tmpDos||0)+f[1];break;
+   case 'mirage':c.echo=f[1]>=1?1:.5;break;
+   case 'tails':for(const e of (f[2]?alive(c):[tg]))if(e&&e.hp>0){e.minus3=1;addSt(e,'pact',f[1]);}break;
+   case 'lie':if(tg&&tg.hp>0){tg.intent=f[1]?{i:-1,n:'停手',idle:1}:{i:-1,n:'防禦',b:6};E.push({t:'lie',uid:tg.uid});}break;
+   case 'mask':{let id='strike';if(f[1]){const at=c.hand.filter(x=>x!==card&&D.cards[x.id].t==='a').sort((a,b)=>cardDef(D,b).c-cardDef(D,a).c)[0];if(at)id=at.id;}if(c.hand.length<handMax(D,st))c.hand.push({uid:'x'+st.uid++,id,up:0,temp:1});draw(D,st,1,E);break;}
+   case 'firstPa':if(firstAtkT&&tg&&tg.hp>0){addSt(tg,'pact',f[1]);draw(D,st,1,E);}break;
+   case 'paIf':if(tg&&tg.hp>0){const had=(tg.st.pact||0)>=f[2];addSt(tg,'pact',f[1]);if(had)addSt(tg,'pact',f[3]);}break;
+   case 'cleanse':delete c.st.weak;delete c.st.vuln;break;
+   case 'constrict':if(tg&&tg.hp>0){const n=(tg.st.pact||0)*f[1];if(n)total+=hitEnemy(D,st,tg,dmgCalc(n,c,tg),E);}break;
+   case 'ifPaSt':if(tg&&tg.hp>0&&tg.st.pact)addSt(tg,f[1],f[2]);break;
+   case 'wait':c.waitNext=1;break;
+   case 'needle':if(tg&&tg.hp>0&&tg.st.pact){if(tg.hp<tg.max*.2){const n=tg.st.pact;delete tg.st.pact;E.push({t:'judge',n});total+=hitEnemy(D,st,tg,dmgCalc(f[2]*n,c,tg),E);if(tg.hp<=0&&pas(D,st,'judgeKillHeal3')){pe(E,'judgeKillHeal3');healP(st,3,E);}if(tg.hp<=0&&c.pw.shell){c.block+=6*c.pw.shell;}}else total+=hitEnemy(D,st,tg,dmgCalc(f[1],c,tg),E);}break;
+   case 'killHeal':if(tg&&tg.hp<=0)healP(st,f[1],E);break;
+   case 'lk1':if(tg&&tg.hp>0){tg.st.link=Math.max(tg.st.link||0,2+(pas(D,st,'linkPlus1')?1:0)+(M(st,'embroider')?1:0));}break;
+   case 'ifLinkB':if(alive(c).some(e=>e.st.link)){c.block+=f[1];E.push({t:'block',n:f[1]});}break;
+   case 'wrap':if(tg&&tg.hp>0){const was=!!tg.st.link;total+=hitEnemy(D,st,tg,dmgCalc(f[1]+bonusOf(),c,tg),E);if(tg.hp>0){if(was){addSt(tg,'pact',2);draw(D,st,1,E);}else tg.st.link=Math.max(tg.st.link||0,2+(pas(D,st,'linkPlus1')?1:0));}}break;
+   case 'dLinked':for(const e of alive(c).filter(e=>e.st.link))total+=hitEnemy(D,st,e,dmgCalc(f[1]+bonusOf(),c,e),E);break;
+   case 'noAtkLinked':for(const e of alive(c).filter(e=>e.st.link)){e.stun=1;E.push({t:'stun',uid:e.uid});}break;
+   case 'heal':healP(st,f[1],E);break;
+   case 'taste':if(tg&&tg.hp>0){tg.hid=0;if(tg.intent&&tg.intent.a)healP(st,f[1],E);}break;
+   case 'pool':c.pool=1;break;
+   case 'drainH':{const h=Math.floor(total*f[1]);if(h)healP(st,h,E);break;}
+   case 'ifHealedA':if(c.healedT)for(const e of alive(c))total+=hitEnemy(D,st,e,dmgCalc(f[1],c,e),E);break;
+   case 'stop':c.stop=1;E.push({t:'stopAll'});break;
+   case 'dIfN':if(tg&&tg.hp>0)total+=hitEnemy(D,st,tg,dmgCalc((c.nPlay>f[2]?f[3]:f[1])+bonusOf(),c,tg),E);break;
+   case 'ifLowDr':if(st.hp<st.maxHp/2)draw(D,st,1,E);break;
+   case 'stackTop':{const top=c.draw.splice(Math.max(0,c.draw.length-5));top.sort((a,b)=>(D.cards[a.id].t==='x'?-9:D.cards[a.id].r)-(D.cards[b.id].t==='x'?-9:D.cards[b.id].r));c.draw.push(...top);draw(D,st,2,E);break;}
    case 'dd':{draw(D,st,f[1],E);for(let q=0;q<f[2]&&c.hand.length;q++){const x=c.hand.find(y=>D.cards[y.id].t==='x')||c.hand.slice().sort((a,b)=>(D.cards[a.id].r||0)-(D.cards[b.id].r||0))[0];c.hand.splice(c.hand.indexOf(x),1);if(!x.temp)c.disc.push(strip(x));}break;}
    case 'rc':{if(c.disc.length&&c.hand.length<handMax(D,st)){c.hand.push(c.disc.pop());}break;}
    case 'seize':{if(tg&&tg.st.str>0){tg.st.str--;addSt(c,'str',1);E.push({t:'seize'});}break;}
@@ -2215,21 +2422,28 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  delete card.kd;
  if(scarN&&isYY(st)){card.scar=(card.scar||0)+scarN;const dk=st.deck.find(x=>x.uid===card.uid);if(dk)dk.scar=card.scar;E.push({t:'scar',n:card.scar});}
  if(card.ring){addAlien(D,st,10,E);delete card.ring;c.ringPlayed=1;}
- if(atk&&total>0&&pas(D,st,'leech')&&!c.leeched){c.leeched=1;const h=Math.floor(total*.2);if(h){pe(E,'leech');st.hp=Math.min(st.maxHp,st.hp+h);E.push({t:'heal',n:h});}}
+ if(atk&&total>0&&pas(D,st,'leech')&&!c.leeched){c.leeched=1;const h=Math.floor(total*(c.pw.young?(c.pw.youngFull?.5:.35):.2));if(h){pe(E,'leech');c.healedT=1;st.hp=Math.min(st.maxHp,st.hp+h);E.push({t:'heal',n:h});}}
  if(d.t==='p'&&pas(D,st,'hatch')&&c.hand.length<handMax(D,st))pe(E,'hatch'),c.hand.push({uid:'x'+st.uid++,id:'b_hatch',up:0,temp:1,free:1});
  if(d.t==='s'&&pas(D,st,'moth')&&!c.skillN){c.skillN=1;addAlien(D,st,5,E);}
  if(!c.firstCard){c.firstCard=1;if(pas(D,st,'mimicFirst')){const o=c.hand.filter(x=>D.cards[x.id].t!=='x'&&!x.temp);if(o.length&&c.hand.length<handMax(D,st)){const x=pick(st,o);c.hand.push({uid:'x'+st.uid++,id:x.id,up:x.up,temp:1});E.push({t:'mimicCard'});}}}
  c.seqT=((c.seqT||'')+d.t).slice(-2);
- if(M(st,'obsess')&&!c.obs){c.obs=card.uid;}
+ if(atk&&c.pw.nine){const a=alive(c);if(a.length){if(c.pw.nineAll)for(const e of a)addSt(e,'pact',1);else addSt(pick(st,a),'pact',c.pw.nine);}}
+ if(c.mix&&c.pair==='BM'&&d.bl){draw(D,st,1,E);c.block+=3;E.push({t:'block',n:3});}
+ if(d.t==='s'&&pas(D,st,'call')&&!c.voiced){c.voiced=1;pe(E,'call');draw(D,st,1,E);}
+ if(M(st,'obsess')&&!c.obs){c.obs=card.uid;}else if(c.obs2===1&&!card.temp){c.obs2=card.uid;}
  if(d.t!=='p'&&!card.temp){{const o=strip(card);delete o.oil;(d.ex?c.exh:c.disc).push(o);}}
  killCheck(D,st,E);return null;}
 
 function endTurn(D,st,E){const c=st.combat;
  if(c.hand.some(x=>x.ring)&&!c.ringPlayed)c.drawLess=(c.drawLess||0)+1;c.ringPlayed=0;
+ if(c.slothClear){c.slothClear=0;for(const x of [...c.hand,...c.disc])delete x.kd;}
+ if(c.mix&&c.pair==='MM')for(const e of alive(c))addSt(e,'pact',2);
+ if(c.rule==='drill')for(const e of alive(c))addSt(e,'str',1);
  if(has(st,'candle')&&c.energy>0){c.block+=4*c.energy;E.push({t:'block',n:4*c.energy});}
  for(const x of c.hand){const xd=D.cards[x.id];if(xd&&xd.endHand&&xd.endHand[0]==='hurt')selfHurt(D,st,xd.endHand[1],E);}
  if(st.hp<=0){loseRun(D,st,E);return;}
- const kp=x=>c.keepAll?!x.temp:cardDef(D,x).keep;const keep=c.hand.filter(kp).map(x=>{delete x.tax;delete x.free;return x;});c.disc.push(...c.hand.filter(x=>!kp(x)&&!x.temp).map(strip));c.hand=keep;c.keepAll=0;
+ const kp=x=>c.keepAll?!x.temp:(cardDef(D,x).keep||x.hold);const keep=c.hand.filter(kp).map(x=>{delete x.tax;delete x.free;delete x.hold;return x;});c.disc.push(...c.hand.filter(x=>!kp(x)&&!x.temp).map(strip));c.hand=keep;c.keepAll=0;
+ if(c.obs2&&c.obs2!==1&&c.obs2!==2){const k=c.disc.findIndex(x=>x.uid===c.obs2);if(k>=0){c.hand.push(c.disc.splice(k,1)[0]);E.push({t:'obsess'});}c.obs2=2;}
  if(c.obs&&c.obs!==1){const k=c.disc.findIndex(x=>x.uid===c.obs);if(k>=0){c.hand.push(c.disc.splice(k,1)[0]);E.push({t:'obsess'});}c.obs=1;}
  if(c.markKeep){c.markKeep=0;const k=c.disc.length-1;if(k>=0){const best=c.disc.slice().sort((a,b)=>cardDef(D,b).c-cardDef(D,a).c)[0];c.disc.splice(c.disc.indexOf(best),1);c.hand.push(best);E.push({t:'bookmark'});}}
  if(keep.length&&c.pw.keepInk)gainInk(st,c,keep.length*c.pw.keepInk,E);
@@ -2237,7 +2451,8 @@ function endTurn(D,st,E){const c=st.combat;
  if(TL(st,'cl_write2'))for(const x of keep)x.kd=(x.kd||0)+1;
  if(pas(D,st,'pactGrow1')){let g=0;for(const e of alive(c))if(e.st.pact&&e.st.pact<10){e.st.pact++;g=1;}if(g)pe(E,'pactGrow1');}
  if(pas(D,st,'coral')&&c.energy>0){pe(E,'coral');const n=c.energy*4;c.block+=n;c.hard=(c.hard||0)+n;E.push({t:'block',n});}
- if(c.full){selfHurt(D,st,8,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}
+ if(c.full&&c.mix){c.mixT--;if(c.mixT<=0){selfHurt(D,st,6,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}c.full=0;c.mix=0;st.alien=0;st.flags['full'+st.layer]=1;st.flags.mixUsed=1;E.push({t:'recall'});}}
+ else if(c.full){selfHurt(D,st,8,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}
   if(st.ch==='yx'&&c.full<2){c.full=2;}else{c.full=0;st.alien=st.ch==='yx'?60:0;st.flags['full'+st.layer]=1;E.push({t:st.ch==='yx'?'fullEnd':'recall'});}}
  if(keep.length&&has(st,'redbookmark')){c.block+=3;E.push({t:'block',n:3});}
  // 敵人回合
@@ -2246,13 +2461,13 @@ function endTurn(D,st,E){const c=st.combat;
  for(const e of c.enemies){if(e.hp<=0)continue;if(c.stop){continue;}if(e.stun){delete e.stun;E.push({t:'stunned',uid:e.uid});continue;}
   if(halfNow&&D.enemies[e.id].timid&&alive(c).length>1&&R(st)<.2){e.hp=0;e.dead=1;e.fled=1;E.push({t:'flee',uid:e.uid});continue;}
   const m=e.intent;E.push({t:'enemyAct',uid:e.uid,n:m.n});const EE=D.enemies[e.id];
-  if(m.solo){breakthrough(D,st,e,E);}
+  if(m.solo){breakthrough(D,st,e,E);if(c.rule==='heal2')hitPlayer(D,st,2,E,null);}
   if(m.tick){e.cd--;}
   if(m.boom){e.cd=EE.cd;}
   if(m.mimic){const L=c.lastCard||{dmg:0,block:0};m.a=L.dmg>0?L.dmg:(L.block?0:EE.mimicBase||0);if(L.block)e.block+=L.block;}
   if(m.realmAll)for(const o of alive(c))if(o!==e)realmUp(D,st,o,1,E);
   if(m.drawLess)c.drawLess=(c.drawLess||0)+m.drawLess;
-  if(m.healAlly){const o=alive(c).filter(x=>x!==e);if(o.length){const t=pick(st,o);t.hp=Math.min(t.max,t.hp+m.healAlly);realmUp(D,st,t,1,E);E.push({t:'allyHeal',uid:t.uid});}}
+  if(m.healAlly){const o=alive(c).filter(x=>x!==e);if(o.length){const t=pick(st,o);t.hp=Math.min(t.max,t.hp+m.healAlly);if(c.rule==='heal2'){hitPlayer(D,st,2,E,null);}realmUp(D,st,t,1,E);E.push({t:'allyHeal',uid:t.uid});}}
   if(m.addHand)for(let i=0;i<m.addHand[1];i++)(c.handQ=c.handQ||[]).push(m.addHand[0]);
   if(m.call){e.num=(e.num||0)+1;E.push({t:'call',uid:e.uid,n:e.num});if(e.num===4)c.dumpNext=1;}
   if(m.gaze){if(isYY(st))addAlien(D,st,m.gaze,E);else if(st.ch==='cl'){st.wick=Math.max(1,(st.wick==null?10:st.wick)-3);E.push({t:'wickDrain',n:3});}}
@@ -2260,7 +2475,11 @@ function endTurn(D,st,E){const c=st.combat;
   if(m.oil){if(hasPart(e,'tube')){if(st.ch==='cl'){if(c.ink){const n=Math.min(c.ink,2);c.ink-=n;E.push({t:'drain',n});}}else c.oilNext=(c.oilNext||0)+1;}else m.a=EE.noPart||0;}
   if(m.sew){const cand=alive(c).filter(x=>x.parts&&x.parts.length<D.enemies[x.id].parts.length);const t=cand.length?pick(st,cand):e;if(t.parts&&t.parts.length<D.enemies[t.id].parts.length){const all=D.enemies[t.id].parts.map(p=>p.id);const miss=all.filter(p=>!t.parts.includes(p));t.parts.unshift(miss[miss.length-1]);t.pd=0;E.push({t:'sewn',uid:t.uid});}t.block+=8;t.pblock=(t.pblock||0)+8;}
   if(m.lung){if(hasPart(e,'nail'))m.a=9;else m.a=0;if(hasPart(e,'horn')){const x={uid:'x'+st.uid++,id:'x_whisper',up:0};c.draw.splice(Math.floor(R(st)*(c.draw.length+1)),0,x);E.push({t:'curseIn'});}}
+  if(m.a&&c.shade){m.a=Math.max(0,m.a-c.shade);c.shade=0;}
+  if(m.idle){E.push({t:'stunned',uid:e.uid});continue;}
+  if(c.rule==='well'&&m.gaze){m.a=(m.a||0)+5;}
   if(m.a&&hasPart(e,'needle'))m.a+=2;
+  if(m.a&&e.minus3)m.a=Math.max(0,m.a-3);
   if(e.jb){e.jb--;if(!e.jb)addSt(e,'str',2);}
   if(m.a){const hits=m.h||1;const am=(D.enemies[e.id].boss||D.enemies[e.id].elite)?1:((D.layers[st.layer]||{}).atkMul||1);for(let h=0;h<hits;h++){const hp0=st.hp;hitPlayer(D,st,dmgCalc(Math.round(m.a*am),e,c),E,e.uid);if(st.hp<hp0&&c.pw.grudge)addSt(e,'pact',c.pw.grudge);if(st.hp<=0)break;}
    if(pas(D,st,'jelly')&&!c.jelly){c.jelly=1;pe(E,'jelly');addSt(e,'str',-2);e.jb=2;}
@@ -2270,11 +2489,12 @@ function endTurn(D,st,E){const c=st.combat;
   if(m.s)addSt(e,m.s[0],m.s[1]);
   if(m.st)addSt(c,m.st[0],m.st[1]);
   if(m.heal)e.hp=Math.min(e.max,e.hp+m.heal);
-  if(m.tax)c.taxNext=(c.taxNext||0)+m.tax;
+  const refl=()=>{if(pas(D,st,'reflect')&&!c.reflected){c.reflected=1;pe(E,'reflect');return true;}return false;};
+  if(m.tax&&!refl())c.taxNext=(c.taxNext||0)+m.tax;
   if(m.clr==='pact'&&e.st.pact){e.block+=e.st.pact;delete e.st.pact;E.push({t:'clr',uid:e.uid});}
   if(m.drainInk&&c.ink){const n=Math.min(c.ink,m.drainInk);c.ink-=n;E.push({t:'drain',n});}
-  if(m.addCard)for(let i=0;i<m.addCard[1];i++){const x={uid:'x'+st.uid++,id:m.addCard[0],up:0};if(D.cards[m.addCard[0]].t==='x')c.draw.splice(Math.floor(R(st)*(c.draw.length+1)),0,x);else c.disc.push(x);}
-  if(m.steal)(c.stealQ=c.stealQ||[]).push({uid:e.uid,n:m.steal});
+  if(m.addCard&&!(D.cards[m.addCard[0]].t==='x'&&refl()))for(let i=0;i<m.addCard[1];i++){const x={uid:'x'+st.uid++,id:m.addCard[0],up:0};if(D.cards[m.addCard[0]].t==='x')c.draw.splice(Math.floor(R(st)*(c.draw.length+1)),0,x);else c.disc.push(x);}
+  if(m.steal&&!refl())(c.stealQ=c.stealQ||[]).push({uid:e.uid,n:m.steal});
   if(st.hp<=0)break;}
  if(st.hp<=0){loseRun(D,st,E);return;}
  if(c.stop){c.stop=0;for(const e of alive(c))delete e.stun;}
@@ -2288,7 +2508,7 @@ function endTurn(D,st,E){const c=st.combat;
 
 function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
  if(st.mode==='g'){addAlien(D,st,-15,E);st.combat=null;st.gi++;st.stats.floors++;const T=(D.trials||[]).find(t=>t.id===st.trial);E.push({t:'gStage',n:st.gi});
-  if(st.gi>=T.stages.length){st.screen='over';st.result={win:true,g:1};E.push({t:'runEnd',win:true,g:1,trial:st.trial,ch:st.ch,floors:st.gi,memory:T.memory||10});}
+  if(st.gi>=T.stages.length){const P=T.prize||[];st.gpick=shuffle(st,P.slice()).slice(0,3);if(st.gpick.length){st.screen='gpick';}else{st.screen='over';st.result={win:true,g:1};E.push({t:'runEnd',win:true,g:1,trial:st.trial,ch:st.ch,floors:st.gi,memory:(T.memory||10)*T.stages.length});}}
   else{const h=Math.round(st.maxHp*(T.heal||.15));st.hp=Math.min(st.maxHp,st.hp+h);st.screen='gnext';}return;}
  if(st.ch==='gu'){const f=D.enemies[c.enemies[0].id].fac;if(f)st.dossier[f]=(st.dossier[f]||0)+1;}
  if(kind==='boss'&&st.layer===1&&(st.pages||0)>=9)E.push({t:'unlockGu'});addAlien(D,st,-15,E);if(has(st,'blotter')&&c.ink>=2){st.hp=Math.min(st.maxHp,st.hp+Math.floor(c.ink/2));}
@@ -2299,7 +2519,7 @@ function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
  if(kind==='elite'&&M(st,'names'))st.namesNext=1;
  if(kind==='elite'&&st.layer===1)E.push({t:'page'});st.gold+=gold;
  if(st.gold>=200)E.push({t:'ach',id:'gold200'});
- const rw={gold,cards:rollCards(D,st,M(st,'obsess')?2:3,kind!=='fight'),relic:null,relicChoice:null,cardTaken:false};
+ const rw={gold,cards:subRoll(D,st)||rollCards(D,st,M(st,'obsess')?2:3,kind!=='fight'),relic:null,relicChoice:null,cardTaken:false};
  if(kind==='elite'){const p=relicPool(D,st);if(p.length){rw.relic=pick(st,p);gainRelic(D,st,rw.relic);}if(M(st,'pride')){const p2=relicPool(D,st);if(p2.length){rw.relic2=pick(st,p2);gainRelic(D,st,rw.relic2);}}}
  if(kind==='boss'){if(st.layer===0){if(st.com==='c_nofix'&&!st.stats.rests)st.comDone=1;if(st.com==='c_quiet'&&!st.stats.elites)st.comDone=1;}if(st.com==='c_letter'&&st.deck.some(x=>x.id==='x_regret'))st.comDone=1;
   st.stats.bosses++;const bid=c.enemies[0].id;E.push({t:'ach',id:{wusign:'boss1',qianhao:'boss2',deepdrill:'boss3'}[bid]});
@@ -2307,13 +2527,13 @@ function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
  if(st.relics.length>=6)E.push({t:'ach',id:'relic6'});
  st.reward=rw;st.combat=null;st.screen='reward';E.push({t:'win',kind,gold});}
 function loseRun(D,st,E){const c=st.combat;const k=c&&c.lastSrc&&c.enemies.find(x=>x.uid===c.lastSrc);
- if(st.mode==='g'){st.screen='over';st.result={win:false,g:1};st.combat=null;E.push({t:'runEnd',win:false,g:1,ch:st.ch,floors:st.gi,memory:st.gi*2});return;}
- {const can=st.deck.filter(x=>D.cards[x.id].r>0&&D.cards[x.id].t!=='x');if(can.length){const x=pick(st,can);E.push({t:'leftCard',card:{id:x.id,up:x.up,scar:x.scar||0,ch:baseCh(st),ttl:3}});}}st.screen='over';st.result={win:false,killer:k?k.id:null};st.combat=null;E.push({t:'runEnd',win:false,killer:k?k.id:null,fourth:st.fourthN!=null?1:0,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,floors:st.stats.floors,memory:memoryOf(D,st,false)});}
+ if(st.mode==='g'){st.screen='over';st.result={win:false,g:1};st.combat=null;E.push({t:'runEnd',win:false,g:1,ch:st.ch,floors:st.gi,memory:st.gi*((D.trials.find(t=>t.id===st.trial)||{}).memory||10)});return;}
+ {const can=st.deck.filter(x=>D.cards[x.id].r>0&&D.cards[x.id].t!=='x');if(can.length){const x=pick(st,can);E.push({t:'leftCard',card:{id:x.id,up:x.up,scar:x.scar||0,ch:baseCh(st),ttl:3}});}}st.screen='over';st.result={win:false,killer:k?k.id:null};st.combat=null;E.push({t:'runEnd',win:false,killer:k?k.id:null,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,floors:st.stats.floors,memory:memoryOf(D,st,false)});}
 function comOk(st){if(!st.com)return false;if(st.com==='c_greed'&&st.gold>=300)return true;if(st.com==='c_return'&&(st.stats.sent||0)>=3)return true;return !!st.comDone;}
 function memoryOf(D,st,win){const M=D.memory;return st.stats.floors*M.perFloor+st.stats.elites*M.perElite+st.stats.bosses*M.perBoss+(win?M.win:0);}
 
 // ── 地圖
-function canMove(D,st,c){const map=st.maps[st.layer];if(c==='boss')return st.row===D.map.rows-1;if(st.row===-1)return c>=0&&c<D.map.cols;if(st.row>=D.map.rows-1)return false;return map.rows[st.row][st.col].e.includes(c);}
+function canMove(D,st,c){const map=st.maps[st.layer];if(c==='boss')return st.row===D.map.rows-1;if(M(st,'dread')&&typeof c==='number'){const row=map.rows[st.row+1];if(row&&row[c]&&row[c].t==='elite')return false;}if(st.row===-1)return c>=0&&c<D.map.cols;if(st.row>=D.map.rows-1)return false;return map.rows[st.row][st.col].e.includes(c);}
 function enter(D,st,c,E){const L=D.layers[st.layer];st.stats.floors++;
  if(c==='boss'){st.row=D.map.rows;startCombat(D,st,[L.boss],'boss').forEach(x=>E.push(x));E.push({t:'boss',id:L.boss});return;}
  st.row++;st.col=c;const t=st.maps[st.layer].rows[st.row][c].t;E.push({t:'enter',node:t});
@@ -2323,18 +2543,19 @@ function enter(D,st,c,E){const L=D.layers[st.layer];st.stats.floors++;
  else if(t==='chest'){const p=relicPool(D,st);const id=p.length?pick(st,p):null;if(id)gainRelic(D,st,id);else st.gold+=50;st.reward={chest:id,gold:id?0:50};st.screen='chest';if(st.relics.length>=6)E.push({t:'ach',id:'relic6'});}
  else if(t==='shop'){if(M(st,'greed'))addAlien(D,st,10,E);st.shop=genShop(D,st);st.screen='shop';}
  else if(t==='event'){const okEv=e=>!e.special&&(!e.ch||e.ch===baseCh(st))&&!(e.hob&&(st.hob||[]).includes(e.hob));let ev=D.events.filter(e=>okEv(e)&&!st.seenEv.includes(e.id));if(!ev.length){st.seenEv=[];ev=D.events.filter(okEv);}let e=pick(st,ev);if(st.left&&!st.flags.leftSeen&&st.layer===0){st.flags.leftSeen=1;e=D.events.find(x=>x.id==='left_card')||e;}else st.seenEv.push(e.id);st.event={id:e.id,done:null};if(has(st,'map'))st.gold+=15;st.screen='event';}}
-function genShop(D,st){const P=D.shop;const cs=[];const p=pool(D,st);const used=new Set();for(let i=0;i<5+(isYY(st)&&phaseOf(st)==='h'?1:0)+(M(st,'greed')?1:0);i++){const left=p.filter(k=>!used.has(k));if(!left.length)break;const id=pick(st,left);used.add(id);const r=D.cards[id].r;cs.push({id,price:Math.round(P.card[r-1]*(.9+R(st)*.2)*(M(st,'queen')?1.2:1)*(pas(D,st,'shop20')?.8:1)),sold:false});}
- const rp=shuffle(st,relicPool(D,st)).slice(0,2).map(id=>({id,price:ri(st,P.relic[0],P.relic[1]),sold:false}));return {cards:cs,relics:rp,removed:false,removeCost:P.remove};}
+function genShop(D,st){const P=D.shop;const cs=[];const p=pool(D,st);const used=new Set();for(let i=0;i<5+(isYY(st)&&phaseOf(st)==='h'?1:0)+(M(st,'greed')?1:0);i++){const left=p.filter(k=>!used.has(k));if(!left.length)break;let id=pick(st,left);if(M(st,'pride')&&D.cards[id].r<3){const up=p.filter(k=>D.cards[k].r===D.cards[id].r+1&&!used.has(k));if(up.length)id=pick(st,up);}used.add(id);const r=D.cards[id].r;cs.push({id,price:Math.round(P.card[r-1]*(.9+R(st)*.2)*Math.max(.5,(M(st,'queen')?1.2:1)*(pas(D,st,'shop20')?.8:1)*(TL(st,'yy_greed1b')?.9:1))*(M(st,'pride')?1.1:1)),sold:false});}
+ const rp=shuffle(st,relicPool(D,st)).slice(0,2).map(id=>({id,price:ri(st,P.relic[0],P.relic[1]),sold:false}));const dx=st.desire&&D.shopX&&D.shopX[st.desire];return {cards:cs,relics:rp,removed:false,removeCost:P.remove,x:dx?{id:st.desire,price:dx.price,sold:false}:null};}
 
 function warpMap(D,st,m){st.layerCorrupt=st.layerCorrupt||{};const a=isYY(st)?(st.alien||0):0;st.layerCorrupt[st.layer]=a;const mid=[];m.rows.forEach((r,ri)=>{if(ri>0&&ri<m.rows.length-1)r.forEach(n=>mid.push(n));});
  if(a>=40){const r=mid.find(n=>n.t==='rest');if(r)r.t='fight';const f=mid.find(n=>n.t==='fight'&&n!==r);if(f)f.t='shop';}
  if(st.layer>0&&st.flags['full'+(st.layer-1)]){const f=mid.filter(n=>n.t==='fight');if(f.length){const n=f[Math.floor(f.length/2)];n.t='elite';n.nest=1;}}
  return m;}
-function nextAfterBoss(D,st,E){if(M(st,'home'))st.hp=Math.min(st.maxHp,st.hp+15);st.layer++;if(st.layer>=D.layers.length){st.screen='over';st.result={win:true};E.push({t:'ach',id:'win_'+st.ch});E.push({t:'runEnd',win:true,fourth:st.fourthN!=null?1:0,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,floors:st.stats.floors,memory:memoryOf(D,st,true)});return;}
+function nextAfterBoss(D,st,E){if(M(st,'home'))st.hp=Math.min(st.maxHp,st.hp+15);if(st.homeBonus){st.hp=Math.min(st.maxHp,st.hp+st.homeBonus);st.homeBonus=0;}st.layer++;if(st.layer>=D.layers.length){st.screen='over';st.result={win:true};E.push({t:'ach',id:'win_'+st.ch});E.push({t:'runEnd',win:true,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,floors:st.stats.floors,memory:memoryOf(D,st,true)});return;}
  st.row=-1;st.col=null;st.maps.push(warpMap(D,st,genMap(D,st,st.layer)));st.screen='map';E.push({t:'layer',n:st.layer});}
 function backToMap(D,st,E){st.reward=null;st.event=null;st.shop=null;st.pick=null;if(st.row>=D.map.rows){nextAfterBoss(D,st,E);return;}st.screen='map';if(st.deck.length>=25)E.push({t:'ach',id:'deck25'});}
 
 // ── 事件結果
+function evOpts(D,st,ev){const o=ev.opts.slice();const X=D.evX&&D.evX[st.persona];if(X&&!ev.special)o.push(X);return o;}
 function applyEvent(D,st,opt,E){const out=[];let pend=null;
  for(const r of opt.r){
   if(r.gold){st.gold=Math.max(0,st.gold+r.gold);}
@@ -2346,6 +2567,13 @@ function applyEvent(D,st,opt,E){const out=[];let pend=null;
   if(r.leftTake&&st.left){st.hp=Math.max(1,st.hp-10);const x=addCard(st,st.left.id);const dk=st.deck[st.deck.length-1];dk.up=st.left.up;if(st.left.scar)dk.scar=st.left.scar;dk.left=1;st.left=null;E.push({t:'leftTaken'});}
   if(r.leftSkip&&st.left){st.left=null;E.push({t:'leftSkip'});}
   if(r.alien){addAlien(D,st,r.alien,E);}
+  if(r.next){st.next=st.next||{};for(const k in r.next)st.next[k]=(st.next[k]||0)+r.next[k];}
+  if(r.flame)E.push({t:'flame'});
+  if(r.dot)st.flags.dot=1;
+  if(r.queen){if(st.gold>=15){st.gold-=15;addCard(st,'n_lantern');out.push({card:'n_lantern'});}else{addAlien(D,st,8,E);out.push({kicked:1});}}
+  if(r.sly){if(R(st)<.7){const p=relicPool(D,st);if(p.length){const id=pick(st,p);gainRelic(D,st,id);out.push({relic:id});}}else{if(st.gold>=40)st.gold-=40;else{st.hp=Math.max(1,st.hp-8);}out.push({caught:1});}}
+  if(r.petty){if(st.grudgeList&&st.grudgeList.length){st.pettyNext=1;st.grudges=st.grudgeList.slice();out.push({petty:1});}else{st.next=st.next||{};st.next.block=(st.next.block||0)+8;}}
+  if(r.curious){if(R(st)<.7)pend={mode:'choose',cards:rollCards(D,st,3,false)};else{addAlien(D,st,10,E);out.push({curse:1});}}
   if(r.relicRandom){const p=relicPool(D,st);if(p.length){const id=pick(st,p);gainRelic(D,st,id);out.push({relic:id});}}
   if(r.upgradeRandom)for(let k=0;k<r.upgradeRandom;k++){const up=st.deck.filter(c=>!c.up&&D.cards[c.id].u);if(up.length){const c=pick(st,up);c.up=1;out.push({upgraded:c.id});}}
   if(r.cardRare){const p=pool(D,st,3);if(p.length){const id=pick(st,p);addCard(st,id);out.push({card:id});}}
@@ -2355,7 +2583,7 @@ function applyEvent(D,st,opt,E){const out=[];let pend=null;
  return {out,pend};}
 
 // ── 主要入口
-function apply(D,st0,a){const st=clone(st0);const E=[];const fail=e=>({ok:false,error:e});
+function apply(D,st0,a){const st=clone(st0);CUR=st;const E=[];const fail=e=>({ok:false,error:e});
  if(st.screen==='over')return fail('這一局已經結束');
  switch(a.type){
   case 'MOVE':if(st.screen!=='map')return fail('現在不能移動');if(!canMove(D,st,a.c))return fail('走不到那裡');enter(D,st,a.c,E);break;
@@ -2377,27 +2605,41 @@ function apply(D,st0,a){const st=clone(st0);const E=[];const fail=e=>({ok:false,
    else st.pick=null;st.deck.splice(i,1);if(M(st,'bookmark'))st.marks=(st.marks||0)+1;E.push({t:'removed'});break;}
   case 'TRANSFORM':{if(!(st.pick&&st.pick.mode==='transform'))return fail('不能轉換');const c=st.deck.find(x=>x.uid===a.uid);if(!c)return fail('沒有這張');if(D.cards[c.id].noRemove)return fail('這張牌不能被換掉');const p=pool(D,st).filter(k=>k!==c.id);c.id=pick(st,p);c.up=0;st.pick=null;E.push({t:'transformed',id:c.id});break;}
   case 'CHOOSE':{if(!(st.pick&&st.pick.mode==='choose'))return fail('不能選');if(a.i!=null){const id=st.pick.cards[a.i];if(!id)return fail('沒有這張');addCard(st,id);E.push({t:'gotCard',id});}st.pick=null;break;}
-  case 'EVENT':{if(st.screen!=='event'||st.event.done)return fail('不能選');const ev=D.events.find(e=>e.id===st.event.id);const opt=ev.opts[a.i];if(!opt)return fail('沒有這個選項');if(opt.need&&opt.need.gold&&st.gold<opt.need.gold)return fail('渡鴉幣不夠');
+  case 'EVENT':{if(st.screen!=='event'||st.event.done)return fail('不能選');const ev=D.events.find(e=>e.id===st.event.id);const opt=evOpts(D,st,ev)[a.i];if(!opt)return fail('沒有這個選項');if(opt.per&&opt.per!==st.persona)return fail('沒有這個選項');if(opt.need&&opt.need.gold&&st.gold<opt.need.gold)return fail('渡鴉幣不夠');
    const {out,pend}=applyEvent(D,st,opt,E);st.event.done={i:a.i,out};if(pend){if(pend.mode==='remove'&&!st.deck.length){}else st.pick=pend;}break;}
   case 'PREP_RELIC':{if(st.screen!=='prep'||!st.prep.relics)return fail('不能選');const id=st.prep.relics[a.i];if(!id)return fail('沒有這件');gainRelic(D,st,id);st.prep.relics=null;E.push({t:'relicGot',id});break;}
   case 'PREP_REMOVE':{if(st.screen!=='prep'||!st.prep.remove)return fail('不能移除');const i=st.deck.findIndex(x=>x.uid===a.uid);if(i<0)return fail('沒有這張');st.deck.splice(i,1);st.prep.remove=0;E.push({t:'removed'});break;}
   case 'PREP_DONE':if(st.screen!=='prep')return fail('不在出發準備');st.prep=null;st.screen='map';break;
   case 'REROLL_MAP':{if(st.screen!=='map'||st.row!==-1)return fail('只能在這一層還沒走之前換');if(!(st.kp||[]).includes('m_skip'))return fail('還沒有第二張地圖');const k='rr'+st.layer;if(st.flags[k])return fail('這一層已經換過了');st.flags[k]=1;st.maps[st.layer]=genMap(D,st,st.layer);E.push({t:'reroll'});break;}
   case 'PURGE':{if(st.screen!=='rest'||!(st.kp||[]).includes('m_purge'))return fail('不能燒');const i=st.deck.findIndex(x=>x.uid===a.uid);if(i<0||D.cards[st.deck[i].id].t!=='x')return fail('只能燒詛咒');const id=st.deck[i].id;st.deck.splice(i,1);E.push({t:'purged',id});backToMap(D,st,E);break;}
-  case 'BUY_E':{if(st.screen!=='combat'||!TL(st,'yy_greed2'))return fail('還不會');const c=st.combat;if(c.boughtE)return fail('這回合已經買過了');if(st.gold<25)return fail('渡鴉幣不夠（要 25）');st.gold-=25;c.energy++;c.boughtE=1;E.push({t:'tal',k:'yy_greed2'});break;}
-  case 'G_NEXT':{if(st.screen!=='gnext')return fail('現在不能開打');const T=(D.trials||[]).find(t=>t.id===st.trial);const sg=T&&T.stages[st.gi];if(!sg)return fail('沒有下一場');st.layer=sg.l;const L=D.layers[sg.l];let ids;if(sg.k==='boss')ids=[L.boss];else if(sg.k==='elite'){const el=pick(st,L.elites);ids=Array.isArray(el)?el:[el];}else ids=pick(st,L.fights);startCombat(D,st,ids,sg.k).forEach(x=>E.push(x));break;}
+  case 'BUY_E':{if(st.screen!=='combat'||!TL(st,'yy_greed2'))return fail('還不會');const c=st.combat;if(c.boughtE)return fail('這回合已經買過了');if(st.gold<30)return fail('渡鴉幣不夠（要 30）');st.gold-=30;c.energy++;c.boughtE=1;E.push({t:'tal',k:'yy_greed2'});break;}
+  case 'G_NEXT':{if(st.screen!=='gnext')return fail('現在不能開打');const T=(D.trials||[]).find(t=>t.id===st.trial);const sg=T&&T.stages[st.gi];if(!sg)return fail('沒有下一場');st.layer=sg.l;const L=D.layers[sg.l];let ids;if(sg.ids)ids=sg.ids;else if(sg.k==='boss')ids=[L.boss];else if(sg.k==='elite'){const el=pick(st,L.elites);ids=Array.isArray(el)?el:[el];}else ids=pick(st,L.fights);st.tRule=sg.rule||null;startCombat(D,st,ids,sg.k).forEach(x=>E.push(x));st.tRule=null;break;}
+  case 'BUY_X':{if(st.screen!=='shop'||!st.shop.x||st.shop.x.sold)return fail('沒有這件');const X=st.shop.x,id=X.id;if(st.gold<X.price)return fail('渡鴉幣不夠');if(id==='vanity'&&(st.alien||0)>=40)return fail('現在不要照。');st.gold-=X.price;X.sold=true;st.next=st.next||{};
+   if(id==='greed'){const p=pool(D,st);for(const it of st.shop.cards.filter(x=>!x.sold).slice(0,2)){it.id=pick(st,p);}}
+   else if(id==='glutton')healP(st,10,E);else if(id==='grudge')st.next.pact=(st.next.pact||0)+1;else if(id==='obsess')st.next.obs=1;
+   else if(id==='vanity'){const p=pool(D,st);const nid=pick(st,p);st.shop.cards.push({id:nid,price:Math.round(D.shop.card[D.cards[nid].r-1]),sold:false});}
+   else if(id==='envy'){const p=relicPool(D,st);if(p.length){const r=pick(st,p);gainRelic(D,st,r);E.push({t:'relicGot',id:r});}}
+   else if(id==='wrath'){st.next.str=2;st.shop.cards.forEach(x=>x.sold=true);st.shop.relics.forEach(x=>x.sold=true);E.push({t:'smash'});backToMap(D,st,E);}
+   else if(id==='home')st.homeBonus=(st.homeBonus||0)+5;else if(id==='letter')st.next.draw=(st.next.draw||0)+1;else if(id==='guard')st.next.shade=3;else if(id==='remember')st.next.flame=1;
+   E.push({t:'boughtX',id});break;}
+  case 'HOLD':{if(st.screen!=='combat'||!TL(st,'cl_write1b'))return fail('還不會');const c=st.combat;if(c.held)return fail('這一場已經夾過書籤了');const x=c.hand[a.i];if(!x)return fail('沒有這張');x.hold=1;c.held=1;E.push({t:'hold'});break;}
+  case 'PEEK_SWAP':{if(st.screen!=='combat'||!pas(D,st,'whisper'))return fail('聽不見');const c=st.combat;if(c.swapped)return fail('這回合已經換過了');if(c.draw.length<3)return fail('抽牌堆不夠三張');c.swapped=c.turn;const L=c.draw.length;const t=c.draw[L-1];c.draw[L-1]=c.draw[L-3];c.draw[L-3]=t;selfHurt(D,st,2,E);if(st.hp<=0){loseRun(D,st,E);}break;}
+  case 'SIGN':{if(st.screen!=='combat'||!pas(D,st,'pactSwap'))return fail('沒有契約可簽');const c=st.combat;if(c.signed)return fail('這一場已經簽過了');const x=c.hand[a.i];const e=c.enemies.find(z=>z.uid===a.uid&&z.hp>0);if(!x||!e)return fail('要選一張手牌和一個敵人');c.signed=1;c.hand.splice(a.i,1);if(!x.temp)c.exh.push(strip(x));pe(E,'pactSwap');
+   const m=e.intent||{};if(m.a){const n=dmgCalc(m.a,e,c)*(m.h||1);c.block+=n;E.push({t:'block',n});}else draw(D,st,2,E);e.intent={i:-1,n:'停手',idle:1};E.push({t:'lie',uid:e.uid});break;}
+  case 'RETRIEVE':{if(st.screen!=='combat'||st.ch!=='cl'||!st.sub)return fail('不能收回');const c=st.combat;if(c.retrieved)return fail('這一場已經收回過了');const k=c.exh.findIndex(x=>D.cards[x.id].bl===st.sub);if(k<0)return fail('消耗堆裡沒有副面貌的牌');c.retrieved=1;c.hand.push(c.exh.splice(k,1)[0]);break;}
+  case 'G_PICK':{if(st.screen!=='gpick')return fail('現在不能選');const id=st.gpick[a.i];if(!id)return fail('沒有這張');const T=(D.trials||[]).find(t=>t.id===st.trial);st.screen='over';st.result={win:true,g:1};E.push({t:'runEnd',win:true,g:1,gCard:id,trial:st.trial,ch:st.ch,floors:st.gi,memory:(T.memory||10)*T.stages.length});break;}
   case 'EYE':{if(st.screen!=='combat'||st.ch!=='gu')return fail('沒有義眼');const c=st.combat;if(c.eyeUsed)return fail('這一場已經用過了');const e=c.enemies.find(x=>x.uid===a.uid&&x.hp>0);if(!e)return fail('沒有這個敵人');c.eyeUsed=1;e.hid=0;c.eye=e.uid;E.push({t:'eye',uid:e.uid});break;}
   case 'TEAR':{if(st.screen!=='combat')return fail('不在戰鬥中');const c=st.combat;const x=c.hand[a.i];if(!x||!D.cards[x.id].purge)return fail('這張撕不掉');if(c.energy<1)return fail('能量不夠');c.energy--;c.hand.splice(a.i,1);E.push({t:'torn',id:x.id});break;}
-  case 'SEND':{if(st.screen!=='combat'||st.ch!=='cl')return fail('只有克勞德能送回');const c=st.combat;const e=c.enemies.find(x=>x.uid===a.uid&&x.hp>0);if(!e)return fail('沒有這個敵人');const isB=D.enemies[e.id].boss;if(isB&&!TL(st,'cl_lamp2'))return fail('首領不能送回');
+  case 'SEND':{if(st.screen!=='combat'||st.ch!=='cl')return fail('只有克勞德能送回');const c=st.combat;const e=c.enemies.find(x=>x.uid===a.uid&&x.hp>0);if(!e)return fail('沒有這個敵人');const isB=D.enemies[e.id].boss;if(c.rule==='drill')return fail('這一場不能送回');if(isB&&!TL(st,'cl_lamp2'))return fail('首領不能送回');
    if(!(e.hp<e.max*(isB?.1:sendRate(D,st))))return fail('牠還不想走');if(c.energy<1)return fail('能量不夠');
    if(pas(D,st,'window')){c.energy--;}
    else if(a.pay==='hp'){c.energy--;selfHurt(D,st,TL(st,'cl_lamp1')?2:4,E,false,true);if(st.hp<=0){loseRun(D,st,E);break;}}
    else{const x=c.hand[a.pay];if(!x)return fail('要選一張手牌');c.energy--;c.hand.splice(a.pay,1);if(!x.temp)c.exh.push(strip(x));}
-   e.hp=0;e.sent=1;st.stats.sent=(st.stats.sent||0)+1;E.push({t:'sent',uid:e.uid,id:e.id});if(M(st,'remember'))E.push({t:'sent',uid:e.uid,id:e.id,extra:1});
+   e.hp=0;e.sent=1;st.stats.sent=(st.stats.sent||0)+1;E.push({t:'sent',uid:e.uid,id:e.id});if(c.flame2)E.push({t:'flame'});if(M(st,'remember'))E.push({t:'sent',uid:e.uid,id:e.id,extra:1});
    if(M(st,'lamps')){st.flags.wh=!st.flags.wh;if(!st.flags.wh)st.wick=(st.wick==null?10:st.wick)-1;}else st.wick=(st.wick==null?10:st.wick)-1;if(st.wick<=0){st.wick=10;st.lamp=(st.lamp||0)+1;E.push({t:'lampReady'});}
    killCheck(D,st,E);break;}
-  case 'LAMP':{if(st.screen!=='combat'||!(st.lamp>0))return fail('燈還沒亮');const c=st.combat;if(c.stop)return fail('這一回合已經照過了');st.lamp--;c.stop=1;E.push({t:'lampLight'});break;}
-  case 'QUIT':{st.combat=null;st.screen='over';st.result={win:false,quit:true};E.push({t:'runEnd',win:false,quit:true,fourth:st.fourthN!=null?1:0,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,floors:st.stats.floors,memory:memoryOf(D,st,false)});break;}
+  case 'LAMP':{if(st.screen!=='combat'||!(st.lamp>0))return fail('燈還沒亮');const c=st.combat;if(c.stop)return fail('這一回合已經照過了');st.lamp--;c.stop=1;E.push({t:'lampLight'});if(TL(st,'cl_lamp1b'))E.push({t:'flame'});break;}
+  case 'QUIT':{st.combat=null;st.screen='over';st.result={win:false,quit:true};E.push({t:'runEnd',win:false,quit:true,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,floors:st.stats.floors,memory:memoryOf(D,st,false)});break;}
   default:return fail('不明的指令');}
  if(!st0.combat&&st.combat){const s0=clone(st0);delete s0.pre;st.pre={s:s0,a};}
  if(!st.combat&&st.pre)delete st.pre;
@@ -2416,9 +2658,11 @@ function migrateRun(D,s){if(!s)return null;s=clone(s);
 function loadRun(D,s){s=migrateRun(D,s);if(!s)return null;if(s.resume){const a=s.resume;delete s.resume;const r=apply(D,s,a);if(r.ok)return r.state;}return s;}
 
 // ── 永久進度（回憶、成就、圖鑑）
-function profOf(meta,ch){ch=ch==='yx'?'yy':ch;meta.prof=meta.prof||{};meta.prof[ch]=meta.prof[ch]||{xp:0,spent:[]};return meta.prof[ch];}
+function profOf(meta,ch){ch=ch==='yx'?'yy':ch;meta.prof=meta.prof||{};meta.prof[ch]=meta.prof[ch]||{xp:0,pts:0,spent:[]};const p=meta.prof[ch];if(p.pts==null)p.pts=Math.floor((p.xp||0)/25);return p;}
 const LV=xp=>Math.floor(xp/25);
-function metaTalent(D,meta0,ch,id){const meta=migrateMeta(meta0);const t=(D.talents||{})[id];if(!t||t.ch!==ch)return {ok:false,error:'沒有這個天賦'};const p=profOf(meta,ch);if(p.spent.includes(id))return {ok:false,error:'已經學會了'};if(t.need&&!p.spent.includes(t.need))return {ok:false,error:'要先學會前一格'};if(LV(p.xp)-p.spent.length<1)return {ok:false,error:'天賦點不夠'};p.spent.push(id);return {ok:true,meta};}
+function talCost(D,id){return ((D.talents||{})[id]||{}).cost||1;}
+function talLeft(D,p){return (p.pts||0)-p.spent.reduce((a,id)=>a+talCost(D,id),0);}
+function metaTalent(D,meta0,ch,id){const meta=migrateMeta(meta0);const t=(D.talents||{})[id];if(!t||t.ch!==ch)return {ok:false,error:'沒有這個天賦'};const p=profOf(meta,ch);if(p.spent.includes(id))return {ok:false,error:'已經學會了'};if(t.need&&!p.spent.includes(t.need))return {ok:false,error:'要先學會前一格'};if(talLeft(D,p)<t.cost)return {ok:false,error:'天賦點不夠（要 '+t.cost+' 點）'};p.spent.push(id);return {ok:true,meta};}
 function metaKeep(D,meta0,card){const meta=migrateMeta(meta0);meta.col=meta.col||[];meta.col.push({id:card.id,up:card.up?1:0});meta.keepPending=0;return meta;}
 function deckOk(D,meta,ch,deck){const R=D.deckRule||{min:10,max:15,same:2};if(deck.length<R.min)return '至少要 '+R.min+' 張';if(deck.length>R.max)return '最多 '+R.max+' 張';const cnt={};const own={};for(const x of (meta.col||[])){const k=x.id+'|'+(x.up?1:0);own[k]=(own[k]||0)+1;}
  const use={};for(const x of deck){const d=D.cards[x.id];if(!d)return '有一張不認得的牌';const free=d.r===0&&d.t!=='x'&&!d.bl&&(d.ch==='any'||d.ch===(ch==='yx'?'yy':ch)||d.ch===ch||d.ch==='none'&&false||x.id==='strike'||x.id==='guard');if(d.ch!=='any'&&d.ch!==ch&&d.ch!==(ch==='yx'?'yy':ch)&&!(x.id==='strike'||x.id==='guard'))return '「'+d.n+'」不是這個角色的牌';cnt[x.id]=(cnt[x.id]||0)+1;if(!free){if(cnt[x.id]>R.same)return '「'+d.n+'」最多放 '+R.same+' 張';const k=x.id+'|'+(x.up?1:0);use[k]=(use[k]||0)+1;if(use[k]>(own[k]||0))return '收藏裡的「'+d.n+'」不夠';}}return null;}
@@ -2434,7 +2678,7 @@ function metaApply(D,meta0,events){const meta=migrateMeta(meta0);const news={ach
  for(const e of events){
   if(e.t==='ach'&&e.id&&!meta.ach.includes(e.id)){meta.ach.push(e.id);news.ach.push(e.id);}
   if(e.t==='kill'){if(!meta.codex[e.id])news.codex.push(e.id);meta.codex[e.id]=(meta.codex[e.id]||0)+1;if(Object.keys(meta.codex).length>=20&&!meta.ach.includes('codex20')){meta.ach.push('codex20');news.ach.push('codex20');}}
-  if(e.t==='sent')meta.flame=(meta.flame||0)+1;
+  if(e.t==='sent'||e.t==='flame')meta.flame=(meta.flame||0)+1;
   if(e.t==='unlockYx')meta.yx=1;
   if(e.t==='unlockGu'){if(!meta.gu)news.gu=1;meta.gu=1;}
   if(e.t==='leftCard')meta.leftNext=e.card;
@@ -2443,16 +2687,19 @@ function metaApply(D,meta0,events){const meta=migrateMeta(meta0);const news={ach
   if(e.t==='page')meta.pages=Math.min(9,(meta.pages||0)+1);
   if(e.t==='drop'&&!meta.hobbies.includes(e.id)){meta.hobbies.push(e.id);news.hobby=e.id;}
   if(e.t==='hobby'&&!meta.hobbies.includes(e.id)){meta.hobbies.push(e.id);news.hobby=e.id;}
-  if(e.t==='runEnd'){const p=profOf(meta,e.ch);const lv0=LV(p.xp);const gain=(e.floors||0)+(e.win?10:0);p.xp+=gain;news.xp=gain;news.lvUp=LV(p.xp)-lv0;
+  if(e.t==='runEnd'){const p=profOf(meta,e.ch);const gain=(e.floors||0)+(e.win?10:0);p.xp+=gain;news.xp=gain;const pg=e.ch==='gu'?0:(1+(e.win?1:0));p.pts+=pg;news.pts=pg;
    if(e.win&&!e.g)meta.keepPending=1;
-   if(e.win&&e.g){const pl=Object.keys(D.cards).filter(k=>{const c=D.cards[k];return c.r===3&&c.t!=='x'&&!c.bl&&(c.ch==='yy'||c.ch==='cl'||c.ch==='any');});if(pl.length){const id=pl[(meta.runs*7+(meta.col||[]).length*13)%pl.length];meta.col=meta.col||[];meta.col.push({id,up:1});news.gCard=id;}meta.trialWins=(meta.trialWins||0)+1;}
+   if(e.dot&&e.win)meta.dotGold=15;
+   if(e.win&&!e.g&&D.bookX)for(const b of D.bookX){if(meta.bookX&&meta.bookX.includes(b.id))continue;const ok=(b.id==='bx1'&&e.ch==='yy'&&e.origin==='B01'&&e.ph&&e.ph.h>=Math.max(e.ph.half||0,e.ph.full||0))||(b.id==='bx2'&&e.origin==='M01'&&['obsess','grudge'].includes(e.desire))||(b.id==='bx3'&&e.fourth);if(ok){meta.bookX=meta.bookX||[];meta.bookX.push(b.id);news.bookX=b.id;}}
+   if(e.win&&e.g&&e.gCard){meta.col=meta.col||[];meta.col.push({id:e.gCard,up:0});news.gCard=e.gCard;meta.trialWins=(meta.trialWins||0)+1;}
+   if(!e.g)meta.dotGold=e.dot&&e.win?15:0;
    meta.runs++;if(!e.g&&meta.runs>=3&&(meta.fourth||0)<9&&e.fourth)meta.fourth=(meta.fourth||0)+1;
    if(e.g){}else if(meta.leftNext){meta.left=meta.leftNext;meta.leftNext=null;}else if(meta.left){meta.left.ttl--;if(meta.left.ttl<=0)meta.left=null;}meta.letter=meta.letterNext||0;meta.letterNext=0;if(e.killer&&e.ch==='yy'&&!meta.grudges.includes(e.killer))meta.grudges.push(e.killer);meta.memory+=e.memory;news.memory=e.memory;let ec=echoOf(D,e);if(e.com){ec+=(D.comReward||15);news.com=e.com;meta.comDone=(meta.comDone||[]);if(!meta.comDone.includes(e.com))meta.comDone.push(e.com);}meta.echo+=ec;news.echo=ec;meta.com=null;
    if(e.win&&e.origin&&e.ph){const k=e.ch+'_'+e.origin;const m=Object.entries(e.ph).sort((a,b)=>b[1]-a[1])[0][0];meta.phWins=meta.phWins||{};meta.phWins[k]=meta.phWins[k]||[];if(!meta.phWins[k].includes(m))meta.phWins[k].push(m);}if(e.win)meta.wins[e.ch]=(meta.wins[e.ch]||0)+1;meta.best=Math.max(meta.best,e.floors||0);
    for(const u of D.unlocks)if(meta.memory>=u.at&&!meta.unlocked.includes(u.id)){meta.unlocked.push(u.id);news.unlocks.push(u.id);}}}
  return {meta,news};}
 
-const API={newRun,apply,desc,cardDef,cost,needsTarget,canMove,alive,dmgCalc,newMeta,metaApply,memoryOf,pool,phaseOf,originOf,sendRate,handMax,metaUnlock,metaTalent,metaKeep,deckOk,profOf,LV,subOn,subOf,saveForm,migrateRun,loadRun,migrateMeta,metaBuy,echoOf};
+const API={newRun,apply,desc,cardDef,cost,needsTarget,canMove,alive,dmgCalc,newMeta,metaApply,memoryOf,pool,phaseOf,originOf,sendRate,handMax,metaUnlock,metaTalent,talLeft,talCost,evOpts,metaKeep,deckOk,profOf,LV,subOn,subOf,saveForm,migrateRun,loadRun,migrateMeta,metaBuy,echoOf};
 if(typeof module!=='undefined')module.exports=API;else root.CARD=API;
 })(this);
 
@@ -2502,12 +2749,13 @@ function drawTitle(){window._inTown=0;$('tbg').style.backgroundImage=`url(${D.co
  $('tmem').textContent=meta.runs?`回憶 ${meta.memory}　·　殘響 ${meta.echo||0}　·　下潛 ${meta.runs} 次　·　走完 ${(meta.wins.yy||0)+(meta.wins.cl||0)} 次`:'';}
 function drawPick(){$('pbg').style.backgroundImage=`url(${I}bg_station.webp)`;
  $('chlist').innerHTML=Object.entries(D.chars).filter(([k,c])=>!c.lock||meta[c.lock]).map(([k,c])=>`<div class="ch">${c.img?`<img src="${c.img}" alt="">`:`<div class="lamp"></div>`}<div><h3>${c.name}</h3><small>${c.title}・生命 ${c.hp}</small><p>${esc(c.desc)}</p>${c.line?`<p style="color:var(--dim);font-size:13px">「${esc(c.line)}」</p>`:''}<p class="relics"><img src="${D.relics[c.relic].ic}" alt=""> <small style="align-self:center">${D.relics[c.relic].n}：${D.relics[c.relic].d}</small></p><button class="main" onclick="pickOrigin('${k}')">${k==='gu'?'就是他':'就是她'}</button></div></div>`).join('');}
+function oOpen(o){return o.unlockWin?((meta.wins&&(meta.wins.yy||0)+(meta.wins.cl||0))>0):meta.memory>=o.unlock;}
 function originsOf(k){if(k==='yx')k='yy';return Object.values(D.origins).filter(o=>o.ch===k);}
 function preload(){const o=C.originOf(D,st);const imgs=[o.img,o.half,o.full,D.inbox+'yx_reveal.webp',D.inbox+'yx_base.webp'].filter(Boolean);if(st.ch!=='yy')imgs.length=1;imgs.forEach(u=>{const i=new Image();i.src=u;});
  if(typeof load==='function'&&AU.ctx)['sfx_transform','sfx_recall','sfx_corrupt','sfx_form_'+st.origin].forEach(n=>{if(AD.sfx.includes(n))load(n);});}
-function startRun(k,origin,dv){dv=dv||{};st=C.newRun(D,(Date.now()%2147483647)>>>0,k,meta,{origin,sub:dv.sub,mode:dv.mode,deck:dv.deck,trial:dv.trial,desire:dv.desire,persona:dv.persona||(Object.values(D.personas).find(p=>p.ch===k&&p.def)||{}).id,hobby:dv.hobby,com:meta.com&&(D.coms.find(c=>c.id===meta.com)||{}).ch!==(k==='cl'?null:'cl')?meta.com:null});if(st.flags.gotLetter)toast(`井邊有一封信，裡面是上一次留下的 <b>${st.flags.gotLetter}</b> 渡鴉幣`);save();preload();talk(D.talk.start[k],()=>route());}
+function startRun(k,origin,dv){dv=dv||{};st=C.newRun(D,(Date.now()%2147483647)>>>0,k,meta,{origin,sub:dv.sub,mode:dv.mode,deck:dv.deck,trial:dv.trial,desire:dv.desire,persona:dv.persona||(Object.values(D.personas).find(p=>p.ch===k&&p.def)||{}).id,hobby:dv.hobby,com:meta.com&&(D.coms.find(c=>c.id===meta.com)||{}).ch!==(k==='cl'?null:'cl')?meta.com:null});if(st.flags.gotDot)toast(`門口放著 <b>${st.flags.gotDot}</b> 渡鴉幣。是他留的。`);if(st.flags.gotLetter)toast(`井邊有一封信，裡面是上一次留下的 <b>${st.flags.gotLetter}</b> 渡鴉幣`);save();preload();talk(D.talk.start[k],()=>route());}
 function contRun(){closeModal();const s=ls(RUNK);if(!s)return;st=C.loadRun(D,s);if(!st){ls(RUNK,null);drawTitle();return;}save();preload();route();if(st.screen==='combat')banner('第 '+st.combat.turn+' 回合');}
-function route(){const s=st.screen;if(s==='map'){drawMap();show('map');}else if(s==='prep'||s==='gnext'){drawPage();show('pg');}else if(s==='combat'){drawCombat();show('cb');}else{drawPage();show('pg');}}
+function route(){const s=st.screen;if(s==='map'){drawMap();show('map');}else if(s==='prep'||s==='gnext'||s==='gpick'){drawPage();show('pg');}else if(s==='combat'){drawCombat();show('cb');}else{drawPage();show('pg');}}
 
 // ── 共用頂欄
 function topBar(){return `<span class="pill">${CH().name}</span><span class="pill"><span>生命 ${Math.max(0,st.hp)}／${st.maxHp}</span></span><span class="pill"><img src="${I}i_coin.webp" alt="">${st.gold}</span><span class="relics" style="flex:1;min-width:0;overflow-x:auto;white-space:nowrap;flex-wrap:nowrap">${st.relics.map(r=>`<img src="${D.relics[r].ic}" onclick="relicInfo('${r}')" alt="">`).join('')}</span>${st.screen==='combat'?'':`<button onclick="showDeck()">牌組 ${st.deck.length}</button>`}<button class="lampB" onclick="lampMenu()" aria-label="燈">${D.T.RETREAT.btn}</button>`;}
@@ -2578,21 +2826,33 @@ function drawCombat(){const c=st.combat;if(!c)return;mood();$('cbg').style.backg
  const seen=window._handSeen||[];$('hand').innerHTML=c.hand.map((x,i)=>cardHtml(x,`data-i="${i}" onclick="tapCard(${i})"`,(i===sel?'sel ':'')+(seen.includes(x.uid)?'':'in ')+(C.cardDef(D,x).keep?'kp ':'')+((C.cost(D,x)>c.energy||C.cost(D,x)<0)?'no':''))).join('');window._handSeen=c.hand.map(x=>x.uid);fanHand();
  $('pDraw').textContent=`抽牌堆 ${c.draw.length}`;$('pDisc').textContent=`棄牌堆 ${c.disc.length}`;
  drawDetail();}
-const PHN={h:'人形',half:'半妖',full:'完全非人'};
-function meImg(){const c=st.combat;const o=C.originOf(D,st);if(st.ch==='gu')return D.chars.gu.img;if(st.ch==='yx')return (st.desire==='greed'||st.desire==='wrath')?D.inbox+'yx_desire_'+st.desire+'.webp':D.chars.yx.img;if(st.ch==='cl')return o.img||D.chars.cl.img;if(c&&c.yx)return D.inbox+'yx_base.webp';const ph=C.phaseOf(st);return ph==='full'?(o.full||o.half||o.img||D.chars.yy.img):ph==='half'?(o.half||o.img||D.chars.yy.img):(o.img||D.chars.yy.img);}
-function meHtml(){const c=st.combat;const ph=C.phaseOf(st);return `<img class="pme ${c&&c.yx?'yx':ph}" src="${meImg()}" onerror="this.src='${D.chars[st.ch].img}'" onclick="meInfo()" alt="">`;}
+const PHN={h:'人形',half:'半妖',full:'完全非人',mix:'混合型態'};window._hy={};
+function meImg(){const c=st.combat;const o=C.originOf(D,st);if(st.ch==='gu')return D.chars.gu.img;if(st.ch==='yx')return (st.desire==='greed'||st.desire==='wrath')?D.inbox+'yx_desire_'+st.desire+'.webp':D.chars.yx.img;if(st.ch==='cl')return o.img||D.chars.cl.img;if(c&&c.yx)return D.inbox+'yx_base.webp';const ph=C.phaseOf(st);if(ph==='mix'){const sb=C.subOf(D,st);return window._hy&&window._hy[st.origin+'_'+st.sub]===0?(o.full||sb.full||o.half||o.img):(D.inbox+'y_hy_'+st.origin+'_'+st.sub+'.webp');}return ph==='full'?(o.full||o.half||o.img||D.chars.yy.img):ph==='half'?(o.half||o.img||D.chars.yy.img):(o.img||D.chars.yy.img);}
+function meHtml(){const c=st.combat;const ph=C.phaseOf(st);const fb=ph==='mix'?(C.originOf(D,st).full||C.originOf(D,st).img||D.chars.yy.img):D.chars[st.ch].img;return `<img class="pme ${c&&c.yx?'yx':ph==='mix'?'full':ph}" src="${meImg()}" onerror="if(window._hy&&'${st.origin}_${st.sub}')(window._hy=window._hy||{})['${st.origin}_${st.sub}']=0;this.onerror=null;this.src='${fb}'" onclick="meInfo()" alt="">`;}
+function extraBtns(){const c=st.combat;const O=C.originOf(D,st),S=C.subOf(D,st);let h='';const pv=k=>O.passive===k||(st.sub&&S.passive===k&&C.subOn(D,st));
+ if(pv('whisper')){const top=c.draw.slice(-3).reverse();h+=`<div class="alt" style="color:#bfe0d0">牌堆頂：${top.map(x=>esc(C.cardDef(D,x).n)).join('、')||'空'} <button class="lampB" style="padding:1px 7px;font-size:12px" ${c.swapped===c.turn||c.draw.length<3?'disabled':''} onclick="event.stopPropagation();peekSwap()">換（失 2 生命）</button></div>`;}
+ if(pv('pactSwap'))h+=`<div class="alt"><button class="lampB" style="padding:1px 7px;font-size:12px" ${c.signed?'disabled':''} onclick="event.stopPropagation();window._sign=1;flash('先點一張手牌，再點要簽給的敵人')">${c.signed?'已經簽過了':'簽契'}</button></div>`;
+ if(st.ch==='cl'&&st.sub)h+=`<div class="alt"><button class="lampB" style="padding:1px 7px;font-size:12px" ${c.retrieved||!c.exh.some(x=>D.cards[x.id].bl===st.sub)?'disabled':''} onclick="event.stopPropagation();doAct({type:'RETRIEVE'},'收回了一張')">收回副面貌的牌</button></div>`;
+ if((st.tal||[]).includes('cl_write1b'))h+=`<div class="alt"><button class="lampB" style="padding:1px 7px;font-size:12px" ${c.held?'disabled':''} onclick="event.stopPropagation();window._hold=1;flash('點一張手牌，把它留到下回合')">${c.held?'書籤夾好了':'夾書籤'}</button></div>`;
+ return h;}
+function doAct(a,msg){if(busy)return;const r=act(a);if(r){if(msg)toast(msg);drawCombat();}return r;}
+function peekSwap(){doAct({type:'PEEK_SWAP'},'低語：頂牌和第三張換了位置');}
 function meExtra(){const c=st.combat;if(st.ch==='gu'){const F={xian:'修仙',eldritch:'不可名狀',flesh:'血肉'};const d=Object.entries(st.dossier||{}).map(([k,v])=>F[k]+' '+v).join('・')||'還是空的';return `<div class="alt" style="color:#cfd8e0">卷宗：${d}${c.tmpDos?'（暫時 +'+c.tmpDos+'）':''}${c.guE?'・少一頁 +1 能量':''} <button class="lampB" style="padding:2px 8px;font-size:12px" ${c.eyeUsed?'disabled':''} onclick="window._eye=1;flash('點一個敵人，用義眼看穿牠')">義眼</button></div>`;}
- if(st.ch==='cl'){const w=st.wick==null?10:st.wick;return `<div class="alt" style="color:#e9c98a">燈芯 <span class="wick">${Array.from({length:10},(_,i)=>`<i class="${i<w?'':'off'}"></i>`).join('')}</span>${st.lamp>0?` <button class="lampB" style="padding:2px 8px;font-size:12px" onclick="useLamp()" ${c.stop?'disabled':''}>燈照 ${st.lamp}</button>`:''}</div>`;}
- const a=st.alien||0;const ph=C.phaseOf(st);return `<div class="alt" onclick="meInfo()">${c.yx?'語熙接手中':PHN[ph]}・異化 ${a}${st.sub?'・副：'+esc(C.subOf(D,st).n)+(C.subOn(D,st)?'（醒著）':''):''}${(st.tal||[]).includes('yy_greed2')?` <button class="lampB" style="padding:1px 7px;font-size:12px" ${c.boughtE||st.gold<25?'disabled':''} onclick="event.stopPropagation();buyE()">買通 25</button>`:''}${c.fullNext?'（下一回合變相）':''}</div><div class="albar"><i style="width:${a}%"></i><b style="left:40%"></b><b style="left:60%"></b></div>`;}
+ if(st.ch==='cl'){const w=st.wick==null?10:st.wick;return extraBtns()+`<div class="alt" style="color:#e9c98a">燈芯 <span class="wick">${Array.from({length:10},(_,i)=>`<i class="${i<w?'':'off'}"></i>`).join('')}</span>${st.lamp>0?` <button class="lampB" style="padding:2px 8px;font-size:12px" onclick="useLamp()" ${c.stop?'disabled':''}>燈照 ${st.lamp}</button>`:''}</div>`;}
+ const ex=extraBtns();const a=st.alien||0;const ph=C.phaseOf(st);return ex+`<div class="alt" onclick="meInfo()">${c.yx?'語熙接手中':PHN[ph]}・異化 ${a}${st.sub?'・副：'+esc(C.subOf(D,st).n)+(C.subOn(D,st)?'（醒著）':''):''}${(st.tal||[]).includes('yy_greed2')?` <button class="lampB" style="padding:1px 7px;font-size:12px" ${c.boughtE||st.gold<25?'disabled':''} onclick="event.stopPropagation();buyE()">買通 25</button>`:''}${c.fullNext?'（下一回合變相）':''}</div><div class="albar"><i style="width:${a}%"></i><b style="left:40%"></b><b style="left:60%"></b></div>`;}
 function meInfo(){if(st.ch==='gu'){flash('卷宗：每打完一場記下一頁，之後對同一系的敵人傷害 +1。');return;}if(st.ch==='cl'){flash('燈芯：每送回一個敵人燒一段，燒完十段得到一次「燈照」。');return;}flash('異化值 40 以上是半妖：攻擊 +1、多抽 1，但每回合失 1 生命。到 100 會變相。');}
 function buyE(){if(busy)return;const r=act({type:'BUY_E'});if(r){sfx('sfx_gold');drawCombat();}}
 const CUT={};
-function cutIn(k){if(fxLv()==='low')return;const turn=st.combat?st.combat.turn:0;if(CUT[k]===turn)return;CUT[k]=turn;const o=C.originOf(D,st).passive===k?C.originOf(D,st):C.subOf(D,st);const el=$('cut');el.style.backgroundImage=`url(${o.cut||o.img||D.chars[st.ch==='yx'?'yy':st.ch].img})`;el.innerHTML=`<b>${esc(o.n||'')}・${esc(D.pasName[k]||'')}</b>`;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');if(st.origin)sfx('sfx_form_'+(o.id||st.origin));}
+function cutIn(k){if(fxLv()==='low')return;const turn=st.combat?st.combat.turn:0;if(CUT[k]===turn)return;CUT[k]=turn;const main=C.originOf(D,st).passive===k;const o=main?C.originOf(D,st):C.subOf(D,st);const ph=C.phaseOf(st);const pimg=main?meImg():((ph==='full'||ph==='mix')?(o.full||o.half||o.img):ph==='half'?(o.half||o.img):o.img);const el=$('cut');el.style.backgroundImage=`url(${D.inbox}y_${o.id}_cut.webp),url(${pimg||D.chars[st.ch==='yx'?'yy':st.ch].img})`;el.innerHTML=`<b>${esc(o.n||'')}・${esc(D.pasName[k]||'')}</b>`;el.classList.remove('on');void el.offsetWidth;el.classList.add('on');if(st.origin)sfx('sfx_form_'+(o.id||st.origin));}
 function useLamp(){if(busy)return;const r=act({type:'LAMP'});if(!r)return;const w=D.T.WICK.shine;banner('燈照');toast(esc(w[2]));drawCombat();}
 function sendAsk(uid){if(busy)return;const S=D.T.SEND_BACK;const c=st.combat;window._send=uid;modal(`<h2 style="color:var(--gold);margin-top:0">${esc(S.lamp)}</h2><p class="big">${esc(S.cost.title)}（另外要 1 點能量）</p><button class="opt" onclick="doSend('hp')">${esc(S.cost.hurt)}</button><h3 style="color:var(--gold)">${esc(S.cost.exhaust)}</h3><div class="cards">${c.hand.map((x,i)=>cardHtml(x,`onclick="doSend(${i})"`)).join('')||'<p>手上沒有牌</p>'}</div><p><button onclick="closeModal()">算了</button></p>`);}
 async function doSend(pay){closeModal();busy=true;const uid=window._send;const el=$('f_'+uid);const r=act({type:'SEND',uid,pay});if(!r){busy=false;return;}const L=D.T.SEND_BACK.cl;const ln=L[Math.floor(Math.random()*L.length)];if(el)el.classList.add('gone');sfx('sfx_purify');toast('克勞德：'+esc(ln[2]));await wait(650);await animate(r.events.filter(e=>e.t!=='kill'),null,null);busy=false;after(r);}
 function ovl(img,txt,ms){const o=$('ovl');o.style.backgroundImage=img?`url(${img})`:'none';o.innerHTML=txt?`<div class="ot">${txt}</div>`:'';o.classList.add('on');return wait(ms).then(()=>o.classList.remove('on'));}
 async function fxCommon(e){
+ if(e.t==='lie'){pop($('f_'+e.uid),'改了','b');drawCombatIf();}
+ else if(e.t==='stopAll'){banner('牠們停手了');}
+ else if(e.t==='flame'){toast('燈火 +1');}
+ else if(e.t==='hold'){}
  if(e.t==='pas'){cutIn(e.k);}
  else if(e.t==='tal'){const t=D.talents[e.k];toast(`<b>${esc(t.line)}・${esc(t.n)}</b>`);}
  else if(e.t==='clSave'){sfx('sfx_recall');const V=D.T.CL_CALLBACK.voice;await ovl(C.originOf(D,st).img||D.chars.yy.img,'克勞德：'+esc(V[Math.floor(Math.random()*V.length)][2]),1600);drawCombatIf();}
@@ -2629,7 +2889,9 @@ async function fxCommon(e){
  else if(e.t==='yxWake'){sfx('sfx_corrupt');const F=D.T.YUXI.flash;await ovl(D.inbox+'yx_reveal.webp',esc(F[Math.floor(Math.random()*F.length)]),800);}
  else if(e.t==='yxTurn'){const L=D.T.YUXI.takeover;toast('語熙：'+esc(L[Math.floor(Math.random()*L.length)][2]));drawCombatIf();await wait(200);}
  else if(e.t==='fullSoon'){const A=D.T.ALIEN.s100;toast('語嫣：'+esc(A.lines[Math.floor(Math.random()*A.lines.length)][2]));}
- else if(e.t==='transform'){sfx('sfx_transform');const o=C.originOf(D,st);const FS=(D.T.FORM_STAGES[st.origin]||{}).beast||{};await wait(700);await ovl(o.full||o.half||o.img||D.chars.yy.img,esc(FS.sound||'所有牌，這一回合都不用代價。'),1100);drawCombatIf();}
+ else if(e.t==='transform'){sfx('sfx_transform');const o=C.originOf(D,st);const FS=(D.T.FORM_STAGES[st.origin]||{}).beast||{};await wait(700);
+  if(e.mix){const sb=C.subOf(D,st);const PT={BB:'契牌費用 -1',MM:'每回合結束，所有敵人 +2 厄契',BM:'每打出一張契牌，抽 1 張、得到 3 格擋'};await ovl(o.full||o.half||o.img||D.chars.yy.img,`混合型態：${esc(o.n)}＋${esc(sb.n)}<br><small>兩個本源同時醒著，兩回合，每回合多 1 能量；${PT[e.pair]}</small>`,1500);}
+  else await ovl(o.full||o.half||o.img||D.chars.yy.img,esc(FS.sound||'所有牌，這一回合都不用代價。'),1100);drawCombatIf();}
  else if(e.t==='recall'){sfx('sfx_recall');const o=C.originOf(D,st);const V=D.T.CL_CALLBACK.voice;const o2=$('ovl');o2.style.backgroundImage=`url(${o.full||o.half||o.img||D.chars.yy.img})`;o2.innerHTML='';o2.classList.add('on');await wait(900);o2.style.backgroundImage=`url(${o.img||D.chars.yy.img})`;o2.innerHTML=`<div class="ot">克勞德：${esc(V[Math.floor(Math.random()*V.length)][2])}</div>`;await wait(1300);o2.classList.remove('on');drawCombatIf();}
  if(e.t==='stun'){pop($('f_'+e.uid),'動不了','p');}
  else if(e.t==='stunned'){flash('牠動不了');await wait(200);}
@@ -2651,6 +2913,8 @@ function fanHand(){const el=$('hand');const cs=[...el.children];const n=cs.lengt
  cs.forEach((e,i)=>{const k=i-mid;e.style.left=(W/2+k*sp-56)+'px';e.style.zIndex=10+i;const up=e.classList.contains('kp')?8:0;e.style.transform=e.classList.contains('sel')?`translateY(-52px) scale(1.14)`:`translateY(${k*k*sink-up}px) rotate(${k*th}deg)`;e.dataset.base=e.style.transform;});}
 addEventListener('resize',()=>{if(st&&st.screen==='combat')fanHand();});
 function tapCard(i){if(busy||Date.now()-(window._noClick||0)<350)return;const c=st.combat;
+ if(window._hold){window._hold=0;doAct({type:'HOLD',i},'這張先留著，下回合再寫完');return;}
+ if(window._sign===1){window._sign={i};sel=i;drawCombat();flash('再點要簽給的敵人');return;}
  if(sel===i&&c.hand[i].id==='x_fourth'&&st.fourthN>=8&&!st.flags.fourthUsed){sel=null;doPlay(i,null);return;}
  if(sel===i){const x=c.hand[i];const k=C.cost(D,x);if(D.cards[x.id].purge){sel=null;const r=act({type:'TEAR',i});if(r){sfx('sfx_purify');toast('符撕掉了');}drawCombat();return;}if(k>=0&&k<=c.energy&&(!C.needsTarget(D,x)||C.alive(c).length===1)){playSel();return;}sel=null;}else{sel=i;sfx('sfx_card_lift');}drawCombat();}
 // 拖曳出牌（輔助；點選照常能用）
@@ -2667,7 +2931,7 @@ function ghostFly(i,uid){if(fxLv()==='low')return;const el=$('hand').children[i]
  requestAnimationFrame(()=>{g.style.left=(b.left+b.width/2-56)+'px';g.style.top=(b.top+b.height/2-81)+'px';g.style.transform='scale(.35)';g.style.opacity='.15';});setTimeout(()=>g.remove(),270);}
 function edge(k,ms){const e=$('edge');e.className=k;setTimeout(()=>{if(e.className===k)e.className='';},ms||300);}
 function comboShow(n){const e=$('combo');if(n<3){e.classList.remove('on');return;}e.textContent=n+' 連擊';e.style.fontSize=Math.min(52,22+n*4)+'px';e.classList.remove('on');void e.offsetWidth;e.classList.add('on');sfx('sfx_combo',1+(n-3)*.08);clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1400);}
-function tapFoe(uid){if(window._eye){window._eye=0;const r=act({type:'EYE',uid});if(r){sfx('sfx_reveal');toast('顧沉舟：'+esc(D.T.UNLOCK_CHARS.gu.inRun[1][2]));drawCombat();}return;}if(busy||sel==null)return;const c=st.combat;if(!C.needsTarget(D,c.hand[sel]))return;doPlay(sel,uid);}
+function tapFoe(uid){if(window._sign&&window._sign.i!=null){const i=window._sign.i;window._sign=0;sel=null;const r=doAct({type:'SIGN',i,uid});if(r)toast('契約簽好了：牠這回合<b>停手</b>');return;}if(window._eye){window._eye=0;const r=act({type:'EYE',uid});if(r){sfx('sfx_reveal');toast('顧沉舟：'+esc(D.T.UNLOCK_CHARS.gu.inRun[1][2]));drawCombat();}return;}if(busy||sel==null)return;const c=st.combat;if(!C.needsTarget(D,c.hand[sel]))return;doPlay(sel,uid);}
 function playSel(){if(sel==null)return;const c=st.combat;const a=C.alive(c);doPlay(sel,a.length===1?a[0].uid:null);}
 async function doPlay(i,uid){busy=true;const card=st.combat.hand[i];const before=snapshot();sel=null;ghostFly(i,uid);const r=act({type:'PLAY',i,target:uid});if(!r){busy=false;drawCombat();return;}
  if(st.combat&&C.cardDef(D,card).t==='a')comboShow(st.combat.atkN);
@@ -2722,6 +2986,7 @@ function banner(t){if(/^第/.test(t)){const f=$('foes');f.classList.remove('newt
 function after(r){if(!r)return;
  if(st.screen==='combat'){drawCombat();return;}
  if(st.screen==='over'){runEnd(r);return;}
+ if(st.screen==='gpick'){playJingle('jingle_clear');drawPage();show('pg');return;}
  if(r.events.some(e=>e.t==='win')){const w=r.events.find(e=>e.t==='win');playJingle('jingle_win');setTimeout(()=>{drawPage();show('pg');},500);return;}
  route();}
 
@@ -2733,7 +2998,8 @@ function drawPage(){const s=st.screen;const L=D.layers[st.layer]||D.layers[D.lay
   if(rw.relicTaken){const R=D.relics[rw.relicTaken];h+=`<div class="rel"><img src="${R.ic}" alt=""><div><b>帶走了：${R.n}</b><small>${R.d}</small></div></div>`;}
   if(!rw.cardTaken&&rw.cards.length){h+=`<h3 style="color:var(--gold)">選一張牌加入牌組</h3><div class="cards">${rw.cards.map((id,i)=>cardHtml({id,up:0},`onclick="pickCard(${i})"`)).join('')}</div><p style="text-align:center"><button onclick="skipCard()">不拿</button></p>`;}
   else h+=`<p style="text-align:center;margin-top:18px"><button class="main" onclick="leave()" ${rw.relicChoice?'disabled':''}>繼續往下</button></p>`;}
- else if(s==='gnext'){const T=D.trials.find(t=>t.id===st.trial);const sg=T.stages[st.gi];const KN={fight:'一般的敵人',elite:'菁英',boss:'首領'};h=`<h2>${esc(T.n)}　第 ${st.gi+1}／${T.stages.length} 場</h2><p class="big">鐵柵門後面的霧散開一點。下一場在${esc(D.layers[sg.l].n)}，對手是${KN[sg.k]}。</p><p>生命 ${st.hp}／${st.maxHp}　牌組 ${st.deck.length} 張</p><p style="text-align:center;margin-top:18px"><button class="main" onclick="gNext()">開打</button></p><p style="text-align:center"><button onclick="showDeck()">看牌組</button></p>`;}
+ else if(s==='gpick'){h=`<h2>五場都打完了</h2><p class="big">霧退回鐵柵門後面，桌上留著三張牌。選一張帶走。</p><div class="cards">${st.gpick.map((id,i)=>cardHtml({id,up:0},`onclick="gPick(${i})"`)).join('')}</div><p style="color:var(--dim)">這些牌只能放在收藏裡、用在牌局，不會進一般下潛。</p>`;}
+ else if(s==='gnext'){const T=D.trials.find(t=>t.id===st.trial);const sg=T.stages[st.gi];const KN={fight:'一般的敵人',elite:'菁英',boss:'首領'};h=`<h2>${esc(T.n)}　第 ${st.gi+1}／${T.stages.length} 場${sg.n?'・'+esc(sg.n):''}</h2><p class="big">鐵柵門後面的霧散開一點。下一場在${esc(D.layers[sg.l].n)}，對手是${sg.ids?sg.ids.map(id=>esc(D.enemies[id].n)).join('、'):KN[sg.k]}。</p>${sg.rd?`<p style="color:#ffb0b8">這一場的規則：${esc(sg.rd)}</p>`:''}<p>生命 ${st.hp}／${st.maxHp}　牌組 ${st.deck.length} 張</p><p style="text-align:center;margin-top:18px"><button class="main" onclick="gNext()">開打</button></p><p style="text-align:center"><button onclick="showDeck()">看牌組</button></p>`;}
  else if(s==='prep'){const p=st.prep;h=`<h2>出發之前</h2><p class="big">井口的繩子垂下去，看不到底。</p>`;
   if(p.relics)h+=`<h3 style="color:var(--gold)">舊行李：選一件帶下去</h3>`+p.relics.map((id,i)=>{const R=D.relics[id];return `<div class="rel" onclick="prepPick(${i})"><img src="${R.ic}" alt=""><div><b>${R.n}</b><small>${R.d}</small></div></div>`;}).join('');
   if(p.remove)h+=`<h3 style="color:var(--gold)">剪掉的線頭：移除一張起始牌</h3><div class="cards">${st.deck.map(c=>cardHtml(c,`onclick="prepRemove(${c.uid})"`)).join('')}</div>`;
@@ -2741,12 +3007,12 @@ function drawPage(){const s=st.screen;const L=D.layers[st.layer]||D.layers[D.lay
  else if(s==='rest'){const K=st.kp||[];const curses=st.deck.filter(c=>D.cards[c.id].t==='x');h=`<h2>營火</h2><p class="big">火光很暖。可以在這裡歇一下。</p><button class="opt" onclick="rest()">休息<small>回復 ${Math.floor(st.maxHp*.3)+(st.relics.includes('teapot')?15:0)+(K.includes('m_rest')?5:0)} 點生命</small></button><button class="opt" onclick="smith()">磨亮一張牌<small>選一張牌強化</small></button>${st.persona==='lazy'?`<button class="opt" onclick="restX('SLEEP')">睡久一點<small>回滿生命，可是醒來時影子長了一點（異化值 +15）</small></button>`:''}${st.hobby==='tea'?`<button class="opt" onclick="restX('TEA')">泡茶<small>異化值 -25</small></button>`:''}${st.hobby==='letters'&&!st.flags.wrote?`<button class="opt" onclick="restX('WRITE')">寫信給下一次的自己<small>在信封裡留 30 渡鴉幣（不算休息）</small></button>`:''}${K.includes('m_purge')?`<button class="opt" onclick="purgeList()" ${curses.length?'':'disabled'}>淨火<small>${curses.length?'燒掉一張詛咒（燒了就不能休息）':'牌組裡沒有詛咒'}</small></button>`:''}`;
   if(window._purge)h+=`<h3 style="color:var(--gold)">選一張詛咒燒掉</h3><div class="cards">${curses.map(c=>cardHtml(c,`onclick="doPurge(${c.uid})"`)).join('')}</div><p style="text-align:center"><button onclick="window._purge=0;drawPage()">算了</button></p>`;}
  else if(s==='chest'){const id=st.reward.chest;h=`<h2>寶箱</h2>`+(id?`<div class="rel"><img src="${D.relics[id].ic}" alt=""><div><b>${D.relics[id].n}</b><small>${D.relics[id].d}</small></div></div>`:`<p class="big">箱子裡只有 ${st.reward.gold} 枚渡鴉幣。</p>`)+`<p><button class="main" onclick="leave()">繼續往下</button></p>`;}
- else if(s==='shop'){const sh=st.shop;h=`<h2>沒有臉的攤主</h2><p style="color:var(--dim)">「看看吧。用渡鴉幣就好。」</p><div class="cards">${sh.cards.map((it,i)=>`<div>${cardHtml({id:it.id,up:0},it.sold?'':`onclick="buyCard(${i})"`,it.sold?'no':'')}<span class="price">${it.sold?'已售出':it.price+' 幣'}</span></div>`).join('')}</div>
+ else if(s==='shop'){const sh=st.shop;const SX=st.desire&&D.shopX[st.desire];const say=(SX&&SX.say)||D.shopSay[st.desire]||'看看吧。用渡鴉幣就好。';h=`<h2>沒有臉的攤主</h2><p style="color:var(--dim)">「${esc(say)}」</p>${sh.x&&SX?`<div class="rel" style="border-color:#c9a0d8;${sh.x.sold?'opacity:.45':''}" ${sh.x.sold?'':'onclick="buyX()"'}><img src="${I}i_seal.webp" alt=""><div><b>${esc(SX.n)}　${sh.x.sold?'已買':sh.x.price+' 幣'}</b><small>${esc(SX.d)}（只有立了「${esc(D.desires[st.desire].n)}」才看得到）</small></div></div>`:''}<div class="cards">${sh.cards.map((it,i)=>`<div>${cardHtml({id:it.id,up:0},it.sold?'':`onclick="buyCard(${i})"`,it.sold?'no':'')}<span class="price">${it.sold?'已售出':it.price+' 幣'}</span></div>`).join('')}</div>
   ${sh.relics.map((it,i)=>{const R=D.relics[it.id];return `<div class="rel" ${it.sold?'style="opacity:.4"':`onclick="buyRelic(${i})"`}><img src="${R.ic}" alt=""><div><b>${R.n}　${it.sold?'已售出':it.price+' 幣'}</b><small>${R.d}</small></div></div>`;}).join('')}
   <button class="opt" onclick="pickDeck('remove')" ${sh.removed?'disabled':''}>請攤主收走一張牌<small>${sh.removed?'已經用過了':sh.removeCost+' 渡鴉幣'}</small></button><p><button class="main" onclick="leave()">離開</button></p>`;}
  else if(s==='event'){const ev=D.events.find(e=>e.id===st.event.id);$('gbg').style.backgroundImage=`url(${ev.img})`;h=`<h2>${esc(ev.n)}</h2><p class="big">${esc(ev.txt)}</p>`;
   if(st.pick){h+=pickHtml();}
-  else if(!st.event.done)h+=ev.opts.map((o,i)=>`<button class="opt" onclick="evPick(${i})" ${o.need&&o.need.gold&&st.gold<o.need.gold?'disabled':''}>${esc(o.t)}<small>${esc(o.d)}</small></button>`).join('');
+  else if(!st.event.done)h+=C.evOpts(D,st,ev).map((o,i)=>o.per&&o.per!==st.persona?'':`<button class="opt" onclick="evPick(${i})" ${o.need&&o.need.gold&&st.gold<o.need.gold?'disabled':''} style="${o.per?'border-color:#c9a0d8':''}">${o.per?`<span style="color:#d9b8ec">【${esc(D.personas[o.per].n)}】</span>`:''}${esc(o.t)}<small>${esc(o.d)}</small></button>`).join('');
   else{const out=st.event.done.out||[];h+=`<p class="big">${esc(ev.opts[st.event.done.i].d)}。</p>`+out.map(o=>o.relic?`<div class="rel"><img src="${D.relics[o.relic].ic}" alt=""><div><b>${D.relics[o.relic].n}</b><small>${D.relics[o.relic].d}</small></div></div>`:o.card?`<p>得到：${D.cards[o.card].n}</p>`:o.upgraded?`<p>升級了：${D.cards[o.upgraded].n}</p>`:'').join('')+`<p><button class="main" onclick="leave()">繼續往下</button></p>`;}}
  if(st.pick&&s!=='event')h+=pickHtml();
  $('gpage').innerHTML=h;}
@@ -2765,7 +3031,7 @@ function spot(k){sfx('sfx_door');const S=D.T.TOWN.spots[k];const lock=(D.town.ne
  if(S.lines)tline(rnd(S.lines));
  if(k==='lamp')openKeeper();else if(k==='well')openWell();else if(k==='home')openHome();else if(k==='study')openStudy();else if(k==='board')openBoard();}
 function openHome(){const S=D.T.TOWN.spots.home;let h=`<h2 style="color:var(--gold);margin-top:0">${esc(S.n)}</h2><p class="big">${esc(dKey(S.desc))}</p><button class="opt" onclick="closeModal();openBook()">回憶之書<small>翻一翻帶回來的故事</small></button>`+talentHtml()+`<h3 style="color:var(--gold)">本源與面貌</h3>`;
- for(const ch of ['yy','cl'])h+=originsOf(ch).map(o=>{const ok=meta.memory>=o.unlock;const F=D.T.FORMS[ch+'_'+o.id]||{};const w=(meta.phWins||{})[ch+'_'+o.id]||[];return `<div class="rel orow" style="${ok?'':'opacity:.5'}" ${ok&&F.story?`onclick="closeModal();talk(D.T.FORMS['${ch}_${o.id}'].story,()=>openHome())"`:''}><img src="${ok?o.img:D.chars[ch].img}" onerror="this.src='${D.chars[ch].img}'" alt=""><div><b>${D.chars[ch].name}・${esc(o.n)}</b><small>${ok?esc(F.pf||F.sub||''):'累積 '+o.unlock+' 回憶後解鎖（現在 '+meta.memory+'）'}</small>${ok&&ch==='yy'?`<small style="color:#d9a0a8">通關過的相：${w.length?w.map(x=>PHN[x]).join('、'):'還沒有'}</small>`:''}</div></div>`;}).join('');
+ for(const ch of ['yy','cl'])h+=originsOf(ch).map(o=>{const ok=oOpen(o);const F=D.T.FORMS[ch+'_'+o.id]||{};const w=(meta.phWins||{})[ch+'_'+o.id]||[];return `<div class="rel orow" style="${ok?'':'opacity:.5'}" ${ok&&F.story?`onclick="closeModal();talk(D.T.FORMS['${ch}_${o.id}'].story,()=>openHome())"`:''}><img src="${ok?o.img:D.chars[ch].img}" onerror="this.src='${D.chars[ch].img}'" alt=""><div><b>${D.chars[ch].name}・${esc(o.n)}</b><small>${ok?esc(F.pf||F.sub||''):(o.unlockWin?'通關一次後解鎖':'累積 '+o.unlock+' 回憶後解鎖（現在 '+meta.memory+'）')}</small>${ok&&ch==='yy'?`<small style="color:#d9a0a8">通關過的相：${w.length?w.map(x=>PHN[x]).join('、'):'還沒有'}</small>`:''}</div></div>`;}).join('');
  modal(h+`<p><button onclick="closeModal()">關閉</button></p>`);}
 function openStudy(){const S=D.T.TOWN.spots.study;const left=meta.memory-(meta.memSpent||0);let h=`<h2 style="color:var(--gold);margin-top:0">${esc(S.n)}</h2><p class="big">${esc(dKey(S.desc))}</p><button class="opt" onclick="closeModal();openCodex()">怪物圖鑑</button><button class="opt" onclick="closeModal();openAch()">成就</button><button class="opt" onclick="showNotes()">公告</button><h3 style="color:var(--gold)">個性（可用回憶 ${left}）</h3>`;
  h+=Object.values(D.personas).map(p=>{const own=p.def||meta.personas.includes(p.id);return `<button class="opt" ${own?'disabled':''} onclick="buyPersona('${p.id}')">${D.chars[p.ch].name}・${esc(p.n)}　${own?'已經有了':'80 回憶'}<small>${esc(p.fx)}</small></button>`;}).join('');
@@ -2781,8 +3047,8 @@ function openWell(){const s=ls(RUNK);if(s&&s.screen!=='over'){const a=D.T.RETREA
 function pickOrigin(k){DV={ch:k};if(k==='gu'){dvGo();return;}dvStep('origin');}
 function dvList(title,items,noneKey,none){return `<h2 style="color:var(--gold);margin-top:0">${title}</h2>`+items.join('')+(none?`<button class="opt" onclick="dvSet('${noneKey}',null)">${none}</button>`:'')+`<p><button onclick="closeModal()">返回</button></p>`;}
 function dvStep(step){const k0=DV.ch;const k=k0==='yx'?'yy':k0;
- if(step==='origin'){const L=originsOf(k);modal(dvList(k==='yy'?'今天，是哪一個她？':'今天，提哪一盞燈？',L.map(o=>{const ok=meta.memory>=o.unlock;const F=D.T.FORMS[k+'_'+o.id]||{};return `<div class="rel orow" style="${ok?'':'opacity:.5'}" ${ok?`onclick="dvSet('origin','${o.id}')"`:''}><img src="${ok?o.img:D.chars[k].img}" alt="" onerror="this.src='${D.chars[k].img}'"><div><b>${esc(o.n)}</b><small>${ok?esc(F.sub||''):'累積 '+o.unlock+' 回憶後解鎖（現在 '+meta.memory+'）'}</small><small style="color:#d9ccb4">${esc(o.d)}</small></div></div>`;})));return;}
- if(step==='sub'){const L=originsOf(k).filter(o=>meta.memory>=o.unlock&&o.id!==DV.origin);if(!L.length){DV.sub=null;dvStep('desire');return;}
+ if(step==='origin'){const L=originsOf(k);modal(dvList(k==='yy'?'今天，是哪一個她？':'今天，提哪一盞燈？',L.map(o=>{const ok=oOpen(o);const F=D.T.FORMS[k+'_'+o.id]||{};return `<div class="rel orow" style="${ok?'':'opacity:.5'}" ${ok?`onclick="dvSet('origin','${o.id}')"`:''}><img src="${ok?o.img:D.chars[k].img}" alt="" onerror="this.src='${D.chars[k].img}'"><div><b>${esc(o.n)}</b><small>${ok?esc(F.sub||''):(o.unlockWin?'通關一次後解鎖':'累積 '+o.unlock+' 回憶後解鎖（現在 '+meta.memory+'）')}</small><small style="color:#d9ccb4">${esc(o.d)}</small></div></div>`;})));return;}
+ if(step==='sub'){const L=originsOf(k).filter(o=>oOpen(o)&&o.id!==DV.origin);if(!L.length){DV.sub=null;dvStep('desire');return;}
   modal(dvList(k==='yy'?'血裡還混著哪一個？（副本源）':'還帶著哪一面？（副面貌）',L.map(o=>`<div class="rel orow" onclick="dvSet('sub','${o.id}')"><img src="${o.img}" alt="" onerror="this.src='${D.chars[k].img}'"><div><b>${esc(o.n)}</b><small style="color:#d9ccb4">${esc(o.d)}</small><small style="color:#d9a0a8">${k==='yy'?'被動要到半妖以上才會醒':'被動從每場戰鬥第 3 回合起生效'}；專屬牌會出現在獎勵裡</small></div></div>`),'sub','只帶一個'));return;}
  if(step==='desire'){const all=Object.values(D.desires).filter(d=>d.ch===k||(k0==='yx'&&d.ch==='yx'));if(k==='yy'&&!meta.ach.includes('boss1')){dvStep('persona');return;}
   const wish=k==='cl';modal(dvList(wish?'這一次，心裡想著什麼？':'這一局，跟哪一種慾望立契？',all.map(d=>{const own=wish||d.id==='wrath'||meta.desires.includes(d.id);return `<button class="opt" onclick="${own?`dvSet('desire','${d.id}')`:`buyDesire('${d.id}')`}">${esc(d.n)}${own?'':'　（立契要 50 殘響，現在 '+(meta.echo||0)+'）'}<small>${esc(d.d)}</small><small style="color:#9fe8a3">好處：${esc(d.good)}</small><small style="color:#ff9aa8">代價：${esc(d.bad)}</small></button>`;}),'desire',wish?'什麼都不想，只是下去':'不立契'));return;}
@@ -2804,7 +3070,7 @@ function drawGate(){$('bbg').style.backgroundImage=`url(${D.inbox}bg_dive3.webp)
  const used={};for(const x of GB.deck){const k=x.id+'|'+(x.up?1:0);used[k]=(used[k]||0)+1;}
  let h=`<p class="big">${esc(T.d)}</p><p style="color:var(--dim)">牌組 ${R.min}～${R.max} 張；基本牌隨便放，收藏的牌同名最多 ${R.same} 張。贏了得到一張更好的牌。</p>
  <p>${chs.map(([k,c])=>`<button ${GB.ch===k?'class="main"':''} onclick="GB={ch:'${k}',origin:'${D.chars[k].origin}',deck:[]};drawGate()">${c.name}</button>`).join(' ')}</p>
- <p>本源：${originsOf(GB.ch).filter(o=>meta.memory>=o.unlock).map(o=>`<button style="padding:4px 8px;font-size:13px;${GB.origin===o.id?'border-color:var(--gold);color:var(--gold)':''}" onclick="GB.origin='${o.id}';drawGate()">${esc(o.n)}</button>`).join(' ')}</p>
+ <p>本源：${originsOf(GB.ch).filter(o=>oOpen(o)).map(o=>`<button style="padding:4px 8px;font-size:13px;${GB.origin===o.id?'border-color:var(--gold);color:var(--gold)':''}" onclick="GB.origin='${o.id}';drawGate()">${esc(o.n)}</button>`).join(' ')}</p>
  <h3 style="color:var(--gold)">這一副牌（${GB.deck.length} 張）${err?'　<small style="color:#ff9aa8">'+esc(err)+'</small>':''}</h3><div class="cards">${GB.deck.map((x,i)=>cardHtml(x,`onclick="GB.deck.splice(${i},1);drawGate()"`)).join('')||'<p style="color:var(--dim)">還是空的。點下面的牌放進來，點這裡的牌拿出去。</p>'}</div>
  <p style="text-align:center"><button class="main" ${err?'disabled':''} onclick="gateGo()">坐下，開始</button></p>
  <h3 style="color:var(--gold)">基本牌</h3><div class="cards">${gbFree(GB.ch).map(id=>cardHtml({id,up:0},`onclick="gbAdd('${id}',0)"`)).join('')}</div>
@@ -2812,9 +3078,10 @@ function drawGate(){$('bbg').style.backgroundImage=`url(${D.inbox}bg_dive3.webp)
  $('bpage').innerHTML=h;show('book');}
 function gbAdd(id,up){if(GB.deck.length>=D.deckRule.max){flash('最多 '+D.deckRule.max+' 張');return;}GB.deck.push({id,up});const e=C.deckOk(D,meta,GB.ch,GB.deck);if(e&&!/至少/.test(e)){GB.deck.pop();flash(e);return;}sfx('sfx_card_lift');drawGate();}
 function gateGo(){const e=C.deckOk(D,meta,GB.ch,GB.deck);if(e){flash(e);return;}sfx('sfx_well');startRun(GB.ch,GB.origin,{mode:'g',deck:GB.deck.slice(),trial:D.trials[0].id});}
-function learn(ch,id){const r=C.metaTalent(D,meta,ch,id);if(!r.ok){flash(r.error);return;}meta=r.meta;save();sfx('sfx_unlock');openHome();}
-function talentHtml(){let h='';for(const ch of ['yy','cl']){const P=C.profOf(meta,ch);const lv=C.LV(P.xp);const pts=lv-P.spent.length;h+=`<h3 style="color:var(--gold)">${D.chars[ch].name}的天賦　<small style="color:var(--dim)">${lv} 級・可用 ${pts} 點・再 ${25-(P.xp%25)} 熟練度升級</small></h3>`;
-  h+=Object.values(D.talents).filter(t=>t.ch===ch).map(t=>{const own=P.spent.includes(t.id);const lock=t.need&&!P.spent.includes(t.need);return `<button class="opt" ${own||lock||pts<1?'disabled':''} style="${own?'border-color:var(--gold);opacity:1':''}" onclick="learn('${ch}','${t.id}')">${esc(t.line)}・${esc(t.n)}${own?'　已學會':lock?'　（要先學前一格）':''}<small>${esc(t.d)}</small></button>`;}).join('');}return h;}
+function learn(ch,id){const r=C.metaTalent(D,meta,ch,id);if(!r.ok){flash(r.error);return;}meta=r.meta;save();sfx('sfx_unlock');openHome();const L=D.talentSay[id];if(L)toast(`語嫣：${esc(L[0])}<br>克勞德：${esc(L[1])}`);}
+function talentHtml(){let h='';for(const ch of ['yy','cl']){const P=C.profOf(meta,ch);const left=C.talLeft(D,P);h+=`<h3 style="color:var(--gold)">${D.chars[ch].name}的天賦　<small style="color:var(--dim)">可用 ${left} 點（用她下潛結束 +1，通關再 +1）</small></h3>`;
+  for(const line of [...new Set(Object.values(D.talents).filter(t=>t.ch===ch).map(t=>t.line))]){h+=`<p style="margin:8px 0 2px;color:#e9c98a">${esc(line)}</p>`;
+   h+=Object.values(D.talents).filter(t=>t.ch===ch&&t.line===line).sort((a,b)=>a.cost-b.cost).map(t=>{const own=P.spent.includes(t.id);const lock=t.need&&!P.spent.includes(t.need);return `<button class="opt" ${own||lock||left<t.cost?'disabled':''} style="${own?'border-color:var(--gold);opacity:1':''}" onclick="learn('${ch}','${t.id}')">${esc(t.n)}　${own?'已學會':t.cost+' 點'}${lock&&!own?'（要先學前一格）':''}<small>${esc(t.d)}</small></button>`;}).join('');}}return h;}
 function openKeeper(){$('bbg').style.backgroundImage=`url(${I}bg_guild.webp)`;$('btitle').textContent='守燈處';
  $('bpage').innerHTML=`<p class="big">攤子上掛滿燈籠。守燈人收的不是錢，是妳帶回來的殘響。</p><p style="color:var(--gold)">殘響 ${meta.echo||0}</p>`+D.keeper.map(k=>{const own=meta.keeper.includes(k.id);const lock=k.need&&!meta.keeper.includes(k.need);return `<button class="opt" ${own||lock?'disabled':''} onclick="buyKeeper('${k.id}')">${esc(k.n)}　${own?'已經有了':k.cost+' 殘響'}<small>${esc(k.d)}${lock?'（要先有「'+esc(D.keeper.find(x=>x.id===k.need).n)+'」）':''}</small></button>`;}).join('');show('book');}
 function buyKeeper(id){const r=C.metaBuy(D,meta,id);if(!r.ok){flash(r.error);return;}meta=r.meta;save();sfx('sfx_unlock');toast(`守燈處：<b>${esc(D.keeper.find(k=>k.id===id).n)}</b>`);openKeeper();}
@@ -2822,7 +3089,9 @@ function prepPick(i){if(act({type:'PREP_RELIC',i}))drawPage();}
 function prepRemove(uid){if(act({type:'PREP_REMOVE',uid}))drawPage();}
 function prepDone(){if(act({type:'PREP_DONE'}))route();}
 function rerollMap(){const r=act({type:'REROLL_MAP'});if(r){toast('換了一張地圖');drawMap();}}
+function gPick(i){const r=act({type:'G_PICK',i});if(r)after(r);}
 function gNext(){const r=act({type:'G_NEXT'});if(!r)return;const ml=meetLines();const go2=()=>{drawCombat();show('cb');banner('第 1 回合');};if(ml.length)talk(ml,go2);else go2();}
+function buyX(){const r=act({type:'BUY_X'});if(!r)return;sfx('sfx_gold');if(r.events.some(e=>e.t==='smash')){toast('桌子翻了。店裡什麼都不剩。');route();return;}toast('買下了');drawPage();}
 function restX(t){const r=act({type:t});if(!r)return;if(t==='WRITE'){toast('信寫好了，壓在井邊的石頭下面');drawPage();return;}route();}
 function purgeList(){window._purge=1;drawPage();}
 function doPurge(uid){window._purge=0;const r=act({type:'PURGE',uid});if(r){sfx('sfx_purify');toast('燒掉了');route();}}
@@ -2864,7 +3133,8 @@ function runEnd(r,forced){const ev=r.events.find(e=>e.t==='runEnd');const win=st
   if(st.result&&!st.result.win&&!st.result.quit&&meta.left)h+=`<div class="rel"><img src="${I}st_echo.webp" alt=""><div><b>有一張牌留在下面了</b><small>「${esc(D.cards[meta.left.id].n)}」。下一次，在第一層可以把它撿回來。</small></div></div>`;
   if(news.gu)h+=`<div class="rel" style="border-color:var(--gold)" onclick="talk(D.T.UNLOCK_CHARS.gu.unlock,()=>{})"><img src="${D.chars.gu.img}" alt=""><div><b>新的下潛者：顧沉舟</b><small>九張漏頁湊齊了。點這裡看他怎麼來的。</small></div></div>`;
   if(meta.yx&&!meta.yxSeen){meta.yxSeen=1;save();h+=`<div class="rel" style="border-color:#ff3b4a" onclick="talk(D.T.UNLOCK_CHARS.yuxi.unlock,()=>{})"><img src="${D.chars.yx.img}" alt=""><div><b>新的下潛者：語熙掌身</b><small>流蘇變紅了。點這裡看。</small></div></div>`;}
-  {const pch=st.ch==='yx'?'yy':st.ch;const P=C.profOf(meta,pch);const lv=C.LV(P.xp);h+=`<div class="rel"><img src="${D.chars[st.ch].img}" alt="" style="object-fit:cover;object-position:50% 12%"><div><b>${D.chars[st.ch].name}的熟練度 +${news.xp||0}${news.lvUp?'　升到 '+lv+' 級':''}</b><small>${lv} 級，離下一級還差 ${25-(P.xp%25)}。${lv-P.spent.length>0?'有 '+(lv-P.spent.length)+' 點天賦可以學，到織命坊看看。':''}</small></div></div>`;}
+  if(st.ch!=='gu'){const pch=st.ch==='yx'?'yy':st.ch;const P=C.profOf(meta,pch);const left=C.talLeft(D,P);h+=`<div class="rel"><img src="${D.chars[pch].img}" alt="" style="object-fit:cover;object-position:50% 12%"><div><b>${D.chars[pch].name}的天賦點 +${news.pts||0}</b><small>現在可用 ${left} 點，到織命坊學。</small></div></div>`;}
+  if(news.bookX){const b=D.bookX.find(x=>x.id===news.bookX);h+=`<div class="rel" style="border-color:var(--gold)"><img src="${I}st_vow.webp" alt=""><div><b>回憶之書多了一頁：〈${esc(b.t)}〉</b><small>${esc(b.cond)}</small></div></div>`;}
   if(news.gCard){const gd=D.cards[news.gCard];h+=`<h3 style="color:var(--gold)">牌局的獎品（已收進收藏）</h3><div class="cards">${cardHtml({id:news.gCard,up:1})}</div>`;}
   if(meta.keepPending&&win&&!st.result.g){const can=st.deck.filter(x=>D.cards[x.id].r>0&&D.cards[x.id].t!=='x');const pk=[];const src=can.slice();while(pk.length<3&&src.length)pk.push(src.splice(Math.floor(Math.random()*src.length),1)[0]);window._keep=pk;
    if(pk.length)h+=`<h3 style="color:var(--gold)">帶一張回去（永久收進收藏）</h3><div class="cards" id="keepRow">${pk.map((x,i)=>cardHtml(x,`onclick="keepCard(${i})"`)).join('')}</div>`;}
@@ -2878,6 +3148,7 @@ function showNotes(){modal(`<h2 style="color:var(--gold);margin-top:0">公告</h
 function openBook(){$('btitle').textContent='回憶之書';$('bbg').style.backgroundImage=`url(${I}bg_library.webp)`;
  let h=`<p style="color:var(--dim)">回憶 ${meta.memory}。每一次下潛，不管走到哪裡，都會留下回憶。</p>`;
  h+=D.unlocks.map(u=>{const got=meta.unlocked.includes(u.id);const st2=D.stories[u.id];return `<div class="rel" style="${got?'':'opacity:.5'}" ${got&&st2?`onclick="readStory('${u.id}')"`:''}><img src="${I}${got?'st_vow':'st_seal'}.webp" alt=""><div><b>${got?esc(u.t):'？？？'}</b><small>${got?(st2?'點一下閱讀':'已解鎖'):'累積 '+u.at+' 回憶'}</small></div></div>`;}).join('');
+ h+=`<h3 style="color:var(--gold)">要特別的條件才看得到的</h3>`+D.bookX.map(b=>{const got=(meta.bookX||[]).includes(b.id);return `<div class="rel" style="${got?'':'opacity:.5'}"><img src="${I}${got?'st_vow':'st_seal'}.webp" alt=""><div><b>${got?'〈'+esc(b.t)+'〉':'？？？'}</b><small>${got?'正文還在寫。':esc(b.cond)}</small></div></div>`;}).join('');
  $('bpage').innerHTML=h;show('book');}
 function readStory(id){talk(D.stories[id].lines,()=>{});}
 function openCodex(){$('btitle').textContent='圖鑑';$('bbg').style.backgroundImage=`url(${I}bg_codex.webp)`;const ks=Object.keys(D.enemies);const n=ks.filter(k=>meta.codex[k]).length;
