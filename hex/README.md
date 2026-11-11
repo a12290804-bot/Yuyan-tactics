@@ -6,7 +6,7 @@
 - 檔案：`data.js`（卡牌、敵人、遺物、事件、對話、成就都是資料表）、`core.js`（規則，純函式、同一個種子結果一樣）、`index.html`（畫面）。
 - 圖片：全部借用渡鴉公會網站的圖（`../../raven-guild/images/`）。
 - 存檔：`localStorage` 的 `dive_run_v1`（這一局）、`dive_meta_v1`（回憶、圖鑑、成就）。
-- 測試：`node tests/core_tests.js`（62 項）；平衡模擬：`node tests/sim.js 300 yy`、`node tests/sim.js 300 cl`。
+- 測試：`node tests/core_tests.js`（66 項）；平衡模擬：`node tests/sim.js 300 yy`、`node tests/sim.js 300 cl`。
 
 ## 加東西
 - 新卡：在 `cards` 加一筆。效果寫成 fx 清單，說明文字會自動產生。

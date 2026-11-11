@@ -3,7 +3,7 @@
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.8',
+ version:'v0.9',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -460,8 +460,46 @@ DATA.events.push({id:'left_card',special:1,n:'她留下的東西',img:DATA.inbox
  {t:'讓它留在這裡',r:[{leftSkip:1}],d:'離開。它不會再等了'}]});
 ['start','win','lose'].forEach(k=>{const T0=DATA.talk[k];if(!T0)return;const U=TX.UNLOCK_CHARS||{};T0.yx=[(U.yuxi&&U.yuxi.inRun||[['yx',null,'……']])[k==='start'?2:k==='win'?3:0]];T0.gu=[(U.gu&&U.gu.inRun||[['gu',null,'……']])[k==='start'?3:k==='win'?0:4]];});
 
+// ── v0.8.1：還沒畫的本源，先借渡鴉公會裡語嫣「動作不一樣」的那批圖（不用只換衣服的提燈站姿）
+DATA.borrow={B02:['y_new2','y_new5','y_redwing'],B03:['y_new15'],B04:['y_cocoon',null,'y_p2'],B05:['y_new13','y_new12','y_mask'],B06:['y_new8','y_new18','y_crowqueen'],B07:['y_redveil','y_new1'],B08:['y_namebottle','y_new11','y_new0'],B10:['y_new16',null,'y_dom_p3'],
+ M05:['y_new14',null,'y_p3'],M06:['y_new4'],M07:['y_new10','y_new3','y_deep'],M08:['y_new7',null,'y_dom_p1'],M09:['y_new17',null,'y_dom_p2'],M10:['y_ev_wing','y_new9'],M11:['y_phoenix'],M12:['y_new6',null,'wb_y_p3']};
+for(const [id,a] of Object.entries(DATA.borrow)){const o=DATA.origins['yy_'+id];if(!o)continue;const has=n=>DATA.haveArt.includes(n);if(!has('y_skin_'+id)&&a[0])o.img=I+a[0]+'.webp';if(!has('y_'+id+'_half')&&a[1])o.half=I+a[1]+'.webp';if(!has('y_'+id+'_full')&&a[2])o.full=I+a[2]+'.webp';}
+
+// ── v0.9：副本源、本源觸發畫面、收藏與牌局、天賦（數值都是暫定，等規則大師）
+DATA.deckRule={min:10,max:15,same:2};
+DATA.trials=[{id:'t1',n:'第一場牌局',d:'連打五場，中間不拿獎勵，每場打完回一點生命。',heal:.15,memory:10,stages:[{l:0,k:'fight'},{l:0,k:'elite'},{l:1,k:'fight'},{l:1,k:'elite'},{l:2,k:'boss'}]}];
+DATA.talents={
+ yy_greed1:{ch:'yy',line:'貪',n:'順手',d:'每打倒一個敵人，多拿 3 渡鴉幣。'},
+ yy_greed2:{ch:'yy',line:'貪',n:'買通',need:'yy_greed1',d:'每回合一次，可以花 25 渡鴉幣換 1 點能量。'},
+ yy_grudge1:{ch:'yy',line:'記仇',n:'先記一筆',d:'每場戰鬥第一次被打，打她的敵人得到 2 層厄契。'},
+ yy_grudge2:{ch:'yy',line:'記仇',n:'第三次',need:'yy_grudge1',d:'同一個敵人打到她第三次時，牠身上的厄契被裁定一次（每層 3 傷害）。'},
+ yy_guard1:{ch:'yy',line:'護短',n:'還不能倒',d:'回合開始時生命低於三成，得到 4 格擋。'},
+ yy_guard2:{ch:'yy',line:'護短',n:'妹妹的聲音',need:'yy_guard1',d:'每局一次，生命歸零時被克勞德叫回來，回到 25% 生命。'},
+ cl_lamp1:{ch:'cl',line:'守燈',n:'輕一點',d:'送回時付的生命從 4 變成 2。'},
+ cl_lamp2:{ch:'cl',line:'守燈',n:'連你也一樣',need:'cl_lamp1',d:'首領生命低於一成時，也可以送回。'},
+ cl_write1:{ch:'cl',line:'寫字',n:'筆尖是濕的',d:'每場戰鬥開始時有 1 墨。'},
+ cl_write2:{ch:'cl',line:'寫字',n:'改了又改',need:'cl_write1',d:'保留在手上的牌，每過一回合費用 -1。'},
+ cl_pain1:{ch:'cl',line:'不肯說痛',n:'還可以',d:'生命低於一半時，每次得到格擋 +2。'},
+ cl_pain2:{ch:'cl',line:'不肯說痛',n:'站著',need:'cl_pain1',d:'回合開始時生命低於三成，得到 6 格擋。'}
+};
+for(const k in DATA.talents)DATA.talents[k].id=k;
+DATA.pasName={firstAtkPact1:'狐火',pactGrow1:'纏',linkPlus1:'張網',judgeKillHeal3:'尾針',keepBlock2:'紙',ink6Double:'墨',hatch:'孵化',script:'劇本',brideLink:'紅線',phylactery:'命匣',leech:'吸血',coral:'骨花',jelly:'麻痺',vine:'寄生',mimicFirst:'千相',sacrifice:'獻祭',molt3:'蛻皮',lure:'誘燈'};
+for(const k in DATA.origins){const o=DATA.origins[k];o.cut=o.half||o.img;}
+
 // ── 公告（新的放最上面）
 DATA.notes=[
+ {ver:'v0.9',lines:[
+  '副本源：出發時除了主本源，可以再選一個副本源。它的專屬牌會出現在獎勵裡；它的被動，語嫣要到半妖以上才會醒，克勞德要到每場的第 3 回合。',
+  '本源發動時會閃過她那個本源的樣子，不同本源看到的畫面不一樣。',
+  '收藏：通關一次下潛，可以從這局的牌組裡選一張帶回來，永久留著。',
+  '新模式「牌局」：渡鴉巷的鐵柵門開了。用收藏的牌自己組一副 10～15 張的牌組，連打五場。打完會得到一張更好的牌。',
+  '天賦：用誰下潛，誰就累積熟練度，輸了也有。升級得到天賦點，在織命坊學。語嫣有貪、記仇、護短三條線；克勞德有守燈、寫字、不肯說痛三條線。'
+ ]},
+ {ver:'v0.8.2',lines:['莉莉絲、水母、鮟鱇多了完全非人的樣子，蛾多了半妖的樣子。']},
+ {ver:'v0.8.1',lines:[
+  '語嫣還沒有專屬立繪的 16 個本源，先換上各自不同姿勢的圖，不再全部是同一張。',
+  '對話時的立繪會跟著現在的本源和相（人形／半妖／完全非人）走；克勞德換了面貌，對話裡也是那個樣子。'
+ ]},
  {ver:'v0.8',lines:[
   '語嫣的本源補到 21 種、克勞德多了「窗」：每一種有自己的被動，在下潛井選。還沒有圖的先用原本的立繪。',
   '會留疤的牌：用血換力量的牌，每讓語嫣失去 1 生命就多一道疤。疤越多打得越重，九道疤以後，那張牌會換一個名字。',
