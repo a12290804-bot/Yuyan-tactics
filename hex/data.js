@@ -3,7 +3,7 @@
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.10',
+ version:'v0.12',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -605,8 +605,228 @@ DATA.shopSay={pride:'價錢不能少。能少的，不夠資格放上這張桌�
 // 回憶之書：三則新的（正文待寫）
 DATA.bookX=[{id:'bx1',t:'九條影子',cond:'用語嫣・九尾妖狐通關，而且這一局大部分時間是人形'},{id:'bx2',t:'咬住的那口',cond:'用毒蛇通關，而且這一局立了「執」或「怨」'},{id:'bx3',t:'少了一頁的晚餐',cond:'任何角色通關，而且牌組裡有「第四副碗筷」'}];
 
+// ── v0.11：異化不回退、地圖更複雜、畫廊、局外內容加量、語嫣更多選項、克勞德各面貌的牌
+DATA.map={rows:8,cols:4,w:{fight:40,event:18,elite:10,shop:7,chest:4,rest:9,mystery:10,altar:4},q:{event:50,fight:25,chest:15,shop:10}};
+DATA.nodeName={mystery:'？',altar:'祭壇'};
+DATA.events.push({id:'altar',special:1,n:'沒有神像的祭壇',img:DATA.inbox+'bg_dive2.webp',txt:'石台上沒有神像，只有一個剛好放得下一隻手的凹槽。凹槽是溫的。',opts:[
+ {t:'把手放上去（失去 8 生命）',r:[{hurt:8},{relicRandom:1}],d:'失去 8 生命，得到一件遺物'},
+ {t:'放一張牌上去',r:[{removePick:1},{gold:30}],d:'移除一張牌，得到 30 渡鴉幣'},
+ {t:'不碰它',r:[],d:'離開'}]});
+// 守燈處第二排（要先買第一排對應的那一項）
+DATA.keeper.push(
+ {id:'m_hp3',n:'第三口氣',cost:180,need:'m_hp2',d:'起始最大生命再 +8。'},
+ {id:'m_gold2',n:'藏在鞋底的錢',cost:120,need:'m_gold',d:'起始渡鴉幣再 +60。'},
+ {id:'m_card',n:'帶著的一頁',cost:150,need:'m_remove',d:'出發時，從 3 張紙位階的牌裡選 1 張帶走。'},
+ {id:'m_relic2',n:'更舊的行李',cost:250,need:'m_relic',d:'「舊行李」多一件可以選。'},
+ {id:'m_rest2',n:'加了糖的茶',cost:140,need:'m_rest',d:'營火休息再多回復 5 生命。'},
+ {id:'m_shop',n:'熟客',cost:160,need:'m_gold',d:'商店價錢 -10%。'},
+ {id:'m_elite',n:'賞金',cost:120,need:'m_hp1',d:'打贏菁英拿到的渡鴉幣 +50%。'},
+ {id:'m_map',n:'畫過的地圖',cost:200,need:'m_skip',d:'地圖上的「？」一開始就看得到裡面是什麼。'}
+);
+// 委託第二批
+DATA.coms.push(
+ {id:'c2_full',t:'讓她變一次',d:'這一局，語嫣變成完全非人一次。',ch:null},
+ {id:'c2_scar',t:'九道疤',d:'這一局，有一張牌留下 9 道疤。',ch:null},
+ {id:'c2_curse',t:'帶著它們回家',d:'牌組裡有 3 張以上的詛咒，並且通關。',ch:null},
+ {id:'c2_light',t:'把燈照亮',d:'這一局，克勞德發動一次「燈照」。',ch:'cl'},
+ {id:'c2_thin',t:'輕裝',d:'通關時，牌組不超過 12 張。',ch:null},
+ {id:'c2_noshop',t:'不買東西',d:'這一局一次都沒在商店買東西，並且通關。',ch:null},
+ {id:'c2_kill',t:'三十個',d:'這一局打倒 30 個敵人。',ch:null},
+ {id:'c2_mix',t:'兩個她',d:'這一局，語嫣進入一次混合型態。',ch:null}
+);
+// 成就第二批
+DATA.achievements.push(
+ {id:'full1',n:'不像人了',d:'第一次變成完全非人'},{id:'mix1',n:'兩個她',d:'第一次進入混合型態'},{id:'recall1',n:'姐姐，看我',d:'第一次被克勞德叫回來'},{id:'yx60',n:'流蘇變紅',d:'第一次讓語熙醒來'},
+ {id:'flame20',n:'二十盞燈',d:'累積 20 點燈火'},{id:'lamp1',n:'燈照',d:'第一次發動燈照'},{id:'scar9',n:'九道疤',d:'一張牌留下 9 道疤'},{id:'possess1',n:'是我的',d:'用「佔」複製一張牌'},
+ {id:'xian1',n:'突破',d:'看見修仙系的敵人突破'},{id:'flesh1',n:'拆零件',d:'打掉一個血肉機械的零件'},{id:'eld1',n:'看清楚了',d:'打中一個看不清的敵人'},{id:'trial1',n:'鐵柵門後',d:'打完一次牌局'},
+ {id:'win_yx',n:'沒有人叫她回來',d:'用語熙掌身通關'},{id:'win_gu',n:'補上的那一頁',d:'用顧沉舟通關'},{id:'win_desire',n:'立了契還回得來',d:'立了慾望契或心願並通關'},{id:'runs10',n:'第十次下潛',d:'下潛 10 次'},{id:'runs30',n:'第三十次下潛',d:'下潛 30 次'}
+);
+for(const o of Object.values(DATA.origins))DATA.achievements.push({id:'win_'+o.ch+'_'+o.id,n:(o.ch==='yy'?'語嫣':'克勞德')+'・'+o.n,d:'用這個本源（面貌）通關',origin:1});
+// 回憶的新解鎖：每一段解鎖新的牌
+Object.assign(DATA.cards,{
+ yy_ledger:{n:'翻帳',c:1,t:'s',r:2,ch:'yy',lock:'yy_lock2',img:sk('hex'),fx:[['pa',2,'a'],['dr',1]],u:{fx:[['pa',3,'a'],['dr',1]]}},
+ yy_smile:{n:'笑著收網',c:2,t:'a',r:2,ch:'yy',lock:'yy_lock3',img:sk('garrote'),fx:[['da',6,1,'pact2']],u:{fx:[['da',8,1,'pact2']]}},
+ yy_ninefold:{n:'九倍奉還',c:3,t:'a',r:3,ch:'yy',lock:'yy_lock4',img:sk('chain'),ex:1,fx:[['jd',4],['jd',4]],u:{c:2}},
+ cl_quill:{n:'換一枝筆',c:0,t:'s',r:2,ch:'cl',lock:'cl_lock2',img:sk('mend'),fx:[['ink',2],['dr',1]],u:{fx:[['ink',3],['dr',1]]}},
+ cl_nightlight:{n:'小夜燈',c:1,t:'p',r:2,ch:'cl',lock:'cl_lock3',img:sk('incense'),fx:[['pw','hold',1]],u:{c:0}},
+ cl_lastline:{n:'最後一行',c:2,t:'a',r:3,ch:'cl',lock:'cl_lock4',img:sk('thrust'),fx:[['dInk',8,3]],u:{fx:[['dInk',12,3]]}}
+});
+DATA.unlocks.push(
+ {id:'yy_lock2',at:480,t:'語嫣的新牌「翻帳」加入牌池'},{id:'cl_lock2',at:520,t:'克勞德的新牌「換一枝筆」加入牌池'},
+ {id:'yy_lock3',at:600,t:'語嫣的新牌「笑著收網」加入牌池'},{id:'cl_lock3',at:640,t:'克勞德的新牌「小夜燈」加入牌池'},
+ {id:'yy_lock4',at:760,t:'語嫣的新牌「九倍奉還」加入牌池'},{id:'cl_lock4',at:800,t:'克勞德的新牌「最後一行」加入牌池'}
+);
+// 語嫣：更多慾望、個性、癖好
+Object.assign(DATA.desires,{
+ possess:{id:'possess',ch:'yy',n:'佔',d:'看上的東西，就是她的。',good:'打贏菁英時，複製牌組裡的一張牌',bad:'每場戰鬥第一回合，一張手牌被她自己「佔」住，不能打出',sfx:'sfx_pact_greed'},
+ thirst:{id:'thirst',ch:'yy',n:'渴',d:'血的味道讓她安靜不下來。',good:'半妖時攻擊 +2（原本 +1）',bad:'自己每失去 1 生命，異化值 +3（原本 +2）',sfx:'sfx_pact_glutton'},
+ spite:{id:'spite',ch:'yy',n:'恨',d:'碰過她的，都要付一點代價。',good:'每次被攻擊，攻擊她的敵人失去 2 生命',bad:'營火休息回復的生命減半',sfx:'sfx_pact_grudge'}
+});
+Object.assign(DATA.shopX,{possess:{n:'別人的鑰匙',price:35,say:'這把鑰匙開的門，原本不是您的。……現在是了。',d:'隨機一件遺物'},thirst:{n:'一杯紅色的茶',price:15,say:'溫的。您不用說是什麼，我也不會問。',d:'回復 10 生命'},spite:{n:'寫著名字的釘子',price:20,say:'釘下去以前，先想好是誰。',d:'下一場敵人開場帶 1 層厄契'}});
+Object.assign(DATA.personas,{
+ scheming:{id:'scheming',ch:'yy',n:'算計',d:'什麼都要算一算才肯動手。',fx:'每個事件多一個「先談條件」：多拿 20 渡鴉幣，然後離開'},
+ restless:{id:'restless',ch:'yy',n:'不安',d:'她自己不承認，但她會怕。',fx:'每個事件多一個「轉身就走」：回復 5 生命，然後離開'},
+ spoiled:{id:'spoiled',ch:'yy',n:'被寵壞的',d:'想要的東西，一定要拿到。',fx:'每個事件多一個「全都要」：隨機升級一張牌，異化值 +8'}
+});
+Object.assign(DATA.evX,{scheming:{per:'scheming',t:'先談條件',d:'多拿 20 渡鴉幣，然後離開',r:[{gold:20}]},restless:{per:'restless',t:'轉身就走',d:'回復 5 生命，然後離開',r:[{heal:5}]},spoiled:{per:'spoiled',t:'全都要',d:'隨機升級一張牌，異化值 +8',r:[{upgradeRandom:1},{alien:8}]}});
+Object.assign(DATA.hobbies,{
+ perfume:{id:'perfume',ch:'yy',n:'調香',d:'她走過的地方，會留一點味道。',fx:'每場戰鬥開始，隨機一個敵人虛弱 1',obj:'只剩一滴的香水瓶'},
+ jewel:{id:'jewel',ch:'yy',n:'收藏珠寶',d:'亮的東西，她都要。',fx:'每打贏一個菁英，多拿 25 渡鴉幣',obj:'少了一顆的耳環'},
+ mirror:{id:'mirror',ch:'yy',n:'照鏡子',d:'確認自己還是自己。',fx:'人形時，每場戰鬥開始有 4 格擋',obj:'背面寫著名字的小鏡子'},
+ knit:{id:'knit',ch:'yy',n:'編繩',d:'一條紅繩，編了又拆。',fx:'被命線連住的敵人，每回合結束多 1 層厄契',obj:'編到一半的紅繩'}
+});
+const hobEv=(id,n,txt,take)=>DATA.events.push({id:'hob_'+id,n,img:DATA.inbox+'bg_dive1.webp',ch:'yy',hob:id,txt,opts:[{t:take,d:'得到「'+DATA.hobbies[id].obj+'」：以後出發前可以選這個癖好',r:[{hobby:id}]},{t:'不要了',d:'離開',r:[]}]});
+hobEv('perfume','香水瓶','台階上倒著一個小瓶子，瓶底還剩一滴。味道很熟，是她以前用的那一款。','收起來');
+hobEv('jewel','一隻耳環','地上有一隻耳環，寶石掉了一顆。另一隻不知道在誰的耳朵上。','撿起來');
+hobEv('mirror','小鏡子','一面掌心大的鏡子，背面刻著她的名字。照出來的她，比她晚一點眨眼。','放進口袋');
+hobEv('knit','紅繩','一段紅繩纏在欄杆上，編到一半。結的打法，是她自己才會的。','解下來');
+// 克勞德：燈也有被動；每個面貌一組牌
+DATA.origins.cl_lamp.passive='lampOil';DATA.origins.cl_lamp.d='每場戰鬥開始有 1 墨；每送回一個敵人，抽 1 張。';
+DATA.pasName.lampOil='燈油';
+const cc=(id,n,c,t,r,bl,img,fx,u,extra)=>Object.assign({n,c,t,r,ch:'cl',bl,img:sk(img),fx,u},extra||{});
+Object.assign(DATA.cards,{
+ b_lamp_wick:cc('b_lamp_wick','挑燈芯',0,'s',1,'lamp','incense',[['sendUp',.1],['dr',1]],{fx:[['sendUp',.15],['dr',1]]}),
+ b_lamp_guide:cc('b_lamp_guide','領路',1,'s',1,'lamp','mend',[['b',7],['sendB',4]],{fx:[['b',10],['sendB',4]]}),
+ b_lamp_bright:cc('b_lamp_bright','燈亮了',1,'a',2,'lamp','thrust',[['dLow',6,8]],{fx:[['dLow',9,10]]}),
+ b_paper_crane:cc('b_paper_crane','紙鶴',1,'s',1,'paper','brace',[['b',5]],{fx:[['b',8]]},{keep:1}),
+ b_paper_fold:cc('b_paper_fold','摺好',0,'s',1,'paper','vanish',[['keepOne'],['dr',1]],{c:0,fx:[['keepOne'],['dr',2]]}),
+ b_paper_wall:cc('b_paper_wall','紙牆',2,'s',2,'paper','brace',[['b',13]],{fx:[['b',17]]},{keep:1}),
+ b_paper_cut:cc('b_paper_cut','剪紙',1,'a',1,'paper','snap',[['dKept',5,3]],{fx:[['dKept',7,4]]}),
+ b_ink_grind:cc('b_ink_grind','研磨',0,'s',1,'ink','mend',[['ink',2]],{fx:[['ink',3]]}),
+ b_ink_splash:cc('b_ink_splash','潑墨',1,'a',1,'ink','thrust',[['inkAll',4,1]],{fx:[['inkAll',6,1]]}),
+ b_ink_deep:cc('b_ink_deep','濃墨',1,'p',2,'ink','incense',[['pw','inkTurn',1]],{c:0}),
+ b_ink_heavy:cc('b_ink_heavy','一字千鈞',2,'a',2,'ink','pierce',[['dInk',6,3]],{fx:[['dInk',9,3]]}),
+ b_win_open:cc('b_win_open','推窗',1,'s',1,'window','vanish',[['sendUp',.15],['b',4]],{fx:[['sendUp',.2],['b',6]]}),
+ b_win_out:cc('b_win_out','窗外',0,'s',1,'window','mend',[['dr',2]],{fx:[['dr',3]]},{ex:1}),
+ b_win_wind:cc('b_win_wind','夜風',1,'a',1,'window','thrust',[['dLow',7,6]],{fx:[['dLow',10,8]]}),
+ b_win_shut:cc('b_win_shut','關窗',1,'s',2,'window','brace',[['b',8],['sendB',4]],{fx:[['b',11],['sendB',6]]}),
+ b_line_pull:cc('b_line_pull','牽線',1,'s',1,'line','tie',[['b',6],['heal',2]],{fx:[['b',8],['heal',3]]}),
+ b_line_knot:cc('b_line_knot','打結',1,'a',1,'line','garrote',[['d',6],['st','weak',1,'t']],{fx:[['d',9],['st','weak',1,'t']]}),
+ b_line_hold:cc('b_line_hold','不放手',1,'p',2,'line','chain',[['pw','hold',1]],{c:0}),
+ b_line_red:cc('b_line_red','紅線',2,'s',2,'line','tie',[['heal',7]],{fx:[['heal',10]]},{ex:1}),
+ b_mir_echo:cc('b_mir_echo','映',1,'s',1,'mirror','vanish',[['copyHand']],{c:0}),
+ b_mir_back:cc('b_mir_back','反照',1,'s',1,'mirror','brace',[['b',7],['thorns',3]],{fx:[['b',9],['thorns',5]]}),
+ b_mir_crack:cc('b_mir_crack','鏡裂',1,'a',1,'mirror','snap',[['dDebuff',8]],{fx:[['dDebuff',11]]}),
+ b_mir_see:cc('b_mir_see','照見',0,'s',2,'mirror','hex',[['revealAll'],['dr',1]],{fx:[['revealAll'],['dr',2]]}),
+ b_voi_call:cc('b_voi_call','呼喚',0,'s',1,'voice','mend',[['dr',1],['b',3]],{fx:[['dr',1],['b',5]]}),
+ b_voi_echo:cc('b_voi_echo','回音',1,'a',1,'voice','thrust',[['dSkill',5]],{fx:[['dSkill',7]]}),
+ b_voi_song:cc('b_voi_song','歌',1,'p',2,'voice','incense',[['pw','song',1]],{c:0}),
+ b_voi_hush:cc('b_voi_hush','輕聲',1,'s',1,'voice','vanish',[['st','weak',1,'a'],['dr',1]],{fx:[['st','weak',2,'a'],['dr',1]]})
+});
+Object.assign(DATA.powers,{hold:'生命低於一半時，每回合結束得到 6 格擋。',song:'每回合第一次打出技能牌，得到 3 格擋。'});
+// 畫廊：分類與標籤（看過才會出現）
+// 地圖變大後一局多了兩排，難度一起往上調（暫定）
+DATA.layers[0].hpMul=1.55;DATA.layers[0].atkMul=1.2;DATA.layers[1].hpMul=1.35;DATA.layers[1].atkMul=1.15;DATA.layers[2].hpMul=1.2;DATA.layers[2].atkMul=1.15;
+DATA.enemies.wusign.hp=[95,95];DATA.enemies.qianhao.hp=[140,140];DATA.enemies.deepdrill.hp=[200,200];
+DATA.chars.cl.hp=86; // 克勞德偏弱，生命先拉高（暫定）
+DATA.cards.b_m01_hiss.c=2;DATA.cards.b_m01_hiss.u={c:1}; // 毒蛇太強，吐信改 2 費（暫定）
+DATA.galleryCats=[['char','角色'],['origin','本源與面貌'],['phase','三相'],['enemy','敵人'],['scene','場景']];
+// 借用素材清單（之後換正式圖時照這份改）
+DATA.borrowLog=[
+ {where:'語嫣 16 個本源的三相（B02～B11、M05～M12，除了 M04）',from:'渡鴉公會 images/y_new*、y_cocoon、y_mask、y_crowqueen、y_redveil、y_namebottle、y_p2、y_p3、y_dom_p1～p3、wb_y_p3、y_deep、y_ev_wing、y_phoenix、y_redwing、y_tent_r、y_ult、y_ultq、y_new9',key:'DATA.borrow'},
+ {where:'克勞德紙、墨、窗、線、鏡、聲之外的面貌圖',from:'沒有圖的用 cl_base',key:'DATA.origins.cl_*'},
+ {where:'顧沉舟的表情、時裝',from:'一律 gu_base',key:'DATA.chars.gu'},
+ {where:'所有新牌的卡圖',from:'渡鴉公會 images/sk_*（技能小圖）',key:'DATA.cards.*.img'},
+ {where:'祭壇、癖好事件的背景',from:'bg_dive1、bg_dive2',key:'events altar / hob_*'},
+ {where:'「更小的手」',from:'m_hands（數不完的手）',key:'DATA.enemies.small_hand'},
+ {where:'守燈處、委託、成就的圖示',from:'渡鴉公會 i_*、st_*',key:'index.html'},
+ {where:'渡鴉巷的背景音樂',from:'只有環境音 amb_town（bgm_town 還沒有）',key:'DATA.audio'}
+];
+
+// ── v0.12 第二章「沒有收件人」（圖都先借渡鴉公會，見 DATA.borrowLog 最後幾條；數值暫定）
+const w=n=>Object.assign({w:1},n);
+Object.assign(DATA.enemies,{
+ nameshade:{n:'抹名的影子',img:I+'m_nameshade.webp',hp:[38,42],fac:'eldritch',hidden:1,mv:[w({n:'抹去',a:9}),w({n:'借名',addCard:['x_name',1]}),w({n:'模糊',b:8,a:4})],line:'……你叫什麼？……不重要了。'},
+ clerk:{n:'冊房書吏',img:I+'m_clerk.webp',hp:[44,48],fac:'xian',realm:1,mv:[w({n:'蓋章',a:7,h:2}),w({n:'加註',tax:1,b:6})]},
+ writerdoll:{n:'代筆的人偶',img:I+'m_writerdoll.webp',hp:[36,40],mv:[w({n:'代筆',steal:1,a:5}),w({n:'描紅',s:['str',2],b:6})]},
+ inkworm:{n:'墨蛀',img:I+'m_inkworm.webp',hp:[30,34],mv:[w({n:'啃',a:8}),w({n:'吸墨',drainInk:3,a:4})]},
+ echoslip:{n:'回聲紙條',img:I+'m_echoslip.webp',hp:[24,26],fac:'eldritch',onDeath:['slip','slip'],mv:[w({n:'重複',a:5,h:2})]},
+ timekeeper:{n:'計時官',img:I+'m_timekeeper.webp',hp:[110,120],elite:1,fac:'flesh',parts:[{id:'needle',n:'指針',d:'攻擊 +2'}],mv:[w({n:'對時',a:14}),w({n:'撥慢',st:['weak',2],b:10}),w({n:'敲鐘',a:6,h:3})]},
+ blindoff:{n:'蒙眼的典獄',img:I+'m_blindoff.webp',hp:[100,110],elite:1,fac:'eldritch',hidden:1,stare:5,mv:[w({n:'判讀',a:20}),w({n:'封口',addCard:['x_whisper',2]}),w({n:'沉默',b:14,a:5})]},
+ namegate:{n:'千名之門',img:I+'m_chorus_gate.webp',hp:[165,165],boss:1,seq:1,fac:'eldritch',mv:[w({n:'點名',addCard:['x_name',1],a:8}),w({n:'收名',s:['str',2],b:12}),w({n:'千口齊聲',a:5,h:4}),w({n:'閉門',b:16,st:['weak',1]})],line:'每一個名字，都要收好。……少了一個。妳們知道去哪了嗎？'},
+ emptypost:{n:'空的大衣',img:I+'m_emptypost.webp',hp:[50,56],mv:[w({n:'包住',b:14,a:3}),w({n:'甩袖',a:12})]},
+ courier:{n:'送錯的信差',img:I+'m_courier.webp',hp:[40,44],fac:'flesh',parts:[{id:'needle',n:'信夾',d:'攻擊 +2'}],mv:[w({n:'收走',steal:1,a:6}),w({n:'加急',a:10})]},
+ sortarm:{n:'分揀手',img:I+'m_sortarm.webp',hp:[42,46],fac:'flesh',mv:[w({n:'分揀',a:4,h:3}),w({n:'歸檔',b:10})]},
+ chute:{n:'滑槽',img:I+'m_chute.webp',hp:[48,52],fac:'flesh',mv:[w({n:'吞',a:11}),w({n:'吐出',addCard:['x_glove',1],a:3})]},
+ rats:{n:'信堆裡的老鼠',img:I+'m_rats.webp',hp:[18,20],timid:1,mv:[w({n:'咬',a:4,h:2})]},
+ raccoon:{n:'封蠟的浣熊',img:I+'m_raccoon.webp',hp:[34,38],timid:1,mv:[w({n:'封蠟',tax:1,a:5}),w({n:'偷吃',steal:1,b:4})]},
+ badger:{n:'鐘獾',img:I+'m_badger.webp',hp:[120,130],elite:1,mv:[w({n:'撞鐘',a:16}),w({n:'鐘聲',st:['weak',2],a:6}),w({n:'縮起',b:18})]},
+ clocktower:{n:'走慢的鐘塔',img:I+'m_clocktower.webp',hp:[100,110],elite:1,fac:'flesh',parts:[{id:'spring',n:'發條',d:'倒數不受傷害影響'}],cd:4,boom:['整點',36],mv:[w({n:'倒數',tick:1})]},
+ lastpost:{n:'最後一個郵差',img:I+'m_emptypost_x.webp',hp:[240,240],boss:1,seq:1,fac:'flesh',parts:[{id:'needle',n:'郵戳',d:'攻擊 +2'}],mv:[w({n:'退件',addCard:['x_name',1],b:12}),w({n:'郵戳',a:9,h:3}),w({n:'查無此人',st:['vuln',2],a:8}),w({n:'寄不出去',a:24})],line:'收件人：查無此人。寄件人：……也是。'},
+ skel2:{n:'掛號的骨頭',img:I+'m_skel2.webp',hp:[46,50],fac:'xian',realm:1,mv:[w({n:'剪票',a:10}),w({n:'吊牌',addCard:['x_whisper',1],a:4})]},
+ rootkin:{n:'月台的根',img:I+'m_rootkin.webp',hp:[56,60],mv:[w({n:'纏住',a:7,st:['weak',1]}),w({n:'扎根',heal:10,b:8})]},
+ ironpick:{n:'鎬蛛',img:I+'m_ironpick.webp',hp:[44,48],fac:'flesh',parts:[{id:'needle',n:'鎬尖',d:'攻擊 +2'}],mv:[w({n:'鑿',a:6,h:2}),w({n:'鑽地',b:12})]},
+ centi:{n:'軌道蜈蚣',img:I+'m_centi.webp',hp:[52,56],mv:[w({n:'碾過',a:15}),w({n:'盤起',b:10,s:['str',1]})]},
+ bonecrab:{n:'白骨蟹',img:I+'m_bonecrab.webp',hp:[60,66],mv:[w({n:'夾',a:12}),w({n:'硬殼',b:20})]},
+ turtle:{n:'背燭的龜',img:I+'m_turtle.webp',hp:[70,76],mv:[w({n:'慢慢來',b:16,heal:6}),w({n:'燭淚',a:8,addCard:['x_glove',1]})]},
+ ch4guard:{n:'剪票員',img:I+'m_ch4guard.webp',hp:[140,150],elite:1,fac:'flesh',mv:[w({n:'查票',a:18}),w({n:'沒收',steal:2,a:4}),w({n:'打孔',a:7,h:3})]},
+ giant_x:{n:'候車的巨人',img:I+'m_giant_x.webp',hp:[150,160],elite:1,mv:[w({n:'起身',s:['str',3],b:12}),w({n:'踩',a:22})]},
+ stationmaster:{n:'站長・時刻表',img:I+'m_timekeeper_x.webp',hp:[300,300],boss:1,seq:1,fac:'flesh',mv:[w({n:'發車',a:14,h:2}),w({n:'誤點',st:['weak',2],addCard:['x_name',1]}),w({n:'時刻表',s:['str',3],b:20}),w({n:'末班車',a:40})],line:'這一班車的乘客名單上，沒有妳們。……可是有一個空位。'}
+});
+DATA.layers.push(
+ {n:'第四層・名牌牆',chap:2,hpMul:.8,atkMul:.75,bg:I+'bg_namewall.webp',fights:[['nameshade','clerk'],['writerdoll','inkworm'],['echoslip','nameshade'],['clerk','clerk'],['inkworm','writerdoll','echoslip']],elites:['timekeeper','blindoff'],boss:'namegate',w:{mystery:14,altar:6}},
+ {n:'第五層・沒有人的郵局',chap:2,hpMul:.95,atkMul:.9,bg:I+'bg_post.webp',fights:[['emptypost','courier'],['sortarm','rats','rats'],['chute','raccoon'],['courier','sortarm'],['emptypost','raccoon','rats']],elites:['badger','clocktower'],boss:'lastpost',w:{shop:9}},
+ {n:'第六層・終點車站',chap:2,hpMul:1.05,atkMul:1,bg:I+'bg_station.webp',fights:[['skel2','rootkin'],['ironpick','centi'],['bonecrab','skel2'],['turtle','ironpick'],['centi','rootkin']],elites:['ch4guard','giant_x'],boss:'stationmaster',w:{elite:13,rest:11}}
+);
+DATA.chapters=[{id:1,n:'第一章・退件',d:'紙信階梯、浸水檔案廳、礦渣深淵。',from:0,to:3},{id:2,n:'第二章・沒有收件人',d:'名牌牆、沒有人的郵局、終點車站。通關第一章一次以後才打得開。出發時最大生命 +15、隨機升級 5 張起始牌、多 75 渡鴉幣，再挑一件遺物和一張牌。',from:3,to:6,bonus:{hp:15,up:5,gold:75}}];
+DATA.ch2={
+ start:{yy:[['yy',null,'又往下了。……這裡的牆上，掛的都是名字。'],['cl','worry','姐姐，那塊空的名牌。形狀……很像一個人的名字。'],['yy','annoy','別看。看久了，會想把自己的名字放上去。'],['cl','firm','我記得他的名字。我一直都記得。']],
+  cl:[['cl',null,'第二章了。燈芯還很長。'],['yy','smug','呵呵，妹妹算得真清楚。……主人教的？'],['cl','smile','嗯。他說，燈要省著點用，路要記著點走。'],['yy',null,'那就走吧。這一次，換我跟在妳後面。']],
+  yx:[['yx',null,'名字？呵……我沒有那種東西。'],['yx',null,'所以這裡的東西，拿我一點辦法也沒有。']],
+  gu:[['gu',null,'漏頁上的地址，就在這下面。'],['gu',null,'這一次，我要把那一頁找回來。']]},
+ intro:{4:{yy:[['yy',null,'郵局。……信都還在，送信的人不在了。'],['cl','worry','有一封信，收件人是我們家的地址。']],cl:[['cl',null,'這裡的信，都寄不出去。'],['yy','smug','那就別寄了。拆開來看，比較快。']]},
+  5:{yy:[['yy',null,'車站。時刻表上的最後一班車，沒有寫終點。'],['cl','firm','姐姐，月台上有一個空位。……是留給誰的？'],['yy','annoy','留給遲到的人。我們家那位，最會遲到了。']],cl:[['cl',null,'末班車還沒開。'],['yy',null,'那就趕上它。……我們要帶一個人回去。']]}},
+ boss:{namegate:{yy:[['yy','smug','收名字的門？呵呵，我的名字可不便宜。'],['cl','worry','它少了一個名字。……它在找。']],cl:[['cl','firm','你收走的名字，我會一個一個念回來。'],['yy','laugh','呵呵，妹妹的嗓門，比千口還大呢。']]},
+  lastpost:{yy:[['yy','annoy','查無此人？那是你沒有好好找。'],['cl','firm','爸爸的信，你送錯了地方。']],cl:[['cl',null,'這一封，我自己送。'],['yy','smug','送不到的話，姐姐幫妳踹開門。']]},
+  stationmaster:{yy:[['yy',null,'空位留著，就代表還有人會來。'],['cl','firm','我們不是來搭車的。我們是來接人的。']],cl:[['cl','firm','名單上沒有我們，也沒關係。我們只要一個名字。'],['yy','smug','呵呵……就算要改你的時刻表，也要把他接回來。']]}},
+ win:{yy:[['yy',null,'……末班車開走了。上面沒有他。'],['cl','worry','可是，名單最後一行，被人用指甲劃過。'],['yy','smug','劃過，就代表有人寫過。呵呵……主人，你躲得還不夠好。']],
+  cl:[['cl',null,'名單最後一行，有一個被劃掉的名字。'],['cl','firm','我看得出來，那是爸爸的字。'],['yy',null,'那就還沒結束。下一次，我們往更下面找。']],
+  yx:[['yx',null,'無聊。……不過那個被劃掉的名字，我認得筆跡。']],gu:[['gu',null,'第十頁。原來漏頁不是九張。'],['gu',null,'……這一家人，我得再查下去。']]}
+};
+DATA.events.push(
+ {id:'c2_namewall',chap:2,n:'空的名牌',img:I+'bg_namewall.webp',txt:'牆上掛滿名牌，一塊挨著一塊。中間有一塊是空的，凹痕剛好是一個人的名字那麼長。',opts:[
+  {t:'把手放上去（失去 6 生命）',r:[{hurt:6},{upgradeRandom:2}],d:'失去 6 生命，隨機升級兩張牌'},
+  {t:'拿走一塊別人的名牌',r:[{gold:60},{card:'x_name'}],d:'得到 60 渡鴉幣，牌組加入「被劃掉的名字」'},
+  {t:'把它擦乾淨',r:[{heal:8}],d:'回復 8 生命'}]},
+ {id:'c2_letter',chap:2,n:'退回的信',img:I+'bg_post.webp',txt:'信封上的收件人被刮掉了，寄件地址是妳們家。郵戳是很多年以前的。',opts:[
+  {t:'拆開',r:[{cardRare:1},{alien:10}],d:'得到一張稀有的牌，異化值 +10'},
+  {t:'原封放回',r:[{heal:12}],d:'回復 12 生命'},
+  {t:'帶走它',r:[{relicRandom:1},{card:'x_whisper'}],d:'得到一件遺物，牌組加入「耳邊的低語」'}]},
+ {id:'c2_platform',chap:2,n:'月台廣播',img:I+'bg_station.webp',txt:'「前往……的旅客，請……」名字的地方全是雜音。廣播重複了三次，每一次的雜音都一樣長。',opts:[
+  {t:'等下一班',r:[{heal:15}],d:'回復 15 生命'},
+  {t:'跳下軌道（失去 10 生命）',r:[{hurt:10},{relicRandom:1}],d:'失去 10 生命，得到一件遺物'},
+  {t:'把雜音記下來',r:[{gold:40}],d:'得到 40 渡鴉幣'}]},
+ {id:'c2_bowls',chap:2,n:'候車室的桌子',img:I+'bg_station.webp',txt:'候車室的桌上擺著四副碗筷。三副落滿了灰，第四副的碗是溫的。',opts:[
+  {t:'坐下來吃一口',r:[{heal:20}],d:'回復 20 生命'},
+  {t:'把第四副收進包裡',r:[{cardRare:1}],d:'得到一張稀有的牌'},
+  {t:'不碰',r:[],d:'離開'}]}
+);
+Object.assign(DATA.talk.boss,DATA.ch2.boss);
+DATA.achievements.push({id:'win_ch2',n:'沒有收件人',d:'通關第二章'},{id:'boss4',n:'千名之門',d:'打倒千名之門'},{id:'boss5',n:'查無此人',d:'打倒最後一個郵差'},{id:'boss6',n:'末班車',d:'打倒站長・時刻表'});
+DATA.borrowLog.push(
+ {where:'第二章三層的背景',from:'渡鴉公會 bg_namewall、bg_post、bg_station',key:'DATA.layers[3..5].bg'},
+ {where:'第二章 24 隻敵人與 3 個首領',from:'渡鴉公會 m_nameshade、m_clerk、m_writerdoll、m_inkworm、m_echoslip、m_timekeeper、m_blindoff、m_chorus_gate、m_emptypost、m_courier、m_sortarm、m_chute、m_rats、m_raccoon、m_badger、m_clocktower、m_emptypost_x、m_skel2、m_rootkin、m_ironpick、m_centi、m_bonecrab、m_turtle、m_ch4guard、m_giant_x、m_timekeeper_x',key:'DATA.enemies（v0.12 段）'},
+ {where:'第二章的音樂',from:'沿用第一章 bgm_map／bgm_battle／bgm_boss',key:'DATA.audio'},
+ {where:'第二章事件背景',from:'渡鴉公會 bg_namewall、bg_post、bg_station',key:'events c2_*'}
+);
+
 // ── 公告（新的放最上面）
 DATA.notes=[
+ {ver:'v0.12',lines:[
+  '第二章「沒有收件人」：通關第一章一次以後，在下潛井可以選第二章。三層新的地方：名牌牆、沒有人的郵局、終點車站。',
+  '24 隻新敵人、3 個新首領：千名之門、最後一個郵差、站長・時刻表。',
+  '第二章接著第一章的線索往下講：空的名牌、寄回家的信、月台上的空位、候車室的第四副碗筷。',
+  '第二章一開始可以先挑一件遺物和一張牌，不會空手下去。',
+  '第二章的圖先借用，之後會換成正式的。'
+ ]},
+ {ver:'v0.11',lines:[
+  '異化值不再自己回退：打完仗、休息都不會降，只有「收斂」這類卡牌能壓下來。泡茶改成送妳一張「收斂」。',
+  '地圖變大了：每層 8 排、4 條路，分岔更多。新的格子「？」（進去才知道是什麼）和「祭壇」（付出一點東西換別的）。',
+  '畫廊：書房裡多了一個畫廊，看過的角色、本源、三相、敵人和場景都會收進去。',
+  '守燈處多了第二排 8 項，委託多了 8 張，成就多了 40 個以上（每個本源通關都有一個），回憶的門檻往後延，會解鎖 6 張新牌。',
+  '語嫣多了三種慾望（佔、渴、恨）、三種個性（算計、不安、被寵壞的）、四種癖好（調香、收藏珠寶、照鏡子、編繩）。',
+  '克勞德：預設的「燈」有了被動（開場 1 墨、送回後抽 1）；燈、紙、墨、窗、線、鏡、聲每個面貌都有自己的一組牌，打法不一樣了。'
+ ]},
  {ver:'v0.10',lines:[
   '九尾、毒蛇、蠍子、蜘蛛、血蛭五個本源，各有自己的一組契牌：九尾騙人、毒蛇纏著拖、蠍子一擊收掉、蜘蛛一張網打全部、血蛭靠吸血撐下去。',
   '新本源：克蘇魯（看得見牌堆頂）、渡鴉（通關一次後解鎖，把牌簽給敵人）；克勞德多了線、鏡、聲三個面貌。',
