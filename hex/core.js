@@ -53,7 +53,9 @@ function addAlien(D,st,n,E){if(!isYY(st)||!n)return;const a0=st.alien||0;const a
  if(a0<60&&a>=60&&!st.flags.yx){st.flags.yx=1;E&&E.push({t:'yxWake'});}
  if(a>=100)fullCheck(st,E);}
 function fullCheck(st,E){if(isYY(st)&&(st.alien||0)>=100&&st.combat&&!st.combat.full&&!st.combat.fullNext&&!st.combat.fullUsed){st.combat.fullNext=1;E&&E.push({t:'fullSoon'});if(st.combat.yx)E&&E.push({t:'unlockYx'});}}
-function needsTarget(D,c,ph){const F=[];for(const f of (cardDef(D,c,ph).fx||[])){if(f[0]==='set')F.push(...f[2]);else F.push(f);}return F.some(f=>(['d','jd','dBlock','dGold','dLost','dAl','dVine','vineX2','dLure','lk','px2','ep','stun','lk1','wrap','tails','lie','constrict','needle','taste','sign','paIf','dKept','dInk','dLow','dDebuff','dSkill','dIfN'].includes(f[0])||(f[0]==='st'&&f[3]==='t'))||((f[0]==='st'||f[0]==='pa')&&(f[f.length-1]==='t')));}
+function needsTarget(D,c,ph){const F=[];for(const f of (cardDef(D,c,ph).fx||[])){if(f[0]==='set'||f[0]==='if')F.push(...f[2]);else F.push(f);}return F.some(f=>(['d','jd','dBlock','dGold','dLost','dAl','dVine','vineX2','dLure','lk','px2','ep','stun','lk1','wrap','tails','lie','constrict','needle','taste','sign','paIf','dKept','dInk','dLow','dDebuff','dSkill','dIfN'].includes(f[0])||(f[0]==='st'&&f[3]==='t'))||((f[0]==='st'||f[0]==='pa')&&(f[f.length-1]==='t')));}
+const CONDT={first:'這是本回合第一張牌',n3:'本回合已經打過 2 張牌',low:'生命在一半以下',full:'生命是滿的',atk:'敵人正要攻擊',deb:'目標有虛弱或易傷',blk:'身上有格擋',lone:'只剩一個敵人',many:'敵人有兩個以上',last:'這是最後一張手牌',ph:'異化 40 以上（克勞德：墨 3 以上）',noblk:'身上沒有格擋',rich:'渡鴉幣 100 以上'};
+function condOk(D,st,c,tg,k){const A=alive(c);switch(k){case 'first':return (c.nPlay||0)===0;case 'n3':return (c.nPlay||0)>=2;case 'low':return st.hp<=st.maxHp/2;case 'full':return st.hp>=st.maxHp;case 'atk':return tg?!!(tg.intent&&tg.intent.a):A.some(e=>e.intent&&e.intent.a);case 'deb':return tg?!!(tg.st.weak||tg.st.vuln):A.some(e=>e.st.weak||e.st.vuln);case 'blk':return c.block>0;case 'noblk':return !c.block;case 'lone':return A.length===1;case 'many':return A.length>=2;case 'last':return c.hand.length===0;case 'ph':return st.ch==='cl'?(c.ink||0)>=3:(st.alien||0)>=40;case 'rich':return st.gold>=100;}return false;}
 function setN(D,st,d){if(!st||!st.deck)return 0;return st.deck.filter(x=>{const o=D.cards[x.id];return o&&((d.tag&&o.tag===d.tag)||(d.bl&&o.bl===d.bl));}).length;}
 function opText(D,f){const S=D.status;const sc=typeof f[3]==='string'?f[3]:null;
  const scT=sc?(sc.startsWith('pact')?`，目標每有 1 層厄契多 ${sc.slice(4)}`:sc.startsWith('ink')?`，用掉所有墨，每 1 墨多 ${sc.slice(3)}`:''):'';
@@ -89,6 +91,7 @@ function opText(D,f){const S=D.status;const sc=typeof f[3]==='string'?f[3]:null;
   case 'firstPa':return `如果這是本回合第一張攻擊，再給予 ${f[1]} 層厄契並抽 1 張`;
   case 'paIf':return `給予 ${f[1]} 層厄契；目標已有 ${f[2]} 層以上時，再給予 ${f[3]} 層`;
   case 'cleanse':return '清除自己的虛弱與易傷';
+  case 'if':return `如果${CONDT[f[1]]||''}：`+f[2].map(x=>opText(D,x).replace(/。$/,'')).join('，');
   case 'set':return `成套（牌組裡同系列有 ${f[1]} 張以上）：`+f[2].map(x=>opText(D,x).replace(/。$/,'')).join('，');
   case 'gold':return f[1]<0?`失去 ${-f[1]} 渡鴉幣`:`得到 ${f[1]} 渡鴉幣`;
   case 'dGold':return `造成 ${f[1]} 傷害，身上每 ${f[2]} 渡鴉幣再 +1`;
@@ -147,7 +150,7 @@ function newRun(D,seed,ch,meta,opt){CARDS_REF=D.cards;seed=seed>>>0||1;const C=D
  for(const id of C.deck)addCard(st,id);
  st.sub=(opt.sub&&opt.sub!==opt.origin)?opt.sub:null;st.tal=((meta&&meta.prof&&meta.prof[ch==='yx'?'yy':ch]||{}).spent||[]).slice();{const bc=ch==='yx'?'yy':ch;const om=(meta&&meta.om)||{};st.otal=[];for(const k in om)if(k.startsWith(bc+'_'))st.otal.push(...(om[k].spent||[]));}
  st.desire=opt.desire||null;st.persona=opt.persona||null;st.hobby=opt.hobby||null;st.shards=0;st.marks=0;
- st.hobby2=(meta&&(meta.keeper||[]).includes('m_hob2')&&opt.hobby2&&opt.hobby2!==st.hobby)?opt.hobby2:null;st.rr=0;st.tt={cs:[],ts:[],el:[],kill:[],rest:0,on:[]};{const L=(D.lean||{})[opt.lean];if(L&&L.eff[ch]){st.lean=opt.lean;addEff(st,L.eff[ch]);}const sv=((D.sins||{})[ch]||{})[st.desire];if(sv>=3)addEff(st,{cs:[['b',3]],rs:{maxhp:4}});else if(sv===2)addEff(st,{rs:{maxhp:2}});st.sinStar=sv||0;}for(const kk of (D.keeper||[]))if(kk.eff&&meta&&(meta.keeper||[]).includes(kk.id)&&(!kk.ch||kk.ch===(ch==='yx'?'yy':ch)))addEff(st,kk.eff);for(const tg of tagsOf(st)){if(!tg)continue;{const td=tagDefOf(D,tg);const ef=td&&td.eff;if(ef){for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold=Math.max(0,st.gold+ef.rs.gold);if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp=Math.max(1,Math.min(st.maxHp,st.hp+ef.rs.maxhp));}}}}const o=meta&&meta.tm&&meta.tm[tg];const T=(D.tagtal||{})[tg];if(!o||!T)continue;for(const tier of o.spent){const ef=(T[tier-1]||{}).eff||{};st.tt.on.push(tg+'_'+tier);for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold+=ef.rs.gold;if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp+=ef.rs.maxhp;}}}}
+ st.hobby2=(meta&&(meta.keeper||[]).includes('m_hob2')&&opt.hobby2&&opt.hobby2!==st.hobby)?opt.hobby2:null;st.rr=0;st.tt={cs:[],ts:[],el:[],kill:[],rest:0,on:[]};{const L=(D.lean||{})[opt.lean];if(L&&L.eff[ch]){st.lean=opt.lean;addEff(st,L.eff[ch]);}const sv=((D.sins||{})[ch]||{})[st.desire];if(sv>=3)addEff(st,{cs:[['b',3]],rs:{maxhp:4}});else if(sv===2)addEff(st,{rs:{maxhp:2}});st.sinStar=sv||0;}for(const kk of (D.keeper||[]))if(kk.eff&&meta&&(meta.keeper||[]).includes(kk.id)&&(!kk.ch||kk.ch===(ch==='yx'?'yy':ch)))addEff(st,kk.eff);for(const tg of tagsOf(st)){if(!tg)continue;{const td=tagDefOf(D,tg);const ef=td&&td.eff;if(ef){for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold=Math.max(0,st.gold+ef.rs.gold);if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp=Math.max(1,Math.min(st.maxHp,st.hp+ef.rs.maxhp));}}}}const o=meta&&meta.tm&&meta.tm[tg];const T=(D.tagtal||{})[tg];if(!o||!T)continue;for(const tier of o.spent){const ef=(T[tier-1]||{}).eff||{};st.tt.on.push(tg+'_'+tier);addEff(st,ef);}}
  if(meta&&meta.letter){st.gold+=meta.letter;st.flags.gotLetter=meta.letter;}
  if(meta&&meta.dotGold){st.gold+=meta.dotGold;st.flags.gotDot=meta.dotGold;}
  if(meta&&meta.grudges)st.grudgeList=meta.grudges.slice();
@@ -165,7 +168,7 @@ function newRun(D,seed,ch,meta,opt){CARDS_REF=D.cards;seed=seed>>>0||1;const C=D
  if(K('m_relic2')&&prep.relics){const p=relicPool(D,st).filter(k=>!prep.relics.includes(k)&&!COSTLY.includes(k));if(p.length)prep.relics.push(pick(st,p));}
  if(prep.relics||prep.remove||prep.cards){st.prep=prep;st.screen='prep';}
  st.chapter=opt.chapter||1;const CH=(D.chapters||[]).find(c=>c.id===st.chapter)||{from:0,to:3};st.endLayer=CH.to;
- if(st.chapter>1){st.layer=CH.from;st.maps=[];st.maps[CH.from]=warpMap(D,st,genMap(D,st,CH.from));st.prep=st.prep||{};const P=st.prep;if(!P.relics){const p=shuffle(st,commonRelics(D,st)).slice(0,3);if(p.length)P.relics=p;}if(!P.cards){const p=pool(D,st).filter(k=>D.cards[k].r>=2);P.cards=shuffle(st,p).slice(0,3);}st.screen='prep';const B=CH.bonus||{};if(B.hp){st.maxHp+=B.hp;st.hp+=B.hp;}if(B.up){const can=shuffle(st,st.deck.filter(x=>!x.up&&D.cards[x.id].u));can.slice(0,B.up).forEach(x=>x.up=1);}if(B.gold)st.gold+=B.gold;}
+ if(st.chapter>1){st.layer=CH.from;st.maps=[];st.maps[CH.from]=warpMap(D,st,genMap(D,st,CH.from));st.prep=st.prep||{};const P=st.prep;if(!P.relics){const p=shuffle(st,commonRelics(D,st)).slice(0,3);if(p.length)P.relics=p;}if(!P.cards){const p=pool(D,st).filter(k=>D.cards[k].r>=2);P.cards=shuffle(st,p).slice(0,3);}st.screen='prep';const B=CH.bonus||{};if(B.hp){st.maxHp+=B.hp;st.hp+=B.hp;}if(B.up){const can=shuffle(st,st.deck.filter(x=>!x.up&&D.cards[x.id].u));can.slice(0,B.up).forEach(x=>x.up=1);}if(B.gold)st.gold+=B.gold;if(B.cards){const p=shuffle(st,pool(D,st).filter(k=>D.cards[k].r>=2&&!(P.cards||[]).includes(k)));p.slice(0,B.cards).forEach(id=>st.deck.push({uid:st.uid++,id,up:0}));}if(B.relics){const p=shuffle(st,commonRelics(D,st).filter(k=>!(P.relics||[]).includes(k)&&!has(st,k)));p.slice(0,B.relics).forEach(k=>gainRelic(D,st,k));}}
  else st.maps.push(warpMap(D,st,genMap(D,st,0)));
  if(opt.mode==='g'){st.mode='g';st.trial=opt.trial||(D.trials[0]||{}).id;st.gi=0;st.prep=null;st.screen='gnext';st.left=null;st.com=null;if(opt.deck&&opt.deck.length){st.deck=[];for(const x of opt.deck){addCard(st,x.id);st.deck[st.deck.length-1].up=x.up?1:0;}}}
  st.asc=Math.max(0,Math.min((meta&&meta.ascMax)||0,opt.asc|0));
@@ -259,7 +262,7 @@ function startCombat(D,st,ids,kind){const ens=ids.map((id,i)=>mkEnemy(D,st,id,i)
   if(OT(D,st,'mirror',3)){const e=one();if(e)addSt(e,'vuln',1);}
   if(OT(D,st,'M09',1)&&c.lure)c.lure=12;
  }
- if(st.tt){tagFx(D,st,st.tt.cs,E,true);if(kind==='elite'||kind==='boss')tagFx(D,st,st.tt.el,E,true);}
+ if(st.tt){tagFx(D,st,st.tt.cs,E,true);for(const sc of (st.tt.setcs||[])){if(st.deck.filter(x=>(D.cards[x.id]||{}).tag===sc[0]).length>=sc[1])tagFx(D,st,sc[2],E,true);}if(kind==='elite'||kind==='boss')tagFx(D,st,st.tt.el,E,true);}
  for(const e of c.enemies)chooseIntent(D,st,e);
  if(pas(D,st,'shop20')){const h=c.enemies.filter(e=>e.hid);if(h.length)pick(st,h).hid=0;const a=c.enemies.filter(e=>e.hp>0);if(a.length)addSt(pick(st,a),'weak',1);pe(E,'shop20');}
  if(pas(D,st,'moth')){if(c.enemies.some(e=>e.hid))pe(E,'moth');for(const e of c.enemies)e.hid=0;}
@@ -272,7 +275,7 @@ function healP(st,n,E){const c=st.combat;const h=Math.min(n,st.maxHp-st.hp);if(h
 function gainInk(st,c,n,E){c.ink+=n;if(c.pw.inkBlock)c.block+=c.pw.inkBlock*n;if(c.ink>=10)E.push({t:'ach',id:'ink10'});}
 function draw(D,st,n,E){const c=st.combat;for(let i=0;i<n;i++){if(c.hand.length>=handMax(D,st))break;if(!c.draw.length){if(!c.disc.length)break;c.draw=shuffle(st,c.disc);c.disc=[];E&&E.push({t:'shuffle'});}const x=c.draw.pop();c.hand.push(x);const xd=D.cards[x.id];if(xd&&xd.t==='x'&&E)addAlien(D,st,5,E);if(xd&&xd.onDraw&&xd.onDraw[0]==='hurt'&&E)selfHurt(D,st,xd.onDraw[1],E);}}
 function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
- c.seqT='';c.sacN=0;c.voiced=0;c.skillT=0;c.sung=0;c.sendUp=0;c.thornsT=0;c.healedT=0;c.pool=0;c.centerN=0;c.p1b=c.p1b||0;for(const e of c.enemies){delete e.minus3;delete e.hissN;}
+ c.tpN=0;c.seqT='';c.sacN=0;c.voiced=0;c.skillT=0;c.sung=0;c.sendUp=0;c.thornsT=0;c.healedT=0;c.pool=0;c.centerN=0;c.p1b=c.p1b||0;for(const e of c.enemies){delete e.minus3;delete e.hissN;}
  if(c.waitNext){c.waitNext=0;c.waitOn=1;}else c.waitOn=0;
  if(pas(D,st,'tether')&&st.hp<st.maxHp*(OT(D,st,'line',2)?.6:.5)&&st.hp>0){pe(E,'tether');healP(st,OT(D,st,'line',1)?3:2,E);if(OT(D,st,'line',3)){c.block+=3;E.push({t:'block',n:3});}}c.leeched=0;c.firstCard=0;c.skillN=0;c.jelly=0;
  if(pas(D,st,'coral')){c.hard=Math.min(c.hard||0,c.block);c.block=c.hard;}
@@ -378,7 +381,7 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  c.energy-=k;c.hand.splice(i,1);st.stats.cards++;E.push({t:'play',id:card.id,up:card.up,tg:tg&&tg.uid});
  let total=0,gk=(d.fx.find(f=>f[0]==='gk')||[0,0])[1];
  const hasDmg=d.fx.some(f=>f[0]==='d'||f[0]==='da');const sb=isYY(st)?scarB(card):0;let scarN=0;
- const FX0=card.ring?d.fx.concat(d.fx.filter(f=>!['hurt','hurtq','mhp','al','ep','en'].includes(f[0]))):d.fx;const FX=FX0.some(f=>f[0]==='set')?[].concat(...FX0.map(f=>f[0]==='set'?(setN(D,st,d)>=f[1]?(E.push({t:'setOn',id:card.id}),f[2]):[]):[f])):FX0;
+ const FX0=card.ring?d.fx.concat(d.fx.filter(f=>!['hurt','hurtq','mhp','al','ep','en'].includes(f[0]))):d.fx;const FX=FX0.some(f=>f[0]==='set'||f[0]==='if')?[].concat(...FX0.map(f=>f[0]==='set'?(setN(D,st,d)>=f[1]?(E.push({t:'setOn',id:card.id}),f[2]):[]):f[0]==='if'?(condOk(D,st,c,tg,f[1])?(E.push({t:'ifOn',id:card.id,k:f[1]}),f[2]):[]):[f])):FX0;
  const dos=st.ch==='gu'?((c.tmpDos||0)+(tg?(st.dossier[D.enemies[tg.id].fac]||0):0)):0;
  const firstAtkT=d.t==='a'&&c.atkN===0;c.nPlay=(c.nPlay||0)+1;
  const echoM=(d.t==='a'&&c.echo)?c.echo:0;if(echoM)c.echo=0;
@@ -492,6 +495,8 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  if(d.t==='s'&&pas(D,st,'moth')&&!c.skillN){c.skillN=1;addAlien(D,st,5,E);}
  if((c.firstCard||0)<(OT(D,st,'B05',2)?2:1)){c.firstCard=(c.firstCard||0)+1;if(pas(D,st,'mimicFirst')){const o=c.hand.filter(x=>D.cards[x.id].t!=='x'&&!x.temp);if(o.length&&c.hand.length<handMax(D,st)){const x=pick(st,o);c.hand.push({uid:'x'+st.uid++,id:x.id,up:x.up,temp:1,free:OT(D,st,'B05',1)?1:undefined});pe(E,'mimicFirst');E.push({t:'mimicCard'});}}}
  c.seqT=((c.seqT||'')+d.t).slice(-2);
+ if(d.tag){st.stats.tagPlays=st.stats.tagPlays||{};st.stats.tagPlays[d.tag]=(st.stats.tagPlays[d.tag]||0)+1;const P=st.tt&&st.tt.play&&st.tt.play[d.tag];if(P&&st.screen==='combat'&&(c.tpN=(c.tpN||0)+1)<=3)tagFx(D,st,P,E,false);}
+ if(D.duo&&st.mode!=='g'&&st.screen==='combat'){if(st.ch==='yy'&&d.t==='s'&&c.weaveT!==c.turn){c.weaveT=c.turn;const e=pick(st,alive(c));if(e){addSt(e,R(st)<.5?'weak':'vuln',1);E.push({t:'trait',k:'weave'});}}else if(st.ch==='yx'&&d.t==='a'&&c.burstT!==c.turn){c.burstT=c.turn;const e=(tg&&tg.hp>0)?tg:pick(st,alive(c));if(e){hitEnemy(D,st,e,5,E);selfHurt(D,st,1,E,false,true);E.push({t:'trait',k:'burst'});}}}
  if(atk&&c.pw.nine){const a=alive(c);if(a.length){if(c.pw.nineAll)for(const e of a)addSt(e,'pact',1);else addSt(pick(st,a),'pact',c.pw.nine);}}
  if(c.mix&&c.pair==='BM'&&d.bl){draw(D,st,1,E);c.block+=3;E.push({t:'block',n:3});}
  if(d.t==='s'){c.skillT=1;if(c.pw.song&&!c.sung){c.sung=1;c.block+=3*c.pw.song;E.push({t:'block',n:3*c.pw.song});}}
@@ -598,7 +603,7 @@ function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
  const rw={el:kind!=='fight'?1:0,gold,cards:subRoll(D,st)||rollCards(D,st,M(st,'obsess')?2:3,kind!=='fight'),relic:null,relicChoice:null,cardTaken:false};
  if(kind==='elite'){const p=relicPool(D,st);if(p.length){rw.relic=pick(st,p);gainRelic(D,st,rw.relic);}if(M(st,'pride')){const p2=relicPool(D,st);if(p2.length){rw.relic2=pick(st,p2);gainRelic(D,st,rw.relic2);}}}
  if(kind==='boss'){if(st.layer===0){if(st.com==='c_nofix'&&!st.stats.rests)st.comDone=1;if(st.com==='c_quiet'&&!st.stats.elites)st.comDone=1;}if(st.com==='c_letter'&&st.deck.some(x=>x.id==='x_regret'))st.comDone=1;
-  st.stats.bosses++;const bid=c.enemies[0].id;E.push({t:'ach',id:{wusign:'boss1',qianhao:'boss2',deepdrill:'boss3',namegate:'boss4',lastpost:'boss5',stationmaster:'boss6'}[bid]});
+  st.stats.bosses++;const bid=c.enemies[0].id;E.push({t:'ach',id:{wusign:'boss1',qianhao:'boss2',deepdrill:'boss3',namegate:'boss4',lastpost:'boss5',stationmaster:'boss6',nh_fox:'boss7',nh_sea:'boss8',nh_her:'boss9'}[bid]});
   const p=shuffle(st,relicPool(D,st)).slice(0,3);rw.relicChoice=p;st.hp=Math.min(st.maxHp,st.hp+Math.ceil((st.maxHp-st.hp)*.75));}
  if(st.relics.length>=6)E.push({t:'ach',id:'relic6'});
  st.reward=rw;st.combat=null;st.screen='reward';E.push({t:'win',kind,gold});}
@@ -610,7 +615,7 @@ function tcomOk(D,st,need,win){const S=st.stats||{};for(const k in need){const v
  case 'elites':if((S.elites||0)<v)return false;break;case 'gold':if(st.gold<v)return false;break;case 'hp':if(st.hp<st.maxHp*v)return false;break;
  case 'deck':if(st.deck.length>v)return false;break;case 'cards':if(st.deck.length<v)return false;break;case 'played':if((S.cards||0)<v)return false;break;
  case 'relics':if(st.relics.length<v)return false;break;case 'rests':if((S.rests||0)>v)return false;break;case 'restsMin':if((S.rests||0)<v)return false;break;
- case 'alienMax':if((st.alien||0)>v)return false;break;case 'transformed':if(!(S.trans>0||st.flags&&st.flags.transformed))return false;break;case 'sent':if((S.sent||0)<v)return false;break;
+ case 'alienMax':if((st.alien||0)>v)return false;break;case 'tagPlays':{const tp=S.tagPlays||{};if(!Object.keys(v).every(k=>(tp[k]||0)>=v[k]))return false;break;}case 'transformed':if(!(S.trans>0||st.flags&&st.flags.transformed))return false;break;case 'sent':if((S.sent||0)<v)return false;break;
  default:return false;}}return true;}
 function tcomList(D,st,win){if(st.mode==='g'||st.ch==='gu')return [];return tagsOf(st).filter(t=>t&&(D.tcom||{})[t]&&tcomOk(D,st,D.tcom[t].need,win));}
 function comOk(st){if(!st.com)return false;const S=st.stats;if(st.com==='c_greed'&&st.gold>=300)return true;if(st.com==='c_return'&&(S.sent||0)>=3)return true;
@@ -638,7 +643,7 @@ function warpMap(D,st,m){if(M(st,'books')||(st.kp||[]).includes('m_map'))for(con
  if(a>=40){const r=mid.find(n=>n.t==='rest');if(r)r.t='fight';const f=mid.find(n=>n.t==='fight'&&n!==r);if(f)f.t='shop';for(const n of mid)if(n.t==='mystery')n.seen=1;}
  if(st.layer>0&&st.flags['full'+(st.layer-1)]){const f=mid.filter(n=>n.t==='fight');if(f.length){const n=f[Math.floor(f.length/2)];n.t='elite';n.nest=1;}}
  return m;}
-function nextAfterBoss(D,st,E){if(M(st,'home'))st.hp=Math.min(st.maxHp,st.hp+15);if(st.homeBonus){st.hp=Math.min(st.maxHp,st.hp+st.homeBonus);st.homeBonus=0;}st.layer++;if(st.layer>=(st.endLayer||3)&&(st.chapter||1)===1&&st.mode!=='g'&&!st.chAsked&&(D.chapters||[]).some(c=>c.id===2)&&D.chAsk){st.chAsked=1;st.screen='chask';E.push({t:'ach',id:'win_'+st.ch});E.push({t:'chClear',chapter:1,ch:st.ch});return;}if(st.layer>=(st.endLayer||3)){st.screen='over';st.result={win:true};E.push({t:'ach',id:'win_'+st.ch});if(st.chapter===2)E.push({t:'ach',id:'win_ch2'});E.push({t:'runEnd',win:true,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,hobby2:st.hobby2,asc:st.asc||0,trans:st.stats.trans||0,elites:st.stats.elites,bosses:st.stats.bosses,floors:st.stats.floors,memory:memoryOf(D,st,true),tcom:tcomList(D,st,true)});return;}
+function nextAfterBoss(D,st,E){if(M(st,'home'))st.hp=Math.min(st.maxHp,st.hp+15);if(st.homeBonus){st.hp=Math.min(st.maxHp,st.hp+st.homeBonus);st.homeBonus=0;}st.layer++;{const cc=st.chapter||1;if(st.layer>=(st.endLayer||3)&&st.mode!=='g'&&(st.chAsked||0)<cc&&(D.chapters||[]).some(c=>c.id===cc+1)&&D.chAsk){st.chAsked=cc;st.chNext=cc+1;st.screen='chask';E.push({t:'ach',id:'win_'+st.ch});if(cc>=2)E.push({t:'ach',id:'win_ch'+cc});E.push({t:'chClear',chapter:cc,ch:st.ch});return;}}if(st.layer>=(st.endLayer||3)){st.screen='over';st.result={win:true};E.push({t:'ach',id:'win_'+st.ch});if(st.chapter>=2)E.push({t:'ach',id:'win_ch'+st.chapter});E.push({t:'runEnd',win:true,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,hobby2:st.hobby2,asc:st.asc||0,trans:st.stats.trans||0,elites:st.stats.elites,bosses:st.stats.bosses,floors:st.stats.floors,memory:memoryOf(D,st,true),tcom:tcomList(D,st,true)});return;}
  st.row=-1;st.col=null;st.maps[st.layer]=warpMap(D,st,genMap(D,st,st.layer));st.screen='map';E.push({t:'layer',n:st.layer});}
 function backToMap(D,st,E){st.reward=null;st.event=null;st.shop=null;st.pick=null;if(st.row>=D.map.rows){nextAfterBoss(D,st,E);return;}st.screen='map';if(st.deck.length>=25)E.push({t:'ach',id:'deck25'});}
 
@@ -677,7 +682,7 @@ function apply(D,st0,a){CARDS_REF=D.cards;const st=clone(st0);CUR=st;const E=[];
   case 'MOVE':if(st.screen!=='map')return fail('現在不能移動');if(!canMove(D,st,a.c))return fail('走不到那裡');enter(D,st,a.c,E);break;
   case 'PLAY':{if(st.screen!=='combat')return fail('不在戰鬥中');const e=play(D,st,a.i,a.target,E);if(e)return fail(e);break;}
   case 'END_TURN':if(st.screen!=='combat')return fail('不在戰鬥中');endTurn(D,st,E);break;
-  case 'CH_CONT':{if(st.screen!=='chask')return fail('現在不能');const CH=D.chapters.find(c=>c.id===2);st.chapter=2;st.endLayer=CH.to;st.layer=CH.from;st.cont=1;st.hp=Math.min(st.maxHp,st.hp+Math.ceil(st.maxHp*.3));st.row=-1;st.col=null;st.maps[st.layer]=warpMap(D,st,genMap(D,st,st.layer));st.screen='map';E.push({t:'layer',n:st.layer});break;}
+  case 'CH_CONT':{if(st.screen!=='chask')return fail('現在不能');const nx=st.chNext||2;const CH=D.chapters.find(c=>c.id===nx);if(!CH)return fail('下面沒有路了');st.chapter=nx;st.endLayer=CH.to;st.layer=CH.from;st.cont=1;st.hp=Math.min(st.maxHp,st.hp+Math.ceil(st.maxHp*.3));st.row=-1;st.col=null;st.maps[st.layer]=warpMap(D,st,genMap(D,st,st.layer));st.screen='map';E.push({t:'layer',n:st.layer});break;}
   case 'CH_END':{if(st.screen!=='chask')return fail('現在不能');st.layer=st.endLayer||3;st.layer--;nextAfterBoss(D,st,E);break;}
   case 'REROLL_REWARD':{if(st.screen!=='reward'||!st.reward||st.reward.cardTaken||!st.reward.cards||!(st.rr>0))return fail('不能重抽');st.rr--;st.reward.cards=rollCards(D,st,st.reward.cards.length||3,!!st.reward.el);E.push({t:'reroll'});break;}
   case 'PICK_CARD':{if(st.screen!=='reward'||st.reward.cardTaken)return fail('不能選');const id=st.reward.cards[a.i];if(!id)return fail('沒有這張');addCard(st,id);st.reward.cardTaken=true;E.push({t:'gotCard',id});break;}
@@ -756,7 +761,7 @@ function tagOf(meta,k){meta.tm=meta.tm||{};if(!meta.tm[k])meta.tm[k]={pts:1,spen
 function metaTTal(D,meta0,k,tier){const meta=migrateMeta(meta0);const T=(D.tagtal||{})[k];if(!T||!T[tier-1])return {ok:false,error:'沒有這個天賦'};const o=tagOf(meta,k);if(o.spent.includes(tier))return {ok:false,error:'已經學會了'};
  if(tier===3){if(!o.spent.includes(2))return {ok:false,error:'要先學會殘響那一格'};if(!(o.wins>0))return {ok:false,error:'要帶著它通關一次'};if((meta.echo||0)<100)return {ok:false,error:'殘響不夠（要 100）'};meta.echo-=100;}else if(tier===2){if(!o.spent.includes(1))return {ok:false,error:'要先學會低語'};if((meta.echo||0)<60)return {ok:false,error:'殘響不夠（要 60）'};meta.echo-=60;}else{if((o.pts||0)<2)return {ok:false,error:'熟練不夠（要 2 點）'};o.pts-=2;}o.spent.push(tier);return {ok:true,meta};}
 function tagsOf(st){return [st.persona,st.desire,st.hobby,st.hobby2].filter(Boolean);}
-function addEff(st,ef){if(!ef)return;for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold=Math.max(0,st.gold+ef.rs.gold);if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp=Math.max(1,Math.min(st.maxHp,st.hp+ef.rs.maxhp));}if(ef.rs.alien)st.alienAdd=(st.alienAdd||0)+ef.rs.alien;if(ef.rs.rr)st.rr=(st.rr||0)+ef.rs.rr;}}
+function addEff(st,ef){if(!ef)return;if(ef.play){st.tt.play=st.tt.play||{};for(const k in ef.play)st.tt.play[k]=(st.tt.play[k]||[]).concat(ef.play[k]);}if(ef.setcs){st.tt.setcs=(st.tt.setcs||[]).concat([ef.setcs]);}for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold=Math.max(0,st.gold+ef.rs.gold);if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp=Math.max(1,Math.min(st.maxHp,st.hp+ef.rs.maxhp));}if(ef.rs.alien)st.alienAdd=(st.alienAdd||0)+ef.rs.alien;if(ef.rs.rr)st.rr=(st.rr||0)+ef.rs.rr;}}
 function tagDefOf(D,tg){return (D.personas||{})[tg]||(D.desires||{})[tg]||(D.hobbies||{})[tg]||null;}
 function tagFx(D,st,ops,E,start){const c=st.combat;for(const f of ops||[]){const n=f[1];const A=c?alive(c):[];switch(f[0]){
  case 'b':if(!c)break;if(start)c.b0=(c.b0||0)+n;else{c.block+=n;E.push({t:'block',n});}break;
