@@ -19,7 +19,15 @@ const scarB=c=>Math.min(4,Math.floor((c.scar||0)/3));
 function cardDef(D,c,ph){const b=D.cards[c.id];let d=(!c.up||!b.u)?b:Object.assign({},b,b.u,{n:b.n+'+'});
  if(c.scar>=9&&D.scarNames&&D.scarNames[c.id])d=Object.assign({},d,{n:D.scarNames[c.id]+(c.up&&b.u?'+':'')});
  if(c.left)d=Object.assign({},d,{n:'她留下的'+d.n});
- if(d.bl&&ph&&ph!=='h'){const P=ph==='mix'?'full':ph;const o=(b.ph&&b.ph[P])||{};d=Object.assign({},d,{fx:o.fx||phFx(d.fx,P)},o.img?{img:o.img}:{});}return d;}
+ if(d.bl&&ph&&ph!=='h'){const P=ph==='mix'?'full':ph;const o=(b.ph&&b.ph[P])||{};d=Object.assign({},d,{fx:o.fx||phFx(d.fx,P)},o.img?{img:o.img}:{});}if(c.fg>0)d=fgFx(d,c.fg);return d;}
+const FGN=['d','da','b','hardB','dVine','dLinked','dInk','dLow','dDebuff','dSkill','dAl','dLost','dGold','dIfN','dKept','thorns','gold','heal','ink'];
+function fgFx(d,lv){const fx=d.fx.map(f=>f.slice());let k=d.c;for(const f of fx){if(FGN.includes(f[0])&&typeof f[1]==='number'){f[1]+=(f[0]==='d'||f[0]==='da')&&f[2]>1?1:(f[0]==='ink'||f[0]==='heal'||f[0]==='dIfN')?1:2;if(f[0]==='dIfN')f[3]+=2;break;}}
+ if(lv>=2){if(d.t==='a')fx.push(['st','weak',1,fx.some(f=>f[0]==='da')?'a':'t']);else if(d.t==='s')fx.push(fx.some(f=>f[0]==='b')?['dr',1]:['b',3]);else if(d.t==='p')fx.push(['b',4]);}
+ if(lv>=3){if(k>0)k--;else fx.push(['dr',1]);}
+ return Object.assign({},d,{fx,c:k,fg:lv});}
+function fgCost(lv){return [[20,1],[40,3],[80,6]][lv-1];}
+function metaForge(D,meta0,id){const meta=migrateMeta(meta0);const c=D.cards[id];if(!c||!(c.bl||c.tag))return {ok:false,error:'這張牌不能刻印'};meta.forge=meta.forge||{};const lv=(meta.forge[id]||0)+1;if(lv>3)return {ok:false,error:'已經刻滿了'};const [e,x]=fgCost(lv);if((meta.echo||0)<e)return {ok:false,error:'殘響不夠（要 '+e+'）'};if((meta.crystal||0)<x)return {ok:false,error:'墨晶不夠（要 '+x+'）'};meta.echo-=e;meta.crystal-=x;meta.forge[id]=lv;return {ok:true,meta,lv};}
+function metaSalvage(D,meta0){const meta=migrateMeta(meta0);const cnt={};const keep=[];let n=0;for(const x of meta.col||[]){const k=x.id+'|'+(x.up?1:0);cnt[k]=(cnt[k]||0)+1;if(cnt[k]>2)n++;else keep.push(x);}if(!n)return {ok:false,error:'沒有多出來的收藏'};meta.col=keep;meta.crystal=(meta.crystal||0)+n;return {ok:true,meta,n};}
 function cost(D,c,ph){if(c.free)return 0;const k=cardDef(D,c).c;return k<0?k:ph==='full'?0:Math.max(0,k+(c.tax||0)+(c.oil||0)-(c.kd||0));}
 const isYY=st=>st.ch==='yy'||st.ch==='yx';
 const baseCh=st=>st.ch==='yx'?'yy':st.ch;
@@ -131,7 +139,7 @@ function newRun(D,seed,ch,meta,opt){seed=seed>>>0||1;const C=D.chars[ch];opt=opt
  for(const id of C.deck)addCard(st,id);
  st.sub=(opt.sub&&opt.sub!==opt.origin)?opt.sub:null;st.tal=((meta&&meta.prof&&meta.prof[ch==='yx'?'yy':ch]||{}).spent||[]).slice();{const bc=ch==='yx'?'yy':ch;const om=(meta&&meta.om)||{};st.otal=[];for(const k in om)if(k.startsWith(bc+'_'))st.otal.push(...(om[k].spent||[]));}
  st.desire=opt.desire||null;st.persona=opt.persona||null;st.hobby=opt.hobby||null;st.shards=0;st.marks=0;
- st.tt={cs:[],ts:[],el:[],kill:[],rest:0,on:[]};for(const tg of [st.persona,st.desire,st.hobby]){if(!tg)continue;{const td=tagDefOf(D,tg);const ef=td&&td.eff;if(ef){for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold=Math.max(0,st.gold+ef.rs.gold);if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp=Math.max(1,Math.min(st.maxHp,st.hp+ef.rs.maxhp));}}}}const o=meta&&meta.tm&&meta.tm[tg];const T=(D.tagtal||{})[tg];if(!o||!T)continue;for(const tier of o.spent){const ef=(T[tier-1]||{}).eff||{};st.tt.on.push(tg+'_'+tier);for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold+=ef.rs.gold;if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp+=ef.rs.maxhp;}}}}
+ st.hobby2=(meta&&(meta.keeper||[]).includes('m_hob2')&&opt.hobby2&&opt.hobby2!==st.hobby)?opt.hobby2:null;st.rr=0;st.tt={cs:[],ts:[],el:[],kill:[],rest:0,on:[]};for(const kk of (D.keeper||[]))if(kk.eff&&meta&&(meta.keeper||[]).includes(kk.id)&&(!kk.ch||kk.ch===(ch==='yx'?'yy':ch)))addEff(st,kk.eff);for(const tg of tagsOf(st)){if(!tg)continue;{const td=tagDefOf(D,tg);const ef=td&&td.eff;if(ef){for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold=Math.max(0,st.gold+ef.rs.gold);if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp=Math.max(1,Math.min(st.maxHp,st.hp+ef.rs.maxhp));}}}}const o=meta&&meta.tm&&meta.tm[tg];const T=(D.tagtal||{})[tg];if(!o||!T)continue;for(const tier of o.spent){const ef=(T[tier-1]||{}).eff||{};st.tt.on.push(tg+'_'+tier);for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold+=ef.rs.gold;if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp+=ef.rs.maxhp;}}}}
  if(meta&&meta.letter){st.gold+=meta.letter;st.flags.gotLetter=meta.letter;}
  if(meta&&meta.dotGold){st.gold+=meta.dotGold;st.flags.gotDot=meta.dotGold;}
  if(meta&&meta.grudges)st.grudgeList=meta.grudges.slice();
@@ -140,7 +148,7 @@ function newRun(D,seed,ch,meta,opt){seed=seed>>>0||1;const C=D.chars[ch];opt=opt
  if(meta&&(meta.runs||0)>=2&&(meta.fourth||0)<9){addCard(st,'x_fourth');st.fourthN=meta.fourth||0;}
  if(meta&&meta.left&&meta.left.ch===baseCh({ch}))st.left=clone(meta.left);
  st.dossier={};st.pages=meta&&meta.pages||0;st.com=opt.com||null;st.stats.rests=0;
- st.origin=opt.origin||C.origin||null;st.alien=ch==='yx'?60:0;if(ch==='yx')st.flags.yx=1;st.reso={};st.wick=10;st.lamp=(st.otal&&st.otal.includes('lamp_3')&&st.origin==='lamp')?1:0;st.stats.ph={h:0,half:0,full:0};st.stats.sent=0;
+ st.origin=opt.origin||C.origin||null;st.alien=(ch==='yx'?60:0)+(ch==='cl'?0:(st.alienAdd||0));if(ch==='yx')st.flags.yx=1;st.reso={};st.wick=10;st.lamp=(st.otal&&st.otal.includes('lamp_3')&&st.origin==='lamp')?1:0;st.stats.ph={h:0,half:0,full:0};st.stats.sent=0;
  const O=originOf(D,st);if(O.hpB){st.maxHp+=O.hpB;st.hp+=O.hpB;}if(O.start&&(ch==='yy'||ch==='cl')){const drop=ch==='yy'?['yy_bind','yy_reel']:['cl_pen','cl_stroke'];st.deck=st.deck.filter(x=>!drop.includes(x.id));for(const id of O.start)addCard(st,id);}if(O.swap){let n=O.swap[1];for(const c of st.deck){if(n&&c.id==='strike'){c.id=O.swap[0];n--;}}}
  gainRelic(D,st,C.relic);
  st.v=2;st.kp=(meta&&meta.keeper||[]).slice();const K=id=>st.kp.includes(id);
@@ -152,10 +160,11 @@ function newRun(D,seed,ch,meta,opt){seed=seed>>>0||1;const C=D.chars[ch];opt=opt
  if(st.chapter>1){st.layer=CH.from;st.maps=[];st.maps[CH.from]=warpMap(D,st,genMap(D,st,CH.from));st.prep=st.prep||{};const P=st.prep;if(!P.relics){const p=shuffle(st,commonRelics(D,st)).slice(0,3);if(p.length)P.relics=p;}if(!P.cards){const p=pool(D,st).filter(k=>D.cards[k].r>=2);P.cards=shuffle(st,p).slice(0,3);}st.screen='prep';const B=CH.bonus||{};if(B.hp){st.maxHp+=B.hp;st.hp+=B.hp;}if(B.up){const can=shuffle(st,st.deck.filter(x=>!x.up&&D.cards[x.id].u));can.slice(0,B.up).forEach(x=>x.up=1);}if(B.gold)st.gold+=B.gold;}
  else st.maps.push(warpMap(D,st,genMap(D,st,0)));
  if(opt.mode==='g'){st.mode='g';st.trial=opt.trial||(D.trials[0]||{}).id;st.gi=0;st.prep=null;st.screen='gnext';st.left=null;st.com=null;if(opt.deck&&opt.deck.length){st.deck=[];for(const x of opt.deck){addCard(st,x.id);st.deck[st.deck.length-1].up=x.up?1:0;}}}
+ st.fg=Object.assign({},(meta&&meta.forge)||{});for(const x of st.deck)if(st.fg[x.id])x.fg=st.fg[x.id];
  return st;}
 const COSTLY=['eyebutton','borrowedheart','namelesslamp','tornphoto'];
 function commonRelics(D,st){return relicPool(D,st).filter(k=>!D.relics[k].ch&&!COSTLY.includes(k)&&k!=='anchor');}
-function addCard(st,id,up){const c={uid:st.uid++,id,up:up?1:0};st.deck.push(c);return c;}
+function addCard(st,id,up){const c={uid:st.uid++,id,up:up?1:0};if(st.fg&&st.fg[id])c.fg=st.fg[id];st.deck.push(c);return c;}
 function genMap(D,st,L){const M=D.map;const rows=[];const Lw=(D.layers[L]||{}).w||{};
  for(let r=0;r<M.rows;r++){const row=[];for(let c=0;c<M.cols;c++){let t;if(r===0)t='fight';else if(r===M.rows-1)t='rest';else if(r===Math.floor(M.rows/2)&&c===1)t='chest';else{const w=Object.assign({},M.w,Lw);if(r<2){delete w.elite;delete w.altar;}if(r>=M.rows-2)delete w.rest;t=pickW(st,w);}const n={t,e:[]};if(t==='mystery')n.q=pickW(st,M.q);row.push(n);}rows.push(row);}
  for(let r=0;r<M.rows-1;r++)for(let c=0;c<M.cols;c++){const opts=[c-1,c,c+1].filter(x=>x>=0&&x<M.cols);const k=R(st);const e=shuffle(st,opts.slice()).slice(0,k<.35?1:k<.85?2:3);rows[r][c].e=e.sort();}
@@ -169,7 +178,7 @@ function gainRelic(D,st,id){if(!id||has(st,id))return;st.relics.push(id);if(id==
 function relicPool(D,st){return Object.keys(D.relics).filter(k=>!D.relics[k].start&&!has(st,k)&&(!D.relics[k].ch||D.relics[k].ch===st.ch)&&(k!=='anchor'||st.unlocked.includes('relic2')));}
 
 // ── 牌池
-function pool(D,st,minR){const nw=(st.ch==='yy'||st.ch==='cl')&&st.origin;const tags=[st.persona,st.desire,st.hobby].filter(Boolean);
+function pool(D,st,minR){const nw=(st.ch==='yy'||st.ch==='cl')&&st.origin;const tags=tagsOf(st).filter(Boolean);
  if(nw)return Object.keys(D.cards).filter(k=>{const c=D.cards[k];if(c.r<1||c.t==='x')return false;if(c.g)return st.mode==='g';if(c.bl)return c.bl===st.origin||c.bl===st.sub;if(c.tag)return tags.includes(c.tag);return false;}).filter(k=>!minR||D.cards[k].r>=minR);
  return Object.keys(D.cards).filter(k=>{const c=D.cards[k];if(c.r<1||c.t==='x')return false;if(c.tag)return false;if(c.bl&&c.bl!==st.origin&&c.bl!==st.sub)return false;if(c.g&&st.mode!=='g')return false;if(c.ch!==baseCh(st)&&c.ch!==st.ch&&c.ch!=='any')return false;if(st.ch==='yx'&&k==='yy_restrain')return false;if(c.lock&&!st.unlocked.includes(c.lock))return false;if(minR&&c.r<minR)return false;return true;});}
 function subRoll(D,st){if(!st.sub||R(st)>=.4)return null;const P=pool(D,st);const a=P.filter(k=>D.cards[k].bl===st.origin),b=P.filter(k=>D.cards[k].bl===st.sub),n=P.filter(k=>!D.cards[k].bl);if(!a.length||!b.length||!n.length)return null;const out=[pick(st,a),pick(st,b),pick(st,n)];return M(st,'obsess')?out.slice(0,2):out;}
@@ -263,7 +272,7 @@ function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
  if(pas(D,st,'molt3')&&c.turn%(OT(D,st,'B03',1)?2:3)===0){pe(E,'molt3');if(OT(D,st,'B03',2)){c.block+=6;E.push({t:'block',n:6});}if(OT(D,st,'B03',3)){healP(st,4,E);c.moltDraw=1;}for(const k of ['weak','vuln','frail'])delete c.st[k];E.push({t:'molt'});}
  if(pas(D,st,'vine')){let n=0;const vd=OT(D,st,'M12',1)?3:2;for(const e of alive(c))if(e.st.vine){e.hp=Math.max(0,e.hp-vd*e.st.vine);n+=e.st.vine;E.push({t:'hit',to:e.uid,n:vd*e.st.vine,blocked:0});}if(n){if(OT(D,st,'M12',2))n*=2;pe(E,'vine');st.hp=Math.min(st.maxHp,st.hp+n);E.push({t:'heal',n});killCheck(D,st,E);if(st.screen!=='combat')return;}}
  if(st.ch==='gu'&&c.draw.length<5)c.guE=1;else c.guE=0;
- if(c.turn===1&&c.b0){c.block+=c.b0;E.push({t:'block',n:c.b0});}
+ if(c.turn===1&&c.b0){c.block+=c.b0;E.push({t:'block',n:c.b0});}if(c.turn===1&&c.addH0){for(const x of c.addH0)if(D.cards[x[0]])c.hand.push({uid:'x'+st.uid++,id:x[0],up:x[1],temp:1});c.addH0=null;}
  if(c.keptB){c.block+=c.keptB;E.push({t:'block',n:c.keptB});c.keptB=0;}
  if(isYY(st)){if(st.hp<st.maxHp/2)addAlien(D,st,5,E);
   if(c.fullNext){c.fullNext=0;c.full=1;st.flags.transformed=1;if(st.sub&&st.ch==='yy'){c.mix=1;c.mixT=2;const a=catOf(st.origin),b=catOf(st.sub);c.pair=a==='B'&&b==='B'?'BB':a==='M'&&b==='M'?'MM':'BM';}E.push({t:'transform',origin:st.origin,mix:c.mix?st.sub:null,pair:c.pair});}
@@ -571,7 +580,7 @@ function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
  if(kind==='elite'&&M(st,'possess')){const can=st.deck.filter(x=>D.cards[x.id].r>0&&D.cards[x.id].t!=='x');if(can.length){const x=pick(st,can);addCard(st,x.id);st.deck[st.deck.length-1].up=x.up;E.push({t:'possess',id:x.id});}}
  if(kind==='elite'&&st.layer===1)E.push({t:'page'});st.gold+=gold;
  if(st.gold>=200)E.push({t:'ach',id:'gold200'});
- const rw={gold,cards:subRoll(D,st)||rollCards(D,st,M(st,'obsess')?2:3,kind!=='fight'),relic:null,relicChoice:null,cardTaken:false};
+ const rw={el:kind!=='fight'?1:0,gold,cards:subRoll(D,st)||rollCards(D,st,M(st,'obsess')?2:3,kind!=='fight'),relic:null,relicChoice:null,cardTaken:false};
  if(kind==='elite'){const p=relicPool(D,st);if(p.length){rw.relic=pick(st,p);gainRelic(D,st,rw.relic);}if(M(st,'pride')){const p2=relicPool(D,st);if(p2.length){rw.relic2=pick(st,p2);gainRelic(D,st,rw.relic2);}}}
  if(kind==='boss'){if(st.layer===0){if(st.com==='c_nofix'&&!st.stats.rests)st.comDone=1;if(st.com==='c_quiet'&&!st.stats.elites)st.comDone=1;}if(st.com==='c_letter'&&st.deck.some(x=>x.id==='x_regret'))st.comDone=1;
   st.stats.bosses++;const bid=c.enemies[0].id;E.push({t:'ach',id:{wusign:'boss1',qianhao:'boss2',deepdrill:'boss3',namegate:'boss4',lastpost:'boss5',stationmaster:'boss6'}[bid]});
@@ -580,7 +589,7 @@ function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
  st.reward=rw;st.combat=null;st.screen='reward';E.push({t:'win',kind,gold});}
 function loseRun(D,st,E){const c=st.combat;const k=c&&c.lastSrc&&c.enemies.find(x=>x.uid===c.lastSrc);
  if(st.mode==='g'){st.screen='over';st.result={win:false,g:1};st.combat=null;E.push({t:'runEnd',win:false,g:1,ch:st.ch,floors:st.gi,memory:st.gi*((D.trials.find(t=>t.id===st.trial)||{}).memory||10)});return;}
- {const can=st.deck.filter(x=>D.cards[x.id].r>0&&D.cards[x.id].t!=='x');if(can.length){const x=pick(st,can);E.push({t:'leftCard',card:{id:x.id,up:x.up,scar:x.scar||0,ch:baseCh(st),ttl:3}});}}st.screen='over';st.result={win:false,killer:k?k.id:null};st.combat=null;E.push({t:'runEnd',win:false,killer:k?k.id:null,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,floors:st.stats.floors,memory:memoryOf(D,st,false),tcom:tcomList(D,st,false)});}
+ {const can=st.deck.filter(x=>D.cards[x.id].r>0&&D.cards[x.id].t!=='x');if(can.length){const x=pick(st,can);E.push({t:'leftCard',card:{id:x.id,up:x.up,scar:x.scar||0,ch:baseCh(st),ttl:3}});}}st.screen='over';st.result={win:false,killer:k?k.id:null};st.combat=null;E.push({t:'runEnd',win:false,killer:k?k.id:null,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,hobby2:st.hobby2,elites:st.stats.elites,bosses:st.stats.bosses,floors:st.stats.floors,memory:memoryOf(D,st,false),tcom:tcomList(D,st,false)});}
 function tcomOk(D,st,need,win){const S=st.stats||{};for(const k in need){const v=need[k];switch(k){
  case 'win':if(!win)return false;break;case 'floors':if((S.floors||0)<v)return false;break;case 'kills':if((S.kills||0)<v)return false;break;
  case 'elites':if((S.elites||0)<v)return false;break;case 'gold':if(st.gold<v)return false;break;case 'hp':if(st.hp<st.maxHp*v)return false;break;
@@ -588,7 +597,7 @@ function tcomOk(D,st,need,win){const S=st.stats||{};for(const k in need){const v
  case 'relics':if(st.relics.length<v)return false;break;case 'rests':if((S.rests||0)>v)return false;break;case 'restsMin':if((S.rests||0)<v)return false;break;
  case 'alienMax':if((st.alien||0)>v)return false;break;case 'transformed':if(!(S.ph&&S.ph.full))return false;break;case 'sent':if((S.sent||0)<v)return false;break;
  default:return false;}}return true;}
-function tcomList(D,st,win){if(st.mode==='g'||st.ch==='gu')return [];return [st.persona,st.desire,st.hobby].filter(t=>t&&(D.tcom||{})[t]&&tcomOk(D,st,D.tcom[t].need,win));}
+function tcomList(D,st,win){if(st.mode==='g'||st.ch==='gu')return [];return tagsOf(st).filter(t=>t&&(D.tcom||{})[t]&&tcomOk(D,st,D.tcom[t].need,win));}
 function comOk(st){if(!st.com)return false;const S=st.stats;if(st.com==='c_greed'&&st.gold>=300)return true;if(st.com==='c_return'&&(S.sent||0)>=3)return true;
  if(st.com==='c2_full'&&st.flags.transformed)return true;if(st.com==='c2_scar'&&st.deck.some(x=>(x.scar||0)>=9))return true;if(st.com==='c2_curse'&&st.deck.filter(x=>x.id&&x.id.startsWith('x_')).length>=3&&st.result&&st.result.win)return true;
  if(st.com==='c2_light'&&st.flags.lit)return true;if(st.com==='c2_thin'&&st.deck.length<=12&&st.result&&st.result.win)return true;if(st.com==='c2_noshop'&&!S.bought&&st.result&&st.result.win)return true;if(st.com==='c2_kill'&&(S.kills||0)>=30)return true;if(st.com==='c2_mix'&&st.flags.mixUsed)return true;
@@ -606,7 +615,7 @@ function enter(D,st,c,E){const L=D.layers[st.layer];st.stats.floors++;
  else if(t==='rest'){st.screen='rest';if(st.com==='c_lamp'&&st.layer>=1)st.comDone=1;}
  else if(t==='chest'){const p=relicPool(D,st);const id=p.length?pick(st,p):null;if(id)gainRelic(D,st,id);else st.gold+=50;st.reward={chest:id,gold:id?0:50};st.screen='chest';if(st.relics.length>=6)E.push({t:'ach',id:'relic6'});}
  else if(t==='shop'){if(M(st,'greed'))addAlien(D,st,10,E);st.shop=genShop(D,st);st.screen='shop';}
- else if(t==='event'){const myT=[st.persona,st.desire,st.hobby].filter(Boolean);const okEv=e=>!e.special&&(!e.chap||e.chap===(st.chapter||1))&&(!e.ch||e.ch===baseCh(st))&&!(e.hob&&(st.hob||[]).includes(e.hob))&&(!e.tag||myT.includes(e.tag));let ev=D.events.filter(e=>okEv(e)&&!st.seenEv.includes(e.id));if(!ev.length){st.seenEv=[];ev=D.events.filter(okEv);}const tev=ev.filter(e=>e.tag);let e=(tev.length&&R(st)<.45)?pick(st,tev):pick(st,ev);if(st.left&&!st.flags.leftSeen&&st.layer===0){st.flags.leftSeen=1;e=D.events.find(x=>x.id==='left_card')||e;}else st.seenEv.push(e.id);st.event={id:e.id,done:null};if(has(st,'map'))st.gold+=15;st.screen='event';}}
+ else if(t==='event'){const myT=tagsOf(st).filter(Boolean);const okEv=e=>!e.special&&(!e.chap||e.chap===(st.chapter||1))&&(!e.ch||e.ch===baseCh(st))&&!(e.hob&&(st.hob||[]).includes(e.hob))&&(!e.tag||myT.includes(e.tag));let ev=D.events.filter(e=>okEv(e)&&!st.seenEv.includes(e.id));if(!ev.length){st.seenEv=[];ev=D.events.filter(okEv);}const tev=ev.filter(e=>e.tag);let e=(tev.length&&R(st)<.45)?pick(st,tev):pick(st,ev);if(st.left&&!st.flags.leftSeen&&st.layer===0){st.flags.leftSeen=1;e=D.events.find(x=>x.id==='left_card')||e;}else st.seenEv.push(e.id);st.event={id:e.id,done:null};if(has(st,'map'))st.gold+=15;st.screen='event';}}
 function genShop(D,st){const P=D.shop;const cs=[];const p=pool(D,st);const used=new Set();for(let i=0;i<5+(isYY(st)&&phaseOf(st)==='h'?1:0)+(M(st,'greed')?1:0);i++){const left=p.filter(k=>!used.has(k));if(!left.length)break;let id=pick(st,left);if(M(st,'pride')&&D.cards[id].r<3){const up=p.filter(k=>D.cards[k].r===D.cards[id].r+1&&!used.has(k));if(up.length)id=pick(st,up);}used.add(id);const r=D.cards[id].r;cs.push({id,price:Math.round(P.card[r-1]*(.9+R(st)*.2)*Math.max(.5,(M(st,'queen')?1.2:1)*(pas(D,st,'shop20')?(OT(D,st,'B02',3)?.7:.8):1)*(TL(st,'yy_greed1b')?.9:1)*((st.kp||[]).includes('m_shop')?.9:1))*(M(st,'pride')?1.1:1)),sold:false});}
  const rp=shuffle(st,relicPool(D,st)).slice(0,2).map(id=>({id,price:ri(st,P.relic[0],P.relic[1]),sold:false}));const dx=st.desire&&D.shopX&&D.shopX[st.desire];return {cards:cs,relics:rp,removed:false,removeCost:P.remove,x:dx?{id:st.desire,price:dx.price,sold:false}:null};}
 
@@ -614,7 +623,7 @@ function warpMap(D,st,m){if(M(st,'books')||(st.kp||[]).includes('m_map'))for(con
  if(a>=40){const r=mid.find(n=>n.t==='rest');if(r)r.t='fight';const f=mid.find(n=>n.t==='fight'&&n!==r);if(f)f.t='shop';for(const n of mid)if(n.t==='mystery')n.seen=1;}
  if(st.layer>0&&st.flags['full'+(st.layer-1)]){const f=mid.filter(n=>n.t==='fight');if(f.length){const n=f[Math.floor(f.length/2)];n.t='elite';n.nest=1;}}
  return m;}
-function nextAfterBoss(D,st,E){if(M(st,'home'))st.hp=Math.min(st.maxHp,st.hp+15);if(st.homeBonus){st.hp=Math.min(st.maxHp,st.hp+st.homeBonus);st.homeBonus=0;}st.layer++;if(st.layer>=(st.endLayer||3)){st.screen='over';st.result={win:true};E.push({t:'ach',id:'win_'+st.ch});if(st.chapter===2)E.push({t:'ach',id:'win_ch2'});E.push({t:'runEnd',win:true,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,floors:st.stats.floors,memory:memoryOf(D,st,true),tcom:tcomList(D,st,true)});return;}
+function nextAfterBoss(D,st,E){if(M(st,'home'))st.hp=Math.min(st.maxHp,st.hp+15);if(st.homeBonus){st.hp=Math.min(st.maxHp,st.hp+st.homeBonus);st.homeBonus=0;}st.layer++;if(st.layer>=(st.endLayer||3)){st.screen='over';st.result={win:true};E.push({t:'ach',id:'win_'+st.ch});if(st.chapter===2)E.push({t:'ach',id:'win_ch2'});E.push({t:'runEnd',win:true,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,hobby2:st.hobby2,elites:st.stats.elites,bosses:st.stats.bosses,floors:st.stats.floors,memory:memoryOf(D,st,true),tcom:tcomList(D,st,true)});return;}
  st.row=-1;st.col=null;st.maps[st.layer]=warpMap(D,st,genMap(D,st,st.layer));st.screen='map';E.push({t:'layer',n:st.layer});}
 function backToMap(D,st,E){st.reward=null;st.event=null;st.shop=null;st.pick=null;if(st.row>=D.map.rows){nextAfterBoss(D,st,E);return;}st.screen='map';if(st.deck.length>=25)E.push({t:'ach',id:'deck25'});}
 
@@ -653,6 +662,7 @@ function apply(D,st0,a){const st=clone(st0);CUR=st;const E=[];const fail=e=>({ok
   case 'MOVE':if(st.screen!=='map')return fail('現在不能移動');if(!canMove(D,st,a.c))return fail('走不到那裡');enter(D,st,a.c,E);break;
   case 'PLAY':{if(st.screen!=='combat')return fail('不在戰鬥中');const e=play(D,st,a.i,a.target,E);if(e)return fail(e);break;}
   case 'END_TURN':if(st.screen!=='combat')return fail('不在戰鬥中');endTurn(D,st,E);break;
+  case 'REROLL_REWARD':{if(st.screen!=='reward'||!st.reward||st.reward.cardTaken||!st.reward.cards||!(st.rr>0))return fail('不能重抽');st.rr--;st.reward.cards=rollCards(D,st,st.reward.cards.length||3,!!st.reward.el);E.push({t:'reroll'});break;}
   case 'PICK_CARD':{if(st.screen!=='reward'||st.reward.cardTaken)return fail('不能選');const id=st.reward.cards[a.i];if(!id)return fail('沒有這張');addCard(st,id);st.reward.cardTaken=true;E.push({t:'gotCard',id});break;}
   case 'SKIP_CARD':if(st.screen!=='reward')return fail('不能跳過');st.reward.cardTaken=true;break;
   case 'PICK_RELIC':{if(st.screen!=='reward'||!st.reward.relicChoice)return fail('不能選');const id=st.reward.relicChoice[a.i];if(!id)return fail('沒有這件');gainRelic(D,st,id);st.reward.relicChoice=null;st.reward.relicTaken=id;break;}
@@ -704,7 +714,7 @@ function apply(D,st0,a){const st=clone(st0);CUR=st;const E=[];const fail=e=>({ok
    if(M(st,'lamps')){st.flags.wh=!st.flags.wh;if(!st.flags.wh)st.wick=(st.wick==null?10:st.wick)-1;}else st.wick=(st.wick==null?10:st.wick)-1;if(st.wick<=0){st.wick=10;st.lamp=(st.lamp||0)+1;E.push({t:'lampReady'});}
    killCheck(D,st,E);break;}
   case 'LAMP':{if(st.screen!=='combat'||!(st.lamp>0))return fail('燈還沒亮');const c=st.combat;if(c.stop)return fail('這一回合已經照過了');st.lamp--;c.stop=1;st.flags.lit=1;E.push({t:'lampLight'});if(TL(st,'cl_lamp1b'))E.push({t:'flame'});break;}
-  case 'QUIT':{st.combat=null;st.screen='over';st.result={win:false,quit:true};E.push({t:'runEnd',win:false,quit:true,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,floors:st.stats.floors,memory:memoryOf(D,st,false),tcom:[]});break;}
+  case 'QUIT':{st.combat=null;st.screen='over';st.result={win:false,quit:true};E.push({t:'runEnd',win:false,quit:true,chapter:st.chapter||1,fourth:st.fourthN!=null?1:0,dot:st.flags.dot?1:0,desire:st.desire,com:comOk(st)?st.com:null,ch:st.ch,origin:st.origin,ph:st.stats.ph,persona:st.persona,hobby:st.hobby,hobby2:st.hobby2,elites:st.stats.elites,bosses:st.stats.bosses,floors:st.stats.floors,memory:memoryOf(D,st,false),tcom:[]});break;}
   default:return fail('不明的指令');}
  if(!st0.combat&&st.combat){const s0=clone(st0);delete s0.pre;st.pre={s:s0,a};}
  if(!st.combat&&st.pre)delete st.pre;
@@ -727,7 +737,9 @@ function profOf(meta,ch){ch=ch==='yx'?'yy':ch;meta.prof=meta.prof||{};meta.prof[
 const LV=xp=>Math.floor(xp/25);
 function tagOf(meta,k){meta.tm=meta.tm||{};if(!meta.tm[k])meta.tm[k]={pts:1,spent:[],runs:0};return meta.tm[k];}
 function metaTTal(D,meta0,k,tier){const meta=migrateMeta(meta0);const T=(D.tagtal||{})[k];if(!T||!T[tier-1])return {ok:false,error:'沒有這個天賦'};const o=tagOf(meta,k);if(o.spent.includes(tier))return {ok:false,error:'已經學會了'};
- if(tier===2){if(!o.spent.includes(1))return {ok:false,error:'要先學會低語'};if((meta.echo||0)<60)return {ok:false,error:'殘響不夠（要 60）'};meta.echo-=60;}else{if((o.pts||0)<2)return {ok:false,error:'熟練不夠（要 2 點）'};o.pts-=2;}o.spent.push(tier);return {ok:true,meta};}
+ if(tier===3){if(!o.spent.includes(2))return {ok:false,error:'要先學會殘響那一格'};if(!(o.wins>0))return {ok:false,error:'要帶著它通關一次'};if((meta.echo||0)<100)return {ok:false,error:'殘響不夠（要 100）'};meta.echo-=100;}else if(tier===2){if(!o.spent.includes(1))return {ok:false,error:'要先學會低語'};if((meta.echo||0)<60)return {ok:false,error:'殘響不夠（要 60）'};meta.echo-=60;}else{if((o.pts||0)<2)return {ok:false,error:'熟練不夠（要 2 點）'};o.pts-=2;}o.spent.push(tier);return {ok:true,meta};}
+function tagsOf(st){return [st.persona,st.desire,st.hobby,st.hobby2].filter(Boolean);}
+function addEff(st,ef){if(!ef)return;for(const k of ['cs','ts','el','kill'])if(ef[k])st.tt[k].push(...ef[k]);if(ef.rest)st.tt.rest+=ef.rest;if(ef.rs){if(ef.rs.gold)st.gold=Math.max(0,st.gold+ef.rs.gold);if(ef.rs.maxhp){st.maxHp+=ef.rs.maxhp;st.hp=Math.max(1,Math.min(st.maxHp,st.hp+ef.rs.maxhp));}if(ef.rs.alien)st.alienAdd=(st.alienAdd||0)+ef.rs.alien;if(ef.rs.rr)st.rr=(st.rr||0)+ef.rs.rr;}}
 function tagDefOf(D,tg){return (D.personas||{})[tg]||(D.desires||{})[tg]||(D.hobbies||{})[tg]||null;}
 function tagFx(D,st,ops,E,start){const c=st.combat;for(const f of ops||[]){const n=f[1];const A=c?alive(c):[];switch(f[0]){
  case 'b':if(!c)break;if(start)c.b0=(c.b0||0)+n;else{c.block+=n;E.push({t:'block',n});}break;
@@ -744,7 +756,8 @@ function tagFx(D,st,ops,E,start){const c=st.combat;for(const f of ops||[]){const
  case 'al':if(n<0)st.alien=Math.max(st.ch==='yx'?40:0,(st.alien||0)+n);else addAlien(D,st,n,E);break;
  case 'str':if(c)addSt(c,'str',n);break;
  case 'vine':if(c)for(const e of A)addSt(e,'vine',n);break;
- case 'hard':if(c){c.block+=n;c.hard=(c.hard||0)+n;}break;}}}
+ case 'hard':if(c){c.block+=n;c.hard=(c.hard||0)+n;}break;
+ case 'addH':if(c){if(start){c.addH0=c.addH0||[];c.addH0.push([f[1],f[2]||0]);}else if(c.hand.length<handMax(D,st))c.hand.push({uid:'x'+st.uid++,id:f[1],up:f[2]||0,temp:1});}break;}}}
 function otOf(meta,k){meta.om=meta.om||{};if(!meta.om[k])meta.om[k]={pts:2,spent:[]};return meta.om[k];}
 function otLeft(D,o){return (o.pts||0)-o.spent.reduce((a,id)=>a+(((D.otal||{})[id]||{}).cost||1),0);}
 function metaOTal(D,meta0,k,id){const meta=migrateMeta(meta0);const t=(D.otal||{})[id];if(!t||t.ok!==k)return {ok:false,error:'沒有這個天賦'};const o=otOf(meta,k);if(o.spent.includes(id))return {ok:false,error:'已經學會了'};if(t.need&&!o.spent.includes(t.need))return {ok:false,error:'要先學會前一格'};if(otLeft(D,o)<t.cost)return {ok:false,error:'熟練不夠（要 '+t.cost+' 點）'};o.spent.push(id);return {ok:true,meta};}
@@ -780,7 +793,7 @@ function metaApply(D,meta0,events){const meta=migrateMeta(meta0);const news={ach
   if(e.t==='page')meta.pages=Math.min(9,(meta.pages||0)+1);
   if(e.t==='drop'&&!meta.hobbies.includes(e.id)){meta.hobbies.push(e.id);news.hobby=e.id;}
   if(e.t==='hobby'&&!meta.hobbies.includes(e.id)){meta.hobbies.push(e.id);news.hobby=e.id;}
-  if(e.t==='runEnd'){const p=profOf(meta,e.ch);const gain=(e.floors||0)+(e.win?10:0);p.xp+=gain;news.xp=gain;const pg=e.ch==='gu'?0:(1+(e.win?1:0));p.pts+=pg;news.pts=pg;{const tgs=[e.persona,e.desire,e.hobby].filter(Boolean);if(tgs.length&&!e.g){news.tags=[];for(const tg of tgs){const o=tagOf(meta,tg);const g=1+(e.win?1:0);o.pts+=g;o.runs=(o.runs||0)+1;news.tags.push([tg,g]);if(e.win&&(D.tcom||{})[tg]&&!meta.ach.includes('tg_'+tg)){meta.ach.push('tg_'+tg);news.ach.push('tg_'+tg);}}}}if(e.tcom&&e.tcom.length){meta.tcomDone=meta.tcomDone||{};news.tcom=[];for(const tg of e.tcom){const T=(D.tcom||{})[tg];if(!T)continue;const first=!meta.tcomDone[tg];meta.tcomDone[tg]=(meta.tcomDone[tg]||0)+1;const g=first?T.echo:Math.floor(T.echo/3);meta.echo+=g;news.tcom.push([tg,g,first?1:0]);}}if(e.origin&&e.ch!=='gu'&&!e.g){const ok=(e.ch==='yx'?'yy':e.ch)+'_'+e.origin;const o=otOf(meta,ok);const og=1+Math.floor((e.floors||0)/8)+(e.win?2:0);o.pts+=og;news.opts=og;news.ok=ok;}
+  if(e.t==='runEnd'){if(!e.g&&e.ch!=='gu'){const cg=(e.elites||0)+(e.bosses||0)*2+(e.win?2:0);if(cg){meta.crystal=(meta.crystal||0)+cg;news.crystal=cg;}}const p=profOf(meta,e.ch);const gain=(e.floors||0)+(e.win?10:0);p.xp+=gain;news.xp=gain;const pg=e.ch==='gu'?0:(1+(e.win?1:0));p.pts+=pg;news.pts=pg;{const tgs=[e.persona,e.desire,e.hobby,e.hobby2].filter(Boolean);if(tgs.length&&!e.g){news.tags=[];for(const tg of tgs){const o=tagOf(meta,tg);const g=1+(e.win?1:0);o.pts+=g;o.runs=(o.runs||0)+1;if(e.win)o.wins=(o.wins||0)+1;news.tags.push([tg,g]);if(e.win&&(D.tcom||{})[tg]&&!meta.ach.includes('tg_'+tg)){meta.ach.push('tg_'+tg);news.ach.push('tg_'+tg);}}}}if(e.tcom&&e.tcom.length){meta.tcomDone=meta.tcomDone||{};news.tcom=[];for(const tg of e.tcom){const T=(D.tcom||{})[tg];if(!T)continue;const first=!meta.tcomDone[tg];meta.tcomDone[tg]=(meta.tcomDone[tg]||0)+1;const g=first?T.echo:Math.floor(T.echo/3);meta.echo+=g;news.tcom.push([tg,g,first?1:0]);}}if(e.origin&&e.ch!=='gu'&&!e.g){const ok=(e.ch==='yx'?'yy':e.ch)+'_'+e.origin;const o=otOf(meta,ok);const og=1+Math.floor((e.floors||0)/8)+(e.win?2:0);o.pts+=og;news.opts=og;news.ok=ok;}
    if(e.win&&!e.g){meta.keepPending=1;meta.chWins=meta.chWins||{};meta.chWins[e.chapter||1]=(meta.chWins[e.chapter||1]||0)+1;}
    if(e.dot&&e.win)meta.dotGold=15;
    if(e.win&&!e.g&&D.bookX)for(const b of D.bookX){if(meta.bookX&&meta.bookX.includes(b.id))continue;const ok=(b.id==='bx1'&&e.ch==='yy'&&e.origin==='B01'&&e.ph&&e.ph.h>=Math.max(e.ph.half||0,e.ph.full||0))||(b.id==='bx2'&&e.origin==='M01'&&['obsess','grudge'].includes(e.desire))||(b.id==='bx3'&&e.fourth);if(ok){meta.bookX=meta.bookX||[];meta.bookX.push(b.id);news.bookX=b.id;}}
@@ -792,6 +805,6 @@ function metaApply(D,meta0,events){const meta=migrateMeta(meta0);const news={ach
    for(const u of D.unlocks)if(meta.memory>=u.at&&!meta.unlocked.includes(u.id)){meta.unlocked.push(u.id);news.unlocks.push(u.id);}}}
  return {meta,news};}
 
-const API={newRun,apply,desc,cardDef,cost,needsTarget,canMove,alive,dmgCalc,newMeta,metaApply,memoryOf,pool,phaseOf,originOf,sendRate,handMax,metaUnlock,metaTalent,talLeft,metaOTal,convCol,metaTTal,tagOf,otOf,otLeft,talCost,evOpts,metaKeep,deckOk,profOf,LV,subOn,subOf,saveForm,migrateRun,loadRun,migrateMeta,metaBuy,echoOf,tcomOk,tcomList,tagDefOf};
+const API={newRun,apply,desc,cardDef,cost,needsTarget,canMove,alive,dmgCalc,newMeta,metaApply,memoryOf,pool,phaseOf,originOf,sendRate,handMax,metaUnlock,metaTalent,talLeft,metaOTal,convCol,metaTTal,tagOf,otOf,otLeft,talCost,evOpts,metaKeep,deckOk,profOf,LV,subOn,subOf,saveForm,migrateRun,loadRun,migrateMeta,metaBuy,echoOf,tcomOk,tcomList,tagDefOf,metaForge,metaSalvage,fgCost,tagsOf};
 if(typeof module!=='undefined')module.exports=API;else root.CARD=API;
 })(this);
