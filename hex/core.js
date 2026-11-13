@@ -9,7 +9,7 @@ const pick=(st,arr)=>arr[Math.floor(R(st)*arr.length)];
 function pickW(st,obj){let tot=0;for(const k in obj)tot+=obj[k];let v=R(st)*tot;for(const k in obj){v-=obj[k];if(v<0)return k;}return Object.keys(obj)[0];}
 function shuffle(st,a){for(let i=a.length-1;i>0;i--){const j=Math.floor(R(st)*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 const clone=o=>JSON.parse(JSON.stringify(o));
-const strip=x=>{const o={uid:x.uid,id:x.id,up:x.up};if(x.oil)o.oil=x.oil;if(x.scar)o.scar=x.scar;if(x.left)o.left=1;return o;};
+const strip=x=>{const o={uid:x.uid,id:x.id,up:x.up};if(x.oil)o.oil=x.oil;if(x.scar)o.scar=x.scar;if(x.left)o.left=1;if(x.pl)o.pl=x.pl;if(x.fg)o.fg=x.fg;return o;};
 const TIMED=['vuln','weak','link','regen'];
 
 // ── 卡牌
@@ -19,11 +19,35 @@ const scarB=c=>Math.min(4,Math.floor((c.scar||0)/3));
 function cardDef(D,c,ph){const b=D.cards[c.id];let d=(!c.up||!b.u)?b:Object.assign({},b,b.u,{n:b.n+'+'});
  if(c.scar>=9&&D.scarNames&&D.scarNames[c.id])d=Object.assign({},d,{n:D.scarNames[c.id]+(c.up&&b.u?'+':'')});
  if(c.left)d=Object.assign({},d,{n:'她留下的'+d.n});
- if(d.bl&&!d.basic&&ph&&ph!=='h'){const P=ph==='mix'?'full':ph;const o=(b.ph&&b.ph[P])||{};d=Object.assign({},d,{fx:o.fx||phFx(d.fx,P)},o.img?{img:o.img}:{});}if(c.pl>0&&d.bl)d=polFx(d,c.pl);if(c.fg>0)d=fgFx(d,c.fg);return d;}
+ if(d.bl&&!d.basic&&ph&&ph!=='h'){const P=ph==='mix'?'full':ph;const o=(b.ph&&b.ph[P])||{};d=Object.assign({},d,{fx:o.fx||phFx(d.fx,P)},o.img?{img:o.img}:{});}if(c.pl>0&&(d.bl||d.tag)&&d.t!=='x')d=polFx(d,c.pl);if(c.fg>0)d=fgFx(d,c.fg);return d;}
 let CARDS_REF=null;
-function stampT(st,c){if(st.fg&&st.fg[c.id])c.fg=st.fg[c.id];if(st.pol>0&&CARDS_REF&&(CARDS_REF[c.id]||{}).bl)c.pl=st.pol;return c;}
-function polStage(v){return v>=80?4:v>=60?3:v>=40?2:v>=20?1:0;}
-function polFx(d,lv){const fx=d.fx.map(f=>f.slice());let hit=0;for(const f of fx){if(FGN.includes(f[0])&&typeof f[1]==='number'){f[1]+=(f[0]==='d'||f[0]==='da')&&f[2]>1?Math.ceil(lv/2):[1,2,3,5][lv-1];hit=1;break;}}if(!hit)fx.push(['b',[2,3,4,6][lv-1]]);if(lv>=2)fx.push(['hurt',lv>=4?2:1]);if(lv>=3&&d.ch!=='cl')fx.push(['al',lv>=4?3:2]);return Object.assign({},d,{fx,pl:lv});}
+function stampT(st,c){if(st.fg&&st.fg[c.id])c.fg=st.fg[c.id];if(st.polS>0&&CARDS_REF&&((CARDS_REF[c.id]||{}).bl||(CARDS_REF[c.id]||{}).tag))c.pl=st.polS;return c;}
+
+const POLT=[10,30,60,100,150,210,280];
+function polStage7(v){v=v||0;let k=0;while(k<7&&v>=POLT[k])k++;if(k===7)k+=Math.floor((v-280)/80);return k;}
+function polStage(v){const k=polStage7(v);return k<=0?0:k<=2?1:k<=4?2:k<=6?3:4;}
+function polNext(v){v=v||0;for(const t of POLT)if(v<t)return t;return 280+80*(Math.floor((v-280)/80)+1);}
+const POLDIR={M01:[['pa',1,'a'],['st','weak',1,'a']],M02:[['st','vuln',1,'a'],['thorns',2]],M03:[['st','weak',1,'a'],['st','vine',1,'a']],M04:[['b',2],['thorns',1]],M05:[['addTemp','b_hatch',1],['st','vuln',1,'a']],M06:[['b',3],['hardB',4]],M07:[['b',3],['st','weak',1,'a']],M08:[['st','weak',1,'a'],['st','vuln',1,'a']],M09:[['lureUp',1],['gold',6]],M10:[['st','weak',1,'a'],['st','weak',2,'a']],M11:[['hardB',3],['thorns',2]],M12:[['st','vine',1,'a'],['st','vine',2,'a']],
+ B01:[['pa',1,'a'],['hit']],B02:[['gold',4],['st','weak',1,'a']],B03:[['cleanse'],['b',5]],B04:[['addTemp','b_hatch',1],['addTemp','b_hatch',2]],B05:[['b',3],['gold',3]],B06:[['st','vuln',1,'a'],['b',3]],B07:[['pa',1,'a'],['thorns',1]],B08:[['b',3],['hardB',2]],B09:[['st','weak',1,'a'],['b',3]],B10:[['st','str',1,'s'],['st','str',1,'s']],B11:[['pa',1,'a'],['b',3]],
+ lamp:[['b',3],['b',2]],paper:[['b',3],['b',5]],ink:[['ink',1],['ink',2]],window:[['b',3],['b',3]],line:[['b',2],['thorns',1]],mirror:[['st','weak',1,'a'],['st','vuln',1,'a']],voice:[['b',3],['st','weak',1,'a']]};
+const CNN=['','一','二','三','四','五','六','七','八','九','十'];
+function polFx(d,lv){const fx=d.fx.map(f=>f.slice());const main=fx.find(f=>FGN.includes(f[0])&&typeof f[1]==='number');
+ const bump=a=>{if(main){main[1]=Math.max(1,Math.round(typeof a==='function'?a(main[1]):main[1]+((main[0]==='d'||main[0]==='da')&&main[2]>1?Math.ceil(a/2):a)));return 1;}return 0;};
+ const dir=(D0=>{const k=d.bl||null;if(k&&POLDIR[k])return POLDIR[k];return d.t==='a'?[['st','vuln',1,'t'],['hit']]:d.t==='p'?[['b',3],['hardB',2]]:[['b',3],['hardB',2]];})();
+ const add=op=>{if(op[0]==='hit'){const h=fx.find(f=>f[0]==='d');if(h){h[2]=(h[2]||1)+1;return;}fx.push(['b',3]);return;}fx.push(op.slice());};
+ let c=d.c,n=d.n,hurt=0;
+ const fit=op=>{const o=op[0];const atkOp=o==='hit'||o==='pa'||(o==='st'&&op[3]!=='s');return d.t==='a'?true:!(o==='hit');};
+ if(lv>=1&&!bump(1))fx.push(['b',2]);
+ if(lv>=2){if(fit(dir[0])&&(d.bl||d.t!=='s'))add(dir[0]);}
+ if(lv>=3)hurt=1;
+ if(lv>=4)bump(2);
+ if(lv>=5&&d.bl&&fit(dir[1]))add(dir[1]);
+ if(lv>=6){if(c>=2)c-=1;hurt=2;if(d.ch!=='cl')fx.push(['al',2]);}
+ if(lv>=7){bump(v=>v*1.3);hurt=2;}
+ const deep=Math.max(0,lv-7);if(deep){bump(2*deep);hurt+=Math.ceil(deep/2);}
+ if(hurt&&d.c>0)fx.push(['hurt',hurt]);
+ const pre=lv>=7?'沉・':lv>=5?'蝕・':lv>=3?'染・':'';if(pre)n=pre+n;if(deep)n=n+'・深'+(CNN[deep]||deep);
+ return Object.assign({},d,{fx,c,n,pl:lv});}
 function metaCleanse(D,meta0,ch){const meta=migrateMeta(meta0);meta.pol=meta.pol||{};const v=meta.pol[ch]||0;if(v<=0)return {ok:false,error:'現在很乾淨'};if((meta.memory||0)<40)return {ok:false,error:'回憶不夠（要 40）'};meta.memory-=40;meta.pol[ch]=Math.max(0,v-20);return {ok:true,meta};}
 const FGN=['d','da','b','hardB','dVine','dLinked','dInk','dLow','dDebuff','dSkill','dAl','dLost','dGold','dIfN','dKept','thorns','gold','heal','ink'];
 function fgFx(d,lv){const fx=d.fx.map(f=>f.slice());let k=d.c;let hit=0;for(const f of fx){if(FGN.includes(f[0])&&typeof f[1]==='number'){f[1]+=(f[0]==='d'||f[0]==='da')&&f[2]>1?1:(f[0]==='ink'||f[0]==='heal'||f[0]==='dIfN')?1:2;if(f[0]==='dIfN')f[3]+=2;hit=1;break;}}if(!hit)fx.push(['b',3]);
@@ -160,7 +184,7 @@ function newRun(D,seed,ch,meta,opt){CARDS_REF=D.cards;seed=seed>>>0||1;const C=D
  if(meta&&meta.left&&meta.left.ch===baseCh({ch}))st.left=clone(meta.left);
  st.dossier={};st.pages=meta&&meta.pages||0;st.com=opt.com||null;st.stats.rests=0;
  st.origin=opt.origin||C.origin||null;st.alien=(ch==='yx'?60:0)+(ch==='cl'?0:(st.alienAdd||0));if(ch==='yx')st.flags.yx=1;st.reso={};st.wick=10;st.lamp=(st.otal&&st.otal.includes('lamp_3')&&st.origin==='lamp')?1:0;st.stats.ph={h:0,half:0,full:0};st.stats.sent=0;
- const O=originOf(D,st);if(O.hpB){st.maxHp+=O.hpB;st.hp+=O.hpB;}if(O.start&&(ch==='yy'||ch==='cl')){const drop=ch==='yy'?['yy_bind','yy_reel']:['cl_pen','cl_stroke'];st.deck=st.deck.filter(x=>!drop.includes(x.id));for(const id of O.start)addCard(st,id);}if(O.swap){let n=O.swap[1];for(const c of st.deck){if(n&&c.id==='strike'){c.id=O.swap[0];n--;}}}if(st.origin&&(ch==='yy'||ch==='cl'||ch==='yx')){const A='o_'+st.origin.toLowerCase()+'_atk',B='o_'+st.origin.toLowerCase()+'_def';for(const c of st.deck){if(c.id==='strike'&&D.cards[A])c.id=A;else if(c.id==='guard'&&D.cards[B])c.id=B;}}if(opt.deck&&opt.deck.length&&opt.mode!=='g'&&startDeckOk(D,st,opt.deck)){st.deck=[];for(const id of opt.deck)addCard(st,id);st.custom=1;}
+ const O=originOf(D,st);if(O.hpB){st.maxHp+=O.hpB;st.hp+=O.hpB;}if(O.start&&(ch==='yy'||ch==='cl')){const drop=ch==='yy'?['yy_bind','yy_reel']:['cl_pen','cl_stroke'];st.deck=st.deck.filter(x=>!drop.includes(x.id));for(const id of O.start)addCard(st,id);}if(O.swap){let n=O.swap[1];for(const c of st.deck){if(n&&c.id==='strike'){c.id=O.swap[0];n--;}}}if(st.origin&&(ch==='yy'||ch==='cl'||ch==='yx')){const A='o_'+st.origin.toLowerCase()+'_atk',B='o_'+st.origin.toLowerCase()+'_def';for(const c of st.deck){if(c.id==='strike'&&D.cards[A])c.id=A;else if(c.id==='guard'&&D.cards[B])c.id=B;}{const SG='o_'+st.origin.toLowerCase()+'_sig';const x=st.deck.find(c=>c.id===A);if(x&&D.cards[SG])x.id=SG;}}if(opt.deck&&opt.deck.length&&opt.mode!=='g'&&startDeckOk(D,st,opt.deck)){st.deck=[];for(const id of opt.deck)addCard(st,id);st.custom=1;}
  gainRelic(D,st,C.relic);
  st.v=2;st.kp=(meta&&meta.keeper||[]).slice();const K=id=>st.kp.includes(id);
  if(K('m_hp1')){st.maxHp+=5;st.hp+=5;}if(K('m_hp2')){st.maxHp+=5;st.hp+=5;}if(K('m_hp3')){st.maxHp+=8;st.hp+=8;}if(K('m_gold'))st.gold+=40;if(K('m_gold2'))st.gold+=60;
@@ -174,11 +198,11 @@ function newRun(D,seed,ch,meta,opt){CARDS_REF=D.cards;seed=seed>>>0||1;const C=D
  st.asc=Math.max(0,Math.min((meta&&meta.ascMax)||0,opt.asc|0));
  st.deepOk=[];if(meta){for(const tg of tagsOf(st)){if(((meta.tm||{})[tg]||{}).runs>=2||(tagDefOf(D,tg)||{}).def)st.deepOk.push(tg);}for(const o of [st.origin,st.sub]){if(o&&(((meta.om||{})[(ch==='yx'?'yy':ch)+'_'+o]||{}).spent||[]).length>=1)st.deepOk.push(o);}}
  st.fg=Object.assign({},(meta&&meta.forge)||{});for(const x of st.deck)if(st.fg[x.id])x.fg=st.fg[x.id];
- st.pol=polStage(((meta&&meta.pol)||{})[ch==='yx'?'yy':ch]||0);if(st.pol>0)for(const x of st.deck)if((D.cards[x.id]||{}).bl)x.pl=st.pol;
+ {const pv=((meta&&meta.pol)||{})[ch==='yx'?'yy':ch]||0;st.pol=polStage(pv);st.polS=polStage7(pv);}if(st.polS>0)for(const x of st.deck)if((D.cards[x.id]||{}).bl||(D.cards[x.id]||{}).tag)x.pl=st.polS;
  return st;}
 const COSTLY=['eyebutton','borrowedheart','namelesslamp','tornphoto'];
 function commonRelics(D,st){return relicPool(D,st).filter(k=>!D.relics[k].ch&&!COSTLY.includes(k)&&k!=='anchor');}
-function addCard(st,id,up){const c={uid:st.uid++,id,up:up?1:0};if(st.fg&&st.fg[id])c.fg=st.fg[id];if(st.pol>0&&typeof CARDS_REF!=='undefined'&&CARDS_REF&&(CARDS_REF[id]||{}).bl)c.pl=st.pol;st.deck.push(c);return c;}
+function addCard(st,id,up){const c={uid:st.uid++,id,up:up?1:0};if(st.fg&&st.fg[id])c.fg=st.fg[id];if(st.polS>0&&typeof CARDS_REF!=='undefined'&&CARDS_REF&&((CARDS_REF[id]||{}).bl||(CARDS_REF[id]||{}).tag))c.pl=st.polS;st.deck.push(c);return c;}
 function genMap(D,st,L){const M=D.map;const rows=[];const Lw=(D.layers[L]||{}).w||{};
  for(let r=0;r<M.rows;r++){const row=[];for(let c=0;c<M.cols;c++){let t;if(r===0)t='fight';else if(r===M.rows-1)t='rest';else if(r===Math.floor(M.rows/2)&&c===1)t='chest';else{const w=Object.assign({},M.w,Lw);if(r<2){delete w.elite;delete w.altar;}if(r>=M.rows-2)delete w.rest;t=pickW(st,w);}const n={t,e:[]};if(t==='mystery')n.q=pickW(st,M.q);row.push(n);}rows.push(row);}
  for(let r=0;r<M.rows-1;r++)for(let c=0;c<M.cols;c++){const opts=[c-1,c,c+1].filter(x=>x>=0&&x<M.cols);const k=R(st);const e=shuffle(st,opts.slice()).slice(0,k<.35?1:k<.85?2:3);rows[r][c].e=e.sort();}
@@ -200,7 +224,7 @@ function subRoll(D,st){if(!st.sub||R(st)>=.4)return null;const P=pool(D,st);cons
 function rollCards(D,st,n,elite){const out=[];let guard=0;while(out.length<n&&guard++<200){const v=R(st);const r=v<(elite?.12:.05)?3:v<(elite?.5:.37)?2:1;const p=pool(D,st).filter(k=>D.cards[k].r===r&&!out.includes(k));if(st.origin&&R(st)<.3){const q=p.filter(k=>D.cards[k].bl===st.origin);if(q.length){out.push(pick(st,q));continue;}}if(R(st)<.25){const have={};for(const x of st.deck){const o=D.cards[x.id];if(o&&o.tag)have[o.tag]=1;}const q=p.filter(k=>D.cards[k].tag&&have[D.cards[k].tag]);if(q.length){out.push(pick(st,q));continue;}}if(p.length)out.push(pick(st,p));}return out;}
 
 // ── 戰鬥
-function mkEnemy(D,st,id,i){const E=D.enemies[id];const L=D.layers[st.layer]||{};const FM=(D.chars[baseCh(st)]||{}).foe||{};const hp=Math.round(ri(st,E.hp[0],E.hp[1])*(E.boss?1:E.elite?(1+((L.hpMul||1)-1)*.35):(L.hpMul||1))*(FM.hp||1)*(1+.08*(st.asc||0)));const e={uid:'e'+i+'_'+st.n,id,n:E.n,hp,max:hp,block:0,st:{},mi:-1,last:[],intent:null};
+function mkEnemy(D,st,id,i){const E=D.enemies[id];const L=D.layers[st.layer]||{};const FM=(D.chars[baseCh(st)]||{}).foe||{};const hp=Math.round(ri(st,E.hp[0],E.hp[1])*(E.boss?1:E.elite?(1+((L.hpMul||1)-1)*.35):(L.hpMul||1))*(FM.hp||1)*(1+.08*(st.asc||0))*(1+.09*Math.max(0,Math.min(8,(st.polS||0)-1))));const e={uid:'e'+i+'_'+st.n,id,n:E.n,hp,max:hp,block:0,st:{},mi:-1,last:[],intent:null};
  if(st.grudges&&st.grudges.includes(id)){e.hp=e.max=Math.max(1,Math.round(hp*.8));}
  if(st.pettyNext&&st.grudges&&st.grudges.includes(id)){e.hp=e.max=Math.max(1,Math.round(e.max*.9));}
  if(TL(st,'yy_grudge1b')&&st.hitBy&&st.hitBy.includes(id))e.st.pact=(e.st.pact||0)+1;
@@ -215,7 +239,7 @@ function chooseIntent(D,st,e){const E=D.enemies[e.id];let i;
  if(E.soloBreak&&e.intent.healAlly&&st.combat&&alive(st.combat).length<=1)e.intent={i:-1,n:E.soloBreak,solo:1};
  if(e.cd!=null)e.intent=e.cd<=1?{i:-1,n:E.boom[0],a:E.boom[1],boom:1}:{i:-1,n:'倒數 '+(e.cd-1),tick:1};
  if(E.hidden&&!(st.combat&&st.combat.eye===e.uid)&&!pas(D,st,'moth'))e.hid=1;}
-function startCombat(D,st,ids,kind){const ens=ids.map((id,i)=>mkEnemy(D,st,id,i));if(ids.length>1)for(const e of ens){e.hp=e.max=Math.round(e.max*.85);}const c={kind,enemies:ens,draw:shuffle(st,st.deck.map(strip)),hand:[],disc:[],exh:[],energy:0,maxE:3,block:0,st:{},pw:{},ink:0,turn:0,hurt:0,atkN:0,log:[]};
+function startCombat(D,st,ids,kind){const ens=ids.map((id,i)=>mkEnemy(D,st,id,i));if(ids.length>1)for(const e of ens){e.hp=e.max=Math.round(e.max*.85);}const c={kind,enemies:ens,draw:shuffle(st,st.deck.map(x=>stampT(st,strip(x)))),hand:[],disc:[],exh:[],energy:0,maxE:3,block:0,st:{},pw:{},ink:0,turn:0,hurt:0,atkN:0,log:[]};
  st.combat=c;st.screen='combat';const E=[];fullCheck(st,E);
  if(isYY(st)&&st.flags.yx&&R(st)<.15)c.yxAt=2+Math.floor(R(st)*3);
  if(pas(D,st,'lure')){c.lure=5;pe(E,'lure');}
@@ -559,7 +583,7 @@ function endTurn(D,st,E){const c=st.combat;
   if(m.a&&hasPart(e,'needle'))m.a+=2;
   if(m.a&&e.minus3)m.a=Math.max(0,m.a-3);
   if(e.jb){e.jb--;if(!e.jb){addSt(e,'str',e.jbN||2);e.jbN=0;}}
-  if(m.a){const hits=m.h||1;const am=((D.enemies[e.id].boss||D.enemies[e.id].elite)?1:((D.layers[st.layer]||{}).atkMul||1))*(((D.chars[baseCh(st)]||{}).foe||{}).atk||1)*(1+.05*(st.asc||0));for(let h=0;h<hits;h++){const hp0=st.hp;hitPlayer(D,st,dmgCalc(Math.round(m.a*am),e,c),E,e.uid);if(st.hp<hp0&&c.pw.grudge)addSt(e,'pact',c.pw.grudge);if(st.hp<=0)break;}
+  if(m.a){const hits=m.h||1;const am=((D.enemies[e.id].boss||D.enemies[e.id].elite)?1:((D.layers[st.layer]||{}).atkMul||1))*(((D.chars[baseCh(st)]||{}).foe||{}).atk||1)*(1+.05*(st.asc||0))*(1+.06*Math.max(0,Math.min(8,(st.polS||0)-1)));for(let h=0;h<hits;h++){const hp0=st.hp;hitPlayer(D,st,dmgCalc(Math.round(m.a*am),e,c),E,e.uid);if(st.hp<hp0&&c.pw.grudge)addSt(e,'pact',c.pw.grudge);if(st.hp<=0)break;}
    if(pas(D,st,'reflect')&&c.mirT!==c.turn&&e.hp>0){c.mirT=c.turn;e.hp=Math.max(0,e.hp-3);E.push({t:'hit',to:e.uid,n:3,blocked:0});pe(E,'reflect');}
    if(c.pw.sting&&e.stingT!==c.turn&&e.hp>0){e.stingT=c.turn;e.hp=Math.max(0,e.hp-3*c.pw.sting);E.push({t:'hit',to:e.uid,n:3*c.pw.sting,blocked:0});}
    if(pas(D,st,'jelly')&&(OT(D,st,'M08',3)?e.jt!==c.turn:!c.jelly)){c.jelly=1;e.jt=c.turn;pe(E,'jelly');const js=OT(D,st,'M08',1)?3:2;if(!e.jb){addSt(e,'str',-js);e.jbN=js;}e.jb=2;if(OT(D,st,'M08',2)){e.hp=Math.max(0,e.hp-3);E.push({t:'hit',to:e.uid,n:3,blocked:0});}}
@@ -820,7 +844,7 @@ function metaApply(D,meta0,events){const meta=migrateMeta(meta0);const news={ach
   if(e.t==='drop'&&!meta.hobbies.includes(e.id)){meta.hobbies.push(e.id);news.hobby=e.id;}
   if(e.t==='hobby'&&!meta.hobbies.includes(e.id)){meta.hobbies.push(e.id);news.hobby=e.id;}
   if(e.t==='chClear'){meta.chWins=meta.chWins||{};meta.chWins[e.chapter]=(meta.chWins[e.chapter]||0)+1;}
-  if(e.t==='runEnd'){if(e.win&&(e.asc||0)>=(meta.ascMax||0)&&e.ch!=='gu'&&!e.g){meta.ascMax=Math.min(10,(e.asc||0)+1);news.asc=meta.ascMax;}if(!e.g&&e.ch!=='gu'){if(e.ch==='yx'){meta.yxRuns=(meta.yxRuns||0)+1;if(e.win)meta.yxWins=(meta.yxWins||0)+1;}{const bc=e.ch==='yx'?'yy':e.ch;if(bc==='yy'||bc==='cl'){const pg=bc==='yy'?(e.trans||0)*4+Math.floor((e.floors||0)/5):Math.floor((e.floors||0)/4)+(e.win?0:2);if(pg>0){meta.pol=meta.pol||{};const v0=meta.pol[bc]||0;const v1=Math.min(100,v0+pg);meta.pol[bc]=v1;news.pol={ch:bc,g:v1-v0,v:v1,from:polStage(v0),to:polStage(v1)};}}}const cg=(e.elites||0)+(e.bosses||0)*2+(e.win?2:0);if(cg){meta.crystal=(meta.crystal||0)+cg;news.crystal=cg;}}const p=profOf(meta,e.ch);const gain=(e.floors||0)+(e.win?10:0);p.xp+=gain;news.xp=gain;const pg=e.ch==='gu'?0:(1+(e.win?1:0));p.pts+=pg;news.pts=pg;{const tgs=[e.persona,e.desire,e.hobby,e.hobby2].filter(Boolean);if(tgs.length&&!e.g){news.tags=[];for(const tg of tgs){const o=tagOf(meta,tg);const g=1+(e.win?1:0);o.pts+=g;o.runs=(o.runs||0)+1;if(e.win)o.wins=(o.wins||0)+1;news.tags.push([tg,g]);if(e.win&&(D.tcom||{})[tg]&&!meta.ach.includes('tg_'+tg)){meta.ach.push('tg_'+tg);news.ach.push('tg_'+tg);}}}}if(e.tcom&&e.tcom.length){meta.tcomDone=meta.tcomDone||{};news.tcom=[];for(const tg of e.tcom){const T=(D.tcom||{})[tg];if(!T)continue;const first=!meta.tcomDone[tg];meta.tcomDone[tg]=(meta.tcomDone[tg]||0)+1;const g=first?T.echo:Math.floor(T.echo/3);meta.echo+=g;news.tcom.push([tg,g,first?1:0]);}}if(e.origin&&e.ch!=='gu'&&!e.g){const ok=(e.ch==='yx'?'yy':e.ch)+'_'+e.origin;const o=otOf(meta,ok);const og=1+Math.floor((e.floors||0)/8)+(e.win?2:0);o.pts+=og;news.opts=og;news.ok=ok;}
+  if(e.t==='runEnd'){if(e.win&&(e.asc||0)>=(meta.ascMax||0)&&e.ch!=='gu'&&!e.g){meta.ascMax=Math.min(10,(e.asc||0)+1);news.asc=meta.ascMax;}if(!e.g&&e.ch!=='gu'){if(e.ch==='yx'){meta.yxRuns=(meta.yxRuns||0)+1;if(e.win)meta.yxWins=(meta.yxWins||0)+1;}{const bc=e.ch==='yx'?'yy':e.ch;if(bc==='yy'||bc==='cl'){const v0=((meta.pol||{})[bc])||0;const sg0=polStage7(v0);let pg=bc==='yy'?Math.min(18,(e.trans||0)+(e.bosses||0)*2+Math.floor((e.floors||0)/8)+(e.win?3:0)):Math.min(14,Math.floor((e.floors||0)/6)+(e.bosses||0)+(e.win?2:0));pg=Math.round(pg*(sg0<=3?1:sg0<=5?.8:.6));if(pg>0){meta.pol=meta.pol||{};const v1=v0+pg;meta.pol[bc]=v1;news.pol={ch:bc,g:v1-v0,v:v1,from:sg0,to:polStage7(v1),next:polNext(v1)};}}}const cg=(e.elites||0)+(e.bosses||0)*2+(e.win?2:0);if(cg){meta.crystal=(meta.crystal||0)+cg;news.crystal=cg;}}const p=profOf(meta,e.ch);const gain=(e.floors||0)+(e.win?10:0);p.xp+=gain;news.xp=gain;const pg=e.ch==='gu'?0:(1+(e.win?1:0));p.pts+=pg;news.pts=pg;{const tgs=[e.persona,e.desire,e.hobby,e.hobby2].filter(Boolean);if(tgs.length&&!e.g){news.tags=[];for(const tg of tgs){const o=tagOf(meta,tg);const g=1+(e.win?1:0);o.pts+=g;o.runs=(o.runs||0)+1;if(e.win)o.wins=(o.wins||0)+1;news.tags.push([tg,g]);if(e.win&&(D.tcom||{})[tg]&&!meta.ach.includes('tg_'+tg)){meta.ach.push('tg_'+tg);news.ach.push('tg_'+tg);}}}}if(e.tcom&&e.tcom.length){meta.tcomDone=meta.tcomDone||{};news.tcom=[];for(const tg of e.tcom){const T=(D.tcom||{})[tg];if(!T)continue;const first=!meta.tcomDone[tg];meta.tcomDone[tg]=(meta.tcomDone[tg]||0)+1;const g=first?T.echo:Math.floor(T.echo/3);meta.echo+=g;news.tcom.push([tg,g,first?1:0]);}}if(e.origin&&e.ch!=='gu'&&!e.g){const ok=(e.ch==='yx'?'yy':e.ch)+'_'+e.origin;const o=otOf(meta,ok);const og=1+Math.floor((e.floors||0)/8)+(e.win?2:0);o.pts+=og;news.opts=og;news.ok=ok;}
    if(e.win&&!e.g){meta.keepPending=1;meta.chWins=meta.chWins||{};meta.chWins[e.chapter||1]=(meta.chWins[e.chapter||1]||0)+1;}
    if(e.dot&&e.win)meta.dotGold=15;
    if(e.win&&!e.g&&D.bookX)for(const b of D.bookX){if(meta.bookX&&meta.bookX.includes(b.id))continue;const ok=(b.id==='bx1'&&e.ch==='yy'&&e.origin==='B01'&&e.ph&&e.ph.h>=Math.max(e.ph.half||0,e.ph.full||0))||(b.id==='bx2'&&e.origin==='M01'&&['obsess','grudge'].includes(e.desire))||(b.id==='bx3'&&e.fourth);if(ok){meta.bookX=meta.bookX||[];meta.bookX.push(b.id);news.bookX=b.id;}}
@@ -832,6 +856,6 @@ function metaApply(D,meta0,events){const meta=migrateMeta(meta0);const news={ach
    for(const u of D.unlocks)if(meta.memory>=u.at&&!meta.unlocked.includes(u.id)){meta.unlocked.push(u.id);news.unlocks.push(u.id);}}}
  return {meta,news};}
 
-const API={newRun,apply,desc,cardDef,cost,needsTarget,canMove,alive,dmgCalc,newMeta,metaApply,memoryOf,pool,phaseOf,originOf,sendRate,handMax,metaUnlock,metaTalent,talLeft,metaOTal,convCol,metaTTal,tagOf,otOf,otLeft,talCost,evOpts,metaKeep,deckOk,profOf,LV,subOn,subOf,saveForm,migrateRun,loadRun,migrateMeta,metaBuy,echoOf,tcomOk,tcomList,tagDefOf,metaForge,metaSalvage,metaCleanse,startDeckOk,polStage,fgCost,tagsOf};
+const API={polStage7,polNext,newRun,apply,desc,cardDef,cost,needsTarget,canMove,alive,dmgCalc,newMeta,metaApply,memoryOf,pool,phaseOf,originOf,sendRate,handMax,metaUnlock,metaTalent,talLeft,metaOTal,convCol,metaTTal,tagOf,otOf,otLeft,talCost,evOpts,metaKeep,deckOk,profOf,LV,subOn,subOf,saveForm,migrateRun,loadRun,migrateMeta,metaBuy,echoOf,tcomOk,tcomList,tagDefOf,metaForge,metaSalvage,metaCleanse,startDeckOk,polStage,fgCost,tagsOf};
 if(typeof module!=='undefined')module.exports=API;else root.CARD=API;
 })(this);
