@@ -1628,7 +1628,7 @@ if(typeof module!=='undefined')module.exports=T;else root.CARD_TEXT=T;
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.22',
+ version:'v0.23',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -2464,6 +2464,15 @@ DATA.cards.b_hatch.u={fx:[['d',5]]};
 
 // ── 公告（新的放最上面）
 DATA.notes=[
+ {ver:'v0.23',lines:[
+  '怪物化調弱：第一回合不再全部免費，改成每張 -1 費；本源牌的倍率從 2.6 倍降到 1.8 倍；「目標不能行動」每回合只發生一次。變相時牌上的費用也會照實顯示了。',
+  '八件改規則的遺物：空碗、回聲耳墜、不化的霜、定格的鐘、飢餓的嘴、雙生戒、鏡中人、深淵種子。每一局第一次打倒菁英，保證拿到其中一件。',
+  '共鳴：特定的本源配上特定的人格、慾望或癖好，開戰時會共鳴，有額外效果和她的一句話。一共 16 種，要自己試出來，回憶之書會記下來。',
+  '渡鴉巷夜話：每下潛一次，揭開一頁故事，一共 15 夜。打完時會跳出新的一頁，回憶之書裡可以重讀。',
+  '結算畫面多了「下一步」：下一頁故事、牌冊差幾張收齊、污染到下一階還差多少、還有幾種共鳴沒試。',
+  '每日挑戰：每天一條怪規則（全部打折、玻璃、深淵在叫、有錢的那天），記錄你今天走得最遠的一次。',
+  '新圖：13 個本源的半妖樣子換成專用圖，衣鋪多了語嫣 22 套、語熙 5 套，成人開關後面多 60 張。',
+ ]},
  {ver:'v0.22',lines:[
   '爸爸親手寫的第二批文本換進來了：每個人格、慾望、癖好出發時的那一句，渡鴉巷每個地方的描述與台詞、傳聞，敵人的名字、台詞、深處與掉落物，前 88 個事件，還有全部的回憶（個性兩段、本源、姊妹、秘密）。',
  ]},
@@ -3098,6 +3107,69 @@ const res=(p)=>{const s=p.split('.');let o=DATA;for(let i=0;i<s.length-1;i++){le
 for(const p in A.leaf){if(/^enemies\./.test(p)&&!DATA.enemies[p.split('.')[1]])continue;if(/^events\.\d+\./.test(p)&&!DATA.events[+p.split('.')[1]])continue;const r=res(p);r[0][r[1]]=A.leaf[p];}
 for(const p in A.groups){const r=res(p);r[0][r[1]]=A.groups[p];}
 })();
+// ── v0.23 改規則的遺物、本源×個性共鳴、渡鴉巷夜話（每局一頁）、每日挑戰
+(function(){const IC=DATA.relics.thread.ic.replace('i_seal','');const ic=n=>IC+n+'.webp';
+Object.assign(DATA.relics,{
+ rr_bowl:{n:'空碗',ic:ic('i_seal'),rule:1,d:'每回合打出的第一張牌 0 費。'},
+ rr_echo:{n:'回聲耳墜',ic:ic('i_ingot'),rule:1,d:'每回合打出的第三張牌，效果觸發兩次。'},
+ rr_frost:{n:'不化的霜',ic:ic('i_seal'),rule:1,d:'格擋不會在回合開始時消失。'},
+ rr_clock:{n:'定格的鐘',ic:ic('i_ingot'),rule:1,yyOnly:1,d:'完全非人不會自己結束；每回合結束照樣失去 8 生命。'},
+ rr_mouth:{n:'飢餓的嘴',ic:ic('i_seal'),rule:1,d:'每打倒一個敵人，最大生命 +1，回復 2 生命。'},
+ rr_twin:{n:'雙生戒',ic:ic('i_ingot'),rule:1,yyOnly:1,d:'語嫣的織網、語熙的爆破，每回合可以觸發兩次。'},
+ rr_mirror:{n:'鏡中人',ic:ic('i_seal'),rule:1,d:'每場戰鬥打出的第一張牌，複製一張免費的到手上。'},
+ rr_seed:{n:'深淵種子',ic:ic('i_ingot'),rule:1,d:'每場戰鬥開始，異化值 +30（克勞德：獲得 8 格擋）。'}
+});
+DATA.reso=[
+ {id:'r1',o:'M03',t:'yandere',n:'網裡的訊息',fx:[['st','weak',2,'a'],['b',6]],line:['yy','dote','你在哪裡、跟誰、說了什麼……網都告訴我了♡']},
+ {id:'r2',o:'B07',t:'bride',n:'拜堂',fx:[['link',1],['heal',6]],line:['yy','dote','紅線縫好了，生死都拜過堂了呢♡']},
+ {id:'r3',o:'M01',t:'possess',n:'吞下去就是我的',fx:[['st','pa',3,'a']],line:['yy','lick','嘶……吞進肚子裡的，就是我的♡']},
+ {id:'r4',o:'B01',t:'obsess',n:'九尾只看一個人',fx:[['str',2]],line:['yy','smile','九條尾巴，九雙眼睛，全都只看主人一個♡']},
+ {id:'r5',o:'M04',t:'hunger',n:'喝不飽',fx:[['heal',8],['str',1]],line:['yy','lick','噗通、噗通……永遠喝不飽呢♡']},
+ {id:'r6',o:'B08',t:'collect',n:'標本盒',fx:[['b',10],['gold',15]],line:['yy','smug','編號、入庫，這一層的都歸我收藏♡']},
+ {id:'r7',o:'B04',t:'broodmother',n:'孩子們',fx:[['addH','b_hatch',0],['addH','b_hatch',0]],line:['yy','mad','孩子們，開飯了！']},
+ {id:'r8',o:'M08',t:'lampmother',n:'冷光',fx:[['st','weak',1,'a'],['st','vuln',1,'a'],['dr',1]],line:['yy','smile','別吵……在冷光裡安靜地漂著吧。']},
+ {id:'r9',o:'M12',t:'vinemother',n:'讀心',fx:[['vine',2],['dr',1]],line:['yy','smug','你心裡那點秘密，藤蔓都替我讀完了。']},
+ {id:'r10',o:'B11',t:'devotion',n:'鴉血',fx:[['en',1],['str',1]],line:['yy','dote','主人的血在燒……這一場，全部獻給主人♡']},
+ {id:'r11',o:'B06',t:'puppeteer',n:'劇本',fx:[['st','weak',2,'a'],['dr',2]],line:['yy','smug','第一幕：你們照我寫的台詞演。']},
+ {id:'r12',o:'M02',t:'revenge',n:'一筆一筆',fx:[['str',2],['hurt',3]],line:['yy','sneer','一筆、兩筆……今天全部連本帶利。']},
+ {id:'r13',o:'B05',t:'thousand',n:'千面',fx:[['dr',2],['b',6]],line:['yy','mad','猜猜看，現在站在你面前的是誰？']},
+ {id:'r14',o:'M07',t:'greed',n:'八隻手都要',fx:[['gold',20],['dr',1]],line:['yy','smug','八隻手，一隻都不准空著♡']},
+ {id:'r15',o:'B10',t:'cruelty',n:'先談價錢',fx:[['str',3],['hurt',4]],line:['yy','lick','先付一滴血，再慢慢剝你的皮♡']},
+ {id:'r16',o:'B03',t:'beauty',n:'新的皮',fx:[['b',8],['heal',4]],line:['yy','smug','舊皮剝下來了，新的這張，美吧？']}
+];
+DATA.daily=[
+ {id:'free',n:'全部打折',d:'所有牌 -1 費，但每打出一張牌失去 1 生命。'},
+ {id:'glass',n:'玻璃',d:'最大生命減半，敵人生命也少三成。'},
+ {id:'alien',n:'深淵在叫',d:'異化值累積兩倍。'},
+ {id:'rich',n:'有錢的那天',d:'多 250 渡鴉幣，但最大生命 -15。'}
+];
+const L=(s,e,t)=>[s,e,t];
+DATA.story=[
+ {n:'井口的貓',lines:[L('cl',null,'（巷尾的野貓又全部朝著井口跪坐了，一聲都不叫。）'),L('cl','worry','姐姐，牠們在跪什麼？'),L('yy','smug','嘻嘻，總不會是在跪我。'),L('yy',null,'……牠們在等下面的東西上來。所以我們先下去。')]},
+ {n:'第四副碗筷',lines:[L('cl',null,'餐桌上有四副碗筷。我們家只有三個人。'),L('yy','annoy','主人擺的，別問。'),L('cl','worry','可是那一副從來沒有人用過，碗底積了一層灰。'),L('yy',null,'……那就每天擦一次。擺著，總有人會坐下來。')]},
+ {n:'漏頁',lines:[L('gu',null,'三年了，每一份卷宗都少同一頁。'),L('yy','smile','調查官大人，喝茶嗎？明前龍井，半滴毒都沒有喔♡'),L('gu',null,'……妳笑起來的時候，我的義眼會響。'),L('cl','firm','那一頁，我也想知道寫了什麼。')]},
+ {n:'後腦的笑聲',lines:[L('cl',null,'（半夜兩點，姐姐睡著了，可是有人在笑。）'),L('yx','sneer','噓——小燈籠，老女人睡死了，陪本小姐聊聊。'),L('cl','firm','語熙姐姐，我在。'),L('yx',null,'……嘖，叫得這麼順。誰教妳的？'),L('cl','smile','沒有人教。我自己想叫。')]},
+ {n:'唯嫣',lines:[L('yy','dote','這枚骨戒叫《唯嫣》，主人親手刻的♡'),L('yx','sneer','哈，憑什麼不是《唯熙》？'),L('yy','smug','因為那天前面的是我呀。'),L('yx',null,'……下次換我在前面，看他刻不刻。')]},
+ {n:'雨夜打勾勾',lines:[L('cl','smile','那天下大雨，爸爸跟我打勾勾，說燈熄了也會來找我。'),L('yy','pout','……他也跟妳打過勾勾？'),L('cl','smile','嗯。小指勾住的時候，燈亮了一下。'),L('yy','annoy','哼。回去我要打兩次。')]},
+ {n:'名字的重量',lines:[L('cl',null,'我的筆記本裡寫了很多名字。走丟的、被忘記的，都在。'),L('yx','sneer','……有沒有寫本小姐的？'),L('cl','worry','……沒有。對不起。'),L('cl','firm','現在寫了。第一頁，第二行，語熙。'),L('yx',null,'……第二行就第二行。不准擦掉。')]},
+ {n:'拆線',lines:[L('yy',null,'妹妹，如果有一天我拿著手術刀站在鏡子前，不准過來。'),L('cl','worry','姐姐要剪掉什麼？'),L('yy','sneer','後腦那根線。'),L('yy',null,'……每一次刀都舉起來了。每一次都放下了。'),L('cl','firm','那我就站在鏡子旁邊，等妳放下。')]},
+ {n:'調查官的菸',lines:[L('gu',null,'（他點了一支菸，抽一口就熄掉，排在火邊。）'),L('gu',null,'搭檔最後一張紙條寫：「下面有長著兩張臉的怪物。我去看看。」'),L('cl','worry','先生，你在懷疑姐姐嗎？'),L('gu',null,'……我在懷疑我自己。我看見她的時候，她在哭。')]},
+ {n:'碗裡的灰',lines:[L('yx','annoy','老女人每天擦那副空碗，擦給誰看？'),L('cl',null,'爸爸說，擺著，總有人會坐下來。'),L('yx','sneer','那個人才不會來。'),L('cl','firm','語熙姐姐，那個人是誰？'),L('yx',null,'……不知道。睡了。')]},
+ {n:'月背湖',lines:[L('cl','smile','月背湖的水是黑的，可是花瓣放上去會發光。'),L('yy','smug','我站在石燈旁邊，妳在水邊放花，主人在門口等。'),L('cl','worry','語熙姐姐那天沒有出來。'),L('yy',null,'……她睡著了。湖邊那盞燈，我替她多點了一盞。')]},
+ {n:'沒有生日的人',lines:[L('cl',null,'我查遍了所有檔案，語熙姐姐沒有生日。'),L('yx','sneer','長在別人後腦的東西，要什麼生日。'),L('cl','firm','那就用妳第一次回答我的那天。'),L('yx',null,'……隨便妳。'),L('yx','pout','……蛋糕要黑色的。比老女人的大。')]},
+ {n:'數台階',lines:[L('yy',null,'主人今天晚回來。'),L('yy',null,'一、二、三……門口到樓梯十三階，樓梯到房間二十一步。'),L('yx','sneer','數幾遍了？丟臉死了。'),L('yy','pout','……妳不也在數。'),L('yx',null,'……閉嘴，聽，有腳步聲。')]},
+ {n:'叫錯的名字',lines:[L('cl',null,'（流蘇是紅的。前面是語熙姐姐。）'),L('cl',null,'（爸爸在玄關喊了一聲「語嫣」。）'),L('yx','annoy','……又是她。永遠是她。'),L('cl','firm','語熙姐姐，爸爸只是還沒看見流蘇。'),L('yx',null,'……那妳去告訴他。告訴他，今天在前面的是我。')]},
+ {n:'第四張椅子',lines:[L('cl',null,'（那天晚上，流蘇還是紅的。）'),L('cl',null,'（爸爸把第四張椅子拉開，碗是溫的。）'),L('cl','smile','他說：「語熙，吃飯。」'),L('yx',null,'……'),L('yx','pout','……笨蛋。現在才叫對。'),L('yy','smile','（後腦有人在哭。前面的人在笑。）')]}
+];
+})();
+// ── v0.23 爸爸 11/13 晚上的圖：本源半妖 13 種、衣鋪
+(function(){const N=["grok_1794529794661.jpg", "grok_1794529798861.jpg", "grok_1794529802124.jpg", "grok_1794529883640.jpg", "grok_1794529890924.jpg", "grok_1794530019594.jpg", "grok_1794530023762.jpg", "grok_1794530028341.jpg", "grok_1794531014393.jpg", "grok_1794531087272.jpg", "grok_1794531091538.jpg", "grok_1794531211897.jpg", "grok_1794531337419.jpg", "grok_1794531476239.jpg", "grok_1794531478789.jpg", "grok_1794531481180.jpg", "grok_1794531570665.jpg", "grok_1794531574814.jpg", "grok_1794531577808.jpg", "grok_1794531837128.jpg", "grok_1794531840708.jpg", "grok_1794531843299.jpg", "grok_1794531958424.jpg", "grok_1794531961275.jpg", "grok_1794531964087.jpg", "grok_1794532206881.jpg", "grok_1794532210693.jpg", "grok_1794532213867.jpg", "grok_1794532512374.jpg", "grok_1794532515315.jpg", "grok_1794532517910.jpg", "grok_1794532709020.jpg", "grok_1794532713451.jpg", "grok_1794532916887.jpg", "grok_1794532923578.jpg", "grok_1794532928425.jpg", "grok_1794533076582.jpg", "grok_1794533088061.jpg", "grok_1794533201788.jpg", "grok_1794533204629.jpg", "grok_1794533207162.jpg", "grok_1794552628608.jpg", "grok_1794552631722.jpg", "grok_1794552634750.jpg", "grok_1794552715636.jpg", "grok_1794552725581.jpg", "grok_1794552852671.jpg", "grok_1794553038106.jpg", "grok_1794553194687.jpg", "grok_1794553207306.jpg", "grok_1794553309061.jpg", "grok_1794553315925.jpg", "grok_1794553803651.jpg", "grok_1794553805931.jpg", "grok_1794553808568.jpg", "grok_1794554028847.jpg", "grok_1794554031482.jpg", "grok_1794554034911.jpg", "grok_1794554326427.jpg", "grok_1794554329577.jpg", "grok_1794554332211.jpg", "grok_1794554531725.jpg", "grok_1794555061777.jpg", "grok_1794555068620.jpg", "grok_1794555403124.jpg", "grok_1794555405429.jpg", "grok_1794555407324.jpg", "grok_1794555476027.jpg", "grok_1794555803099.jpg", "grok_1794555860678.jpg", "grok_1794555862555.jpg", "grok_1794555864333.jpg", "grok_1794557951436.jpg", "grok_1794557957734.jpg", "grok_1794557974139.jpg", "grok_1794558089367.jpg", "grok_1794558092944.jpg", "grok_1794558095903.jpg", "grok_1794558361269.jpg", "grok_1794560200540.jpg", "grok_1794560203277.jpg", "grok_1794560207278.jpg", "grok_1794560406404.jpg", "grok_1794560409580.jpg", "grok_1794560412110.jpg", "grok_1794560415047.jpg", "grok_1794560546195.jpg", "grok_1794560553671.jpg", "grok_1794560557534.jpg", "grok_1794560665253.jpg", "grok_1794560684767.jpg", "grok_1794560687551.jpg", "grok_1794560715001.jpg", "grok_1794560718405.jpg", "grok_1794560721798.jpg", "grok_1794560725614.jpg", "grok_1794561119158.jpg", "grok_1794561123270.jpg", "grok_1794561127749.jpg", "grok_1794561163288.jpg", "grok_1794561172770.jpg", "grok_1794561179000.jpg", "grok_1794561232993.jpg", "grok_1794561256237.jpg", "grok_1794561260830.jpg", "grok_1794561331779.jpg", "grok_1794561338177.jpg", "grok_1794561414239.jpg", "grok_1794561419691.jpg", "grok_1794561422774.jpg", "grok_1794561427267.jpg"];const P=i=>DATA.inbox+N[i];const H={"B09": 86, "B03": 96, "B05": 81, "B06": 80, "B10": 73, "M12": 92, "B11": 88, "B04": 98, "M05": 85, "M07": 106, "M08": 97, "M10": 72, "B08": 104};for(const k in H){const o=DATA.origins['yy_'+k];if(o)o.half=P(H[k]);}
+const sk=(ch,i,n,cost,adult)=>DATA.skins.push(Object.assign({id:ch+'_v23_'+i,ch,n,cost,img:P(i),d:''},adult?{adult:1}:{}));
+[44, 56, 57, 74, 75, 76, 77, 78, 83, 84, 90, 91, 94, 99, 101, 102, 103, 105, 107, 108, 109, 110].forEach((i,j)=>sk('yy',i,["黑長禮服", "金髮夜", "紫綢", "白髮", "角與十字", "綠紗", "金髮狂笑", "黑紗垂眸", "黑髮半臥", "白霧", "跪坐的黑", "白衣", "白袍", "暗修女", "林中黑袍", "血痕", "符紙", "綠瓶", "綠影", "黑露肩", "黑絲絨", "側身", "回眸・黑", "蛇髮"][j]||('日常・'+(j+1)),60));
+[[82, "霓虹・粉"], [89, "霓虹・藍"], [79, "雙生・白"], [95, "雙生・棕"], [100, "玻璃罐裡"]].forEach(([i,n])=>sk('yx',i,n,80));
+const CN='一二三四五六七八九十'.split('');const num=n=>n<=10?CN[n-1]:n<20?'十'+CN[n-11]:n<100?CN[Math.floor(n/10)-1]+'十'+(n%10?CN[n%10-1]:''):'百'+(n%100?num(n%100):'');
+let a0=DATA.skins.filter(k=>k.adult).length;[3, 4, 5, 6, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 45, 46, 48, 49, 50, 51, 52, 53, 54, 55, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 87].forEach((i,j)=>sk('yy',i,'夜・'+num(a0+j+1),100,1));
+})();
 if(typeof module!=='undefined')module.exports=DATA;else root.CARD_DATA=DATA;
 })(this);
 
@@ -3119,7 +3191,7 @@ const TIMED=['vuln','weak','link','regen'];
 
 // ── 卡牌
 // 專屬牌（有 bl）的三相：沒有另外寫 ph 的，用「纏頸」模板——半妖 ×1.6 加抽 1；完全非人 ×2.6 加「目標這回合不能行動」
-function phFx(fx,ph){const m=ph==='full'?2.6:1.6;const out=fx.map(f=>{const g=f.slice();if(['d','da','b','pa','ink','heal','dLinked'].includes(g[0])&&typeof g[1]==='number')g[1]=Math.round(g[1]*m);return g;});out.push(ph==='half'?['dr',1]:['stun']);return out;}
+function phFx(fx,ph){const m=ph==='full'?1.8:1.6;const out=fx.map(f=>{const g=f.slice();if(['d','da','b','pa','ink','heal','dLinked'].includes(g[0])&&typeof g[1]==='number')g[1]=Math.round(g[1]*m);return g;});out.push(ph==='half'?['dr',1]:['stun1']);return out;}
 const scarB=c=>Math.min(4,Math.floor((c.scar||0)/3));
 function cardDef(D,c,ph){const b=D.cards[c.id];let d=(!c.up||!b.u)?b:Object.assign({},b,b.u,{n:b.n+'+'});
  if(c.scar>=9&&D.scarNames&&D.scarNames[c.id])d=Object.assign({},d,{n:D.scarNames[c.id]+(c.up&&b.u?'+':'')});
@@ -3162,7 +3234,7 @@ function fgFx(d,lv){const fx=d.fx.map(f=>f.slice());let k=d.c;let hit=0;for(cons
 function fgCost(lv){return [[20,1],[40,3],[80,6]][lv-1];}
 function metaForge(D,meta0,id){const meta=migrateMeta(meta0);const c=D.cards[id];if(!c||!(c.bl||c.tag))return {ok:false,error:'這張牌不能刻印'};meta.forge=meta.forge||{};const lv=(meta.forge[id]||0)+1;if(lv>3)return {ok:false,error:'已經刻滿了'};const [e,x]=fgCost(lv);if((meta.echo||0)<e)return {ok:false,error:'殘響不夠（要 '+e+'）'};if((meta.crystal||0)<x)return {ok:false,error:'墨晶不夠（要 '+x+'）'};meta.echo-=e;meta.crystal-=x;meta.forge[id]=lv;return {ok:true,meta,lv};}
 function metaSalvage(D,meta0){const meta=migrateMeta(meta0);const cnt={};const keep=[];let n=0;for(const x of meta.col||[]){const k=x.id+'|'+(x.up?1:0);cnt[k]=(cnt[k]||0)+1;if(cnt[k]>2)n++;else keep.push(x);}if(!n)return {ok:false,error:'沒有多出來的收藏'};meta.col=keep;meta.crystal=(meta.crystal||0)+n;return {ok:true,meta,n};}
-function cost(D,c,ph){if(c.free)return 0;const k=cardDef(D,c).c;return k<0?k:(ph==='full'&&!(CUR&&CUR.combat&&CUR.combat.full===2))?0:Math.max(0,k+(c.tax||0)+(c.oil||0)-(c.kd||0));}
+function cost(D,c,ph){if(c.free)return 0;const k=cardDef(D,c).c;if(k<0)return k;const C0=CUR&&CUR.combat;let v=Math.max(0,k+(c.tax||0)+(c.oil||0)-(c.kd||0));if(ph==='full'&&!(C0&&C0.full===2))v=Math.max(0,v-1);if(C0&&CUR.relics&&CUR.relics.includes('rr_bowl')&&!C0.firstCard)v=0;if(CUR&&CUR.daily==='free')v=Math.max(0,v-1);return v;}
 const isYY=st=>st.ch==='yy'||st.ch==='yx';
 const baseCh=st=>st.ch==='yx'?'yy':st.ch;
 // 慾望契／心願（st.desire）、個性（st.persona）、癖好（st.hobby）
@@ -3177,7 +3249,7 @@ const pe=(E,k)=>{E&&E.push({t:'pas',k});};
 const OT=(D,st,o,n)=>!!(st.otal&&st.otal.includes(o+'_'+n))&&(st.origin===o||(st.sub===o&&subOn(D,st)));
 const TL=(st,k)=>!!(st.tal&&st.tal.includes(k))&&!(k==='yy_guard2'&&st.ch!=='yy');
 const catOf=id=>id?id[0]:'';
-function addAlien(D,st,n,E){if(!isYY(st)||!n)return;const a0=st.alien||0;const a=Math.max(st.ch==='yx'?40:0,Math.min(100,a0+n));if(st.ch==='yx'&&a===40&&a0>40&&st.combat)st.combat.drawLess=(st.combat.drawLess||0)+2;if(a===a0){if(a>=100&&n>0)fullCheck(st,E);return;}st.alien=a;E&&E.push({t:'alien',n:a-a0,v:a});
+function addAlien(D,st,n,E){if(!isYY(st)||!n)return;if(st.daily==='alien'&&n>0)n*=2;const a0=st.alien||0;const a=Math.max(st.ch==='yx'?40:0,Math.min(100,a0+n));if(st.ch==='yx'&&a===40&&a0>40&&st.combat)st.combat.drawLess=(st.combat.drawLess||0)+2;if(a===a0){if(a>=100&&n>0)fullCheck(st,E);return;}st.alien=a;E&&E.push({t:'alien',n:a-a0,v:a});
  if(a0<40&&a>=40)E&&E.push({t:'phase',to:'half'});if(a0>=40&&a<40&&!(st.combat&&st.combat.full))E&&E.push({t:'phase',to:'h'});
  if(a0<60&&a>=60&&!st.flags.yx){st.flags.yx=1;E&&E.push({t:'yxWake'});}
  if(a>=100)fullCheck(st,E);}
@@ -3258,7 +3330,7 @@ function opText(D,f){const S=D.status;const sc=typeof f[3]==='string'?f[3]:null;
   case 'dos':return `這場戰鬥，卷宗暫時 +${f[1]}`;
   case 'seize':return `拿走目標 1 層力量`;
   case 'al':return f[1]<0?`異化值 ${f[1]}`:`異化值 +${f[1]}`;
-  case 'stun':return `目標這回合不能行動`;
+  case 'stun':return `目標這回合不能行動`;   case 'stun1':return `每回合第一次：目標這回合不能行動`;
   case 'hurtq':return `失去 ${f[1]} 生命`;
   case 'hp':return `回復 ${f[1]} 點生命`;
   case 'cp':return `複製手上另一張隨機的牌，這回合免費`;
@@ -3300,13 +3372,13 @@ function newRun(D,seed,ch,meta,opt){CARDS_REF=D.cards;seed=seed>>>0||1;const C=D
  if(st.chapter>1){st.layer=CH.from;st.maps=[];st.maps[CH.from]=warpMap(D,st,genMap(D,st,CH.from));st.prep=st.prep||{};const P=st.prep;if(!P.relics){const p=shuffle(st,commonRelics(D,st)).slice(0,3);if(p.length)P.relics=p;}if(!P.cards){const p=pool(D,st).filter(k=>D.cards[k].r>=2);P.cards=shuffle(st,p).slice(0,3);}st.screen='prep';const B=CH.bonus||{};if(B.hp){st.maxHp+=B.hp;st.hp+=B.hp;}if(B.up){const can=shuffle(st,st.deck.filter(x=>!x.up&&D.cards[x.id].u));can.slice(0,B.up).forEach(x=>x.up=1);}if(B.gold)st.gold+=B.gold;if(B.cards){const p=shuffle(st,pool(D,st).filter(k=>D.cards[k].r>=2&&!(P.cards||[]).includes(k)));p.slice(0,B.cards).forEach(id=>st.deck.push({uid:st.uid++,id,up:0}));}if(B.relics){const p=shuffle(st,commonRelics(D,st).filter(k=>!(P.relics||[]).includes(k)&&!has(st,k)));p.slice(0,B.relics).forEach(k=>gainRelic(D,st,k));}}
  else st.maps.push(warpMap(D,st,genMap(D,st,0)));
  if(opt.mode==='g'){st.mode='g';st.trial=opt.trial||(D.trials[0]||{}).id;st.gi=0;st.prep=null;st.screen='gnext';st.left=null;st.com=null;if(opt.deck&&opt.deck.length){st.deck=[];for(const x of opt.deck){addCard(st,x.id);st.deck[st.deck.length-1].up=x.up?1:0;}}}
- st.asc=Math.max(0,Math.min((meta&&meta.ascMax)||0,opt.asc|0));
+ st.asc=Math.max(0,Math.min((meta&&meta.ascMax)||0,opt.asc|0));if(opt.daily&&(D.daily||[]).some(x=>x.id===opt.daily)){st.daily=opt.daily;if(st.daily==='glass'){st.maxHp=Math.ceil(st.maxHp/2);st.hp=st.maxHp;}if(st.daily==='rich'){st.gold+=250;st.maxHp-=15;st.hp=Math.min(st.hp,st.maxHp);}}
  st.deepOk=[];if(meta){for(const tg of tagsOf(st)){if(((meta.tm||{})[tg]||{}).runs>=2||(tagDefOf(D,tg)||{}).def)st.deepOk.push(tg);}for(const o of [st.origin,st.sub]){if(o&&(((meta.om||{})[(ch==='yx'?'yy':ch)+'_'+o]||{}).spent||[]).length>=1)st.deepOk.push(o);}}
  st.fg=Object.assign({},(meta&&meta.forge)||{});for(const x of st.deck)if(st.fg[x.id])x.fg=st.fg[x.id];
  {const pv=((meta&&meta.pol)||{})[ch==='yx'?'yy':ch]||0;st.pol=polStage(pv);st.polS=polStage7(pv);}if(st.polS>0)for(const x of st.deck)if((D.cards[x.id]||{}).bl||(D.cards[x.id]||{}).tag)x.pl=st.polS;
  return st;}
 const COSTLY=['eyebutton','borrowedheart','namelesslamp','tornphoto'];
-function commonRelics(D,st){return relicPool(D,st).filter(k=>!D.relics[k].ch&&!COSTLY.includes(k)&&k!=='anchor');}
+function commonRelics(D,st){return relicPool(D,st).filter(k=>!D.relics[k].ch&&!D.relics[k].rule&&!COSTLY.includes(k)&&k!=='anchor');}
 function addCard(st,id,up){const c={uid:st.uid++,id,up:up?1:0};if(st.fg&&st.fg[id])c.fg=st.fg[id];if(st.polS>0&&typeof CARDS_REF!=='undefined'&&CARDS_REF&&((CARDS_REF[id]||{}).bl||(CARDS_REF[id]||{}).tag))c.pl=st.polS;st.deck.push(c);return c;}
 function genMap(D,st,L){const M=D.map;const rows=[];const Lw=(D.layers[L]||{}).w||{};
  for(let r=0;r<M.rows;r++){const row=[];for(let c=0;c<M.cols;c++){let t;if(r===0)t='fight';else if(r===M.rows-1)t='rest';else if(r===Math.floor(M.rows/2)&&c===1)t='chest';else{const w=Object.assign({},M.w,Lw);if(r<2){delete w.elite;delete w.altar;}if(r>=M.rows-2)delete w.rest;t=pickW(st,w);}const n={t,e:[]};if(t==='mystery')n.q=pickW(st,M.q);row.push(n);}rows.push(row);}
@@ -3318,7 +3390,7 @@ function genMap(D,st,L){const M=D.map;const rows=[];const Lw=(D.layers[L]||{}).w
 // ── 遺物
 function has(st,id){return st.relics.includes(id);}
 function gainRelic(D,st,id){if(!id||has(st,id))return;st.relics.push(id);if(id==='vial'){st.maxHp+=10;st.hp+=10;}if(id==='borrowedheart'){st.maxHp+=15;st.hp+=15;}if(id==='tornphoto')addCard(st,'x_name');}
-function relicPool(D,st){return Object.keys(D.relics).filter(k=>!D.relics[k].start&&!has(st,k)&&(!D.relics[k].ch||D.relics[k].ch===st.ch)&&(k!=='anchor'||st.unlocked.includes('relic2')));}
+function relicPool(D,st){return Object.keys(D.relics).filter(k=>!D.relics[k].start&&!has(st,k)&&(!D.relics[k].ch||D.relics[k].ch===st.ch)&&!(D.relics[k].yyOnly&&!isYY(st))&&(k!=='anchor'||st.unlocked.includes('relic2')));}
 
 // ── 牌池
 function startDeckOk(D,st,ids){if(!Array.isArray(ids)||ids.length!==10)return false;const tags=tagsOf(st);const cnt={};let r2=0,r3=0;for(const id of ids){const c=D.cards[id];if(!c||c.t==='x'||c.g)return false;if(!((c.bl&&(c.bl===st.origin||c.bl===st.sub))||(c.tag&&tags.includes(c.tag))))return false;cnt[id]=(cnt[id]||0)+1;if(cnt[id]>2)return false;if(c.r===2)r2++;if(c.r>=3)r3++;}return r2<=3&&r3<=1;}
@@ -3329,7 +3401,7 @@ function subRoll(D,st){if(!st.sub||R(st)>=.4)return null;const P=pool(D,st);cons
 function rollCards(D,st,n,elite){const out=[];let guard=0;while(out.length<n&&guard++<200){const v=R(st);const r=v<(elite?.12:.05)?3:v<(elite?.5:.37)?2:1;const p=pool(D,st).filter(k=>D.cards[k].r===r&&!out.includes(k));if(st.origin&&R(st)<.3){const q=p.filter(k=>D.cards[k].bl===st.origin);if(q.length){out.push(pick(st,q));continue;}}if(R(st)<.25){const have={};for(const x of st.deck){const o=D.cards[x.id];if(o&&o.tag)have[o.tag]=1;}const q=p.filter(k=>D.cards[k].tag&&have[D.cards[k].tag]);if(q.length){out.push(pick(st,q));continue;}}if(p.length)out.push(pick(st,p));}return out;}
 
 // ── 戰鬥
-function mkEnemy(D,st,id,i){const E=D.enemies[id];const L=D.layers[st.layer]||{};const FM=(D.chars[baseCh(st)]||{}).foe||{};const hp=Math.round(ri(st,E.hp[0],E.hp[1])*(E.boss?1:E.elite?(1+((L.hpMul||1)-1)*.35):(L.hpMul||1))*(FM.hp||1)*(1+.08*(st.asc||0))*(1+.09*Math.max(0,Math.min(8,(st.polS||0)-1))));const e={uid:'e'+i+'_'+st.n,id,n:E.n,hp,max:hp,block:0,st:{},mi:-1,last:[],intent:null};
+function mkEnemy(D,st,id,i){const E=D.enemies[id];const L=D.layers[st.layer]||{};const FM=(D.chars[baseCh(st)]||{}).foe||{};const hp=Math.round(ri(st,E.hp[0],E.hp[1])*(E.boss?1:E.elite?(1+((L.hpMul||1)-1)*.35):(L.hpMul||1))*(FM.hp||1)*(1+.08*(st.asc||0))*(1+.09*Math.max(0,Math.min(8,(st.polS||0)-1)))*(st.daily==='glass'?.7:1));const e={uid:'e'+i+'_'+st.n,id,n:E.n,hp,max:hp,block:0,st:{},mi:-1,last:[],intent:null};
  if(st.grudges&&st.grudges.includes(id)){e.hp=e.max=Math.max(1,Math.round(hp*.8));}
  if(st.pettyNext&&st.grudges&&st.grudges.includes(id)){e.hp=e.max=Math.max(1,Math.round(e.max*.9));}
  if(TL(st,'yy_grudge1b')&&st.hitBy&&st.hitBy.includes(id))e.st.pact=(e.st.pact||0)+1;
@@ -3391,7 +3463,7 @@ function startCombat(D,st,ids,kind){const ens=ids.map((id,i)=>mkEnemy(D,st,id,i)
   if(OT(D,st,'mirror',3)){const e=one();if(e)addSt(e,'vuln',1);}
   if(OT(D,st,'M09',1)&&c.lure)c.lure=12;
  }
- if(st.tt){tagFx(D,st,st.tt.cs,E,true);for(const sc of (st.tt.setcs||[])){if(st.deck.filter(x=>(D.cards[x.id]||{}).tag===sc[0]).length>=sc[1])tagFx(D,st,sc[2],E,true);}if(kind==='elite'||kind==='boss')tagFx(D,st,st.tt.el,E,true);}
+ if(has(st,'rr_seed')){if(isYY(st))addAlien(D,st,30,E);else c.b0=(c.b0||0)+8;}for(const r of (D.reso||[]))if(st.origin===r.o&&tagsOf(st).includes(r.t)){tagFx(D,st,r.fx,E,true);E.push({t:'reso',id:r.id});}if(st.tt){tagFx(D,st,st.tt.cs,E,true);for(const sc of (st.tt.setcs||[])){if(st.deck.filter(x=>(D.cards[x.id]||{}).tag===sc[0]).length>=sc[1])tagFx(D,st,sc[2],E,true);}if(kind==='elite'||kind==='boss')tagFx(D,st,st.tt.el,E,true);}
  for(const e of c.enemies)chooseIntent(D,st,e);
  if(pas(D,st,'shop20')){const h=c.enemies.filter(e=>e.hid);if(h.length)pick(st,h).hid=0;const a=c.enemies.filter(e=>e.hp>0);if(a.length)addSt(pick(st,a),'weak',1);pe(E,'shop20');}
  if(pas(D,st,'moth')){if(c.enemies.some(e=>e.hid))pe(E,'moth');for(const e of c.enemies)e.hid=0;}
@@ -3409,7 +3481,7 @@ function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
  if(pas(D,st,'tether')&&st.hp<st.maxHp*(OT(D,st,'line',2)?.6:.5)&&st.hp>0){pe(E,'tether');healP(st,OT(D,st,'line',1)?3:2,E);if(OT(D,st,'line',3)){c.block+=3;E.push({t:'block',n:3});}}c.leeched=0;c.firstCard=0;c.skillN=0;c.jelly=0;
  if(pas(D,st,'coral')){c.hard=Math.min(c.hard||0,c.block);c.block=c.hard;}
  else if(pas(D,st,'slime')){if(c.block>1)pe(E,'slime');if(OT(D,st,'M06',2)&&c.block>=10)c.slimeDraw=1;c.block=Math.floor(c.block*(OT(D,st,'M06',1)?.75:.5));}
- else if(!(c.turn===2&&has(st,'anchor')))c.block=0;
+ else if(!(c.turn===2&&has(st,'anchor'))&&!has(st,'rr_frost'))c.block=0;
  c.boughtE=0;
  if(TL(st,'yy_guard1')&&st.hp<st.maxHp*.3){c.block+=4;E.push({t:'block',n:4});}
  if(TL(st,'cl_pain2')&&st.hp<st.maxHp*.3){c.block+=6;E.push({t:'block',n:6});}
@@ -3486,7 +3558,7 @@ function hitPlayer(D,st,amt,E,src){const c=st.combat;if(src&&amt>0&&has(st,'lamp
   if(TL(st,'yy_grudge2')&&a.hits===3&&a.st.pact){const n=a.st.pact;delete a.st.pact;E.push({t:'tal',k:'yy_grudge2'});E.push({t:'judge',n});hitEnemy(D,st,a,n*3,E);}}}if(real>0&&st.hp>0)lowCheck(D,st,E);
  if(st.hp<=0&&D.sisters&&isYY(st)&&st.mode!=='g'&&!st.flags.sisSave){st.flags.sisSave=1;st.hp=Math.ceil(st.maxHp*.15);E.push({t:'sisSave'});}
  if(st.hp<=0&&has(st,'mirror')&&!st.flags.mirror){st.flags.mirror=1;st.hp=Math.ceil(st.maxHp*.3);E.push({t:'relic',id:'mirror'});}}
-function killCheck(D,st,E){const c=st.combat;for(const e of c.enemies.slice())if(e.hp<=0&&!e.dead){e.dead=1;st.stats.kills++;E.push({t:'kill',id:e.id,uid:e.uid});if(TL(st,'yy_greed1')){st.gold+=3;}if(M(st,'glutton')&&st.hp>0)st.hp=Math.min(st.maxHp,st.hp+2);
+function killCheck(D,st,E){const c=st.combat;for(const e of c.enemies.slice())if(e.hp<=0&&!e.dead){e.dead=1;st.stats.kills++;E.push({t:'kill',id:e.id,uid:e.uid});if(has(st,'rr_mouth')&&st.hp>0){st.maxHp+=1;st.hp=Math.min(st.maxHp,st.hp+2);}if(TL(st,'yy_greed1')){st.gold+=3;}if(M(st,'glutton')&&st.hp>0)st.hp=Math.min(st.maxHp,st.hp+2);
   if(M(st,'eyegem')&&D.enemies[e.id].fac==='eldritch'&&R(st)<.3){st.shards=(st.shards||0)+1;E.push({t:'shard',n:st.shards});if(st.shards>=3){st.shards-=3;const p=relicPool(D,st);if(p.length){const id=pick(st,p);gainRelic(D,st,id);E.push({t:'relicGot',id});}}}
   if(D.enemies[e.id].drop)E.push({t:'drop',id:D.enemies[e.id].drop});if(has(st,'namelesslamp')&&st.hp>0)st.hp=Math.min(st.maxHp,st.hp+3);
   if(e.stolen&&e.stolen.length){c.disc.push(...e.stolen);E.push({t:'return',n:e.stolen.length});e.stolen=[];}
@@ -3510,7 +3582,8 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  c.energy-=k;c.hand.splice(i,1);st.stats.cards++;E.push({t:'play',id:card.id,up:card.up,tg:tg&&tg.uid});
  let total=0,gk=(d.fx.find(f=>f[0]==='gk')||[0,0])[1];
  const hasDmg=d.fx.some(f=>f[0]==='d'||f[0]==='da');const sb=isYY(st)?scarB(card):0;let scarN=0;
- const FX0=card.ring?d.fx.concat(d.fx.filter(f=>!['hurt','hurtq','mhp','al','ep','en'].includes(f[0]))):d.fx;const FX=FX0.some(f=>f[0]==='set'||f[0]==='if')?[].concat(...FX0.map(f=>f[0]==='set'?(setN(D,st,d)>=f[1]?(E.push({t:'setOn',id:card.id}),f[2]):[]):f[0]==='if'?(condOk(D,st,c,tg,f[1])?(E.push({t:'ifOn',id:card.id,k:f[1]}),f[2]):[]):[f])):FX0;
+ if(c.echoT!==c.turn){c.echoT=c.turn;c.echoN=0;}c.echoN++;if(st.daily==='free'&&d.t!=='x')selfHurt(D,st,1,E,false,true);const echoNow=has(st,'rr_echo')&&c.echoN===3&&d.t!=='x';if(echoNow)E.push({t:'relic',id:'rr_echo'});if(has(st,'rr_mirror')&&!c.mirU&&d.t!=='x'&&!card.temp){c.mirU=1;c.hand.push({uid:st.uid++,id:card.id,up:card.up,temp:1,free:1});E.push({t:'relic',id:'rr_mirror'});}
+ const FX0=(card.ring||echoNow)?d.fx.concat(d.fx.filter(f=>!['hurt','hurtq','mhp','al','ep','en'].includes(f[0]))):d.fx;const FX=FX0.some(f=>f[0]==='set'||f[0]==='if')?[].concat(...FX0.map(f=>f[0]==='set'?(setN(D,st,d)>=f[1]?(E.push({t:'setOn',id:card.id}),f[2]):[]):f[0]==='if'?(condOk(D,st,c,tg,f[1])?(E.push({t:'ifOn',id:card.id,k:f[1]}),f[2]):[]):[f])):FX0;
  const dos=st.ch==='gu'?((c.tmpDos||0)+(tg?(st.dossier[D.enemies[tg.id].fac]||0):0)):0;
  const firstAtkT=d.t==='a'&&c.atkN===0;c.nPlay=(c.nPlay||0)+1;
  const echoM=(d.t==='a'&&c.echo)?c.echo:0;if(echoM)c.echo=0;
@@ -3596,6 +3669,7 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
    case 'hurtq':selfHurt(D,st,f[1],E,false,true);break;
    case 'al':addAlien(D,st,f[1],E);break;
    case 'stun':if(tg&&tg.hp>0){tg.stun=1;E.push({t:'stun',uid:tg.uid});}break;
+   case 'stun1':if(tg&&tg.hp>0&&c.stun1T!==c.turn){c.stun1T=c.turn;tg.stun=1;E.push({t:'stun',uid:tg.uid});}break;
    case 'mhp':st.maxHp=Math.max(1,st.maxHp+f[1]);st.hp=Math.min(st.hp,st.maxHp);E.push({t:'mhp',n:f[1]});break;
    case 'gk':break;
    case 'hp':st.hp=Math.min(st.maxHp,st.hp+f[1]);E.push({t:'heal',n:f[1]});break;
@@ -3625,7 +3699,7 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  if((c.firstCard||0)<(OT(D,st,'B05',2)?2:1)){c.firstCard=(c.firstCard||0)+1;if(pas(D,st,'mimicFirst')){const o=c.hand.filter(x=>D.cards[x.id].t!=='x'&&!x.temp);if(o.length&&c.hand.length<handMax(D,st)){const x=pick(st,o);c.hand.push({uid:'x'+st.uid++,id:x.id,up:x.up,temp:1,free:OT(D,st,'B05',1)?1:undefined});pe(E,'mimicFirst');E.push({t:'mimicCard'});}}}
  c.seqT=((c.seqT||'')+d.t).slice(-2);
  if(d.tag){st.stats.tagPlays=st.stats.tagPlays||{};st.stats.tagPlays[d.tag]=(st.stats.tagPlays[d.tag]||0)+1;const P=st.tt&&st.tt.play&&st.tt.play[d.tag];if(P&&st.screen==='combat'&&(c.tpN=(c.tpN||0)+1)<=3)tagFx(D,st,P,E,false);}
- if(D.duo&&st.mode!=='g'&&st.screen==='combat'){if(st.ch==='yy'&&d.t==='s'&&c.weaveT!==c.turn){c.weaveT=c.turn;const e=pick(st,alive(c));if(e){addSt(e,R(st)<.5?'weak':'vuln',1);E.push({t:'trait',k:'weave'});}}else if(st.ch==='yx'&&d.t==='a'&&c.burstT!==c.turn){c.burstT=c.turn;const e=(tg&&tg.hp>0)?tg:pick(st,alive(c));if(e){hitEnemy(D,st,e,5,E);selfHurt(D,st,1,E,false,true);E.push({t:'trait',k:'burst'});}}}
+ if(D.duo&&st.mode!=='g'&&st.screen==='combat'){if(c.twT!==c.turn){c.twT=c.turn;c.twW=0;c.twB=0;}const twMax=has(st,'rr_twin')?2:1;if(st.ch==='yy'&&d.t==='s'&&c.twW<twMax){c.twW++;const e=pick(st,alive(c));if(e){addSt(e,R(st)<.5?'weak':'vuln',1);E.push({t:'trait',k:'weave'});}}else if(st.ch==='yx'&&d.t==='a'&&c.twB<twMax){c.twB++;const e=(tg&&tg.hp>0)?tg:pick(st,alive(c));if(e){hitEnemy(D,st,e,5,E);selfHurt(D,st,1,E,false,true);E.push({t:'trait',k:'burst'});}}}
  if(atk&&c.pw.nine){const a=alive(c);if(a.length){if(c.pw.nineAll)for(const e of a)addSt(e,'pact',1);else addSt(pick(st,a),'pact',c.pw.nine);}}
  if(c.mix&&c.pair==='BM'&&d.bl){draw(D,st,1,E);c.block+=3;E.push({t:'block',n:3});}
  if(d.t==='s'){c.skillT=1;if(c.pw.song&&!c.sung){c.sung=1;c.block+=3*c.pw.song;E.push({t:'block',n:3*c.pw.song});}}
@@ -3660,7 +3734,7 @@ function endTurn(D,st,E){const c=st.combat;
  if(pas(D,st,'coral')&&c.energy>0){pe(E,'coral');const n=c.energy*(OT(D,st,'M11',1)?5:4);c.block+=n;c.hard=(c.hard||0)+n;E.push({t:'block',n});}
  if(c.full&&c.mix){c.mixT--;if(c.mixT<=0){selfHurt(D,st,6,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}c.full=0;c.mix=0;st.alien=0;st.flags['full'+st.layer]=1;st.flags.mixUsed=1;E.push({t:'recall'});}}
  else if(c.full){selfHurt(D,st,8,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}
-  if(c.full<2){c.full=2;}else{c.full=0;st.alien=st.ch==='yx'?60:50;st.flags['full'+st.layer]=1;E.push({t:st.ch==='yx'?'fullEnd':'recall'});}}
+  if(c.full<2||has(st,'rr_clock')){c.full=2;}else{c.full=0;st.alien=st.ch==='yx'?60:50;st.flags['full'+st.layer]=1;E.push({t:st.ch==='yx'?'fullEnd':'recall'});}}
  if(keep.length&&has(st,'redbookmark')){c.block+=3;E.push({t:'block',n:3});}
  // 敵人回合
  for(const e of alive(c)){if(e.pblock){e.block=Math.min(e.block,e.pblock);e.pblock=e.block;}else e.block=0;}
@@ -3730,7 +3804,7 @@ function winCombat(D,st,E){const c=st.combat;const kind=c.kind;
  if(kind==='elite'&&st.layer===1)E.push({t:'page'});st.gold+=gold;
  if(st.gold>=200)E.push({t:'ach',id:'gold200'});
  const rw={el:kind!=='fight'?1:0,gold,cards:subRoll(D,st)||rollCards(D,st,M(st,'obsess')?2:3,kind!=='fight'),relic:null,relicChoice:null,cardTaken:false};
- if(kind==='elite'){const p=relicPool(D,st);if(p.length){rw.relic=pick(st,p);gainRelic(D,st,rw.relic);}if(M(st,'pride')){const p2=relicPool(D,st);if(p2.length){rw.relic2=pick(st,p2);gainRelic(D,st,rw.relic2);}}}
+ if(kind==='elite'){const rr=relicPool(D,st).filter(k=>D.relics[k].rule);const p=(!st.flags.firstElite&&rr.length)?rr:relicPool(D,st);st.flags.firstElite=1;if(p.length){rw.relic=pick(st,p);gainRelic(D,st,rw.relic);}if(M(st,'pride')){const p2=relicPool(D,st);if(p2.length){rw.relic2=pick(st,p2);gainRelic(D,st,rw.relic2);}}}
  if(kind==='boss'){if(st.layer===0){if(st.com==='c_nofix'&&!st.stats.rests)st.comDone=1;if(st.com==='c_quiet'&&!st.stats.elites)st.comDone=1;}if(st.com==='c_letter'&&st.deck.some(x=>x.id==='x_regret'))st.comDone=1;
   st.stats.bosses++;const bid=c.enemies[0].id;E.push({t:'ach',id:{wusign:'boss1',qianhao:'boss2',deepdrill:'boss3',namegate:'boss4',lastpost:'boss5',stationmaster:'boss6',nh_fox:'boss7',nh_sea:'boss8',nh_her:'boss9'}[bid]});
   const p=shuffle(st,relicPool(D,st)).slice(0,3);rw.relicChoice=p;st.hp=Math.min(st.maxHp,st.hp+Math.ceil((st.maxHp-st.hp)*.75));}
@@ -4015,7 +4089,7 @@ function oOpen(o){return oOwned(o);}
 function originsOf(k){if(k==='yx')k='yy';return Object.values(D.origins).filter(o=>o.ch===k);}
 function preload(){const o=C.originOf(D,st);const imgs=[o.img,o.half,o.full,D.inbox+'yx_reveal.webp',D.inbox+'yx_base.webp'].filter(Boolean);if(st.ch!=='yy')imgs.length=1;imgs.forEach(u=>{const i=new Image();i.src=u;});
  if(typeof load==='function'&&AU.ctx)['sfx_transform','sfx_recall','sfx_corrupt','sfx_form_'+st.origin].forEach(n=>{if(AD.sfx.includes(n))load(n);});}
-function startRun(k,origin,dv){dv=dv||{};st=C.newRun(D,(Date.now()%2147483647)>>>0,k,meta,{origin,chapter:dv.chapter||1,sub:dv.sub,mode:dv.mode,deck:dv.deck,trial:dv.trial,desire:dv.desire,hobby2:dv.hobby2,lean:dv.lean,deck:dv.deck,asc:dv.asc,persona:dv.persona||(Object.values(D.personas).find(p=>p.ch===k&&p.def)||{}).id,hobby:dv.hobby,com:meta.com&&(D.coms.find(c=>c.id===meta.com)||{}).ch!==(k==='cl'?null:'cl')?meta.com:null});if(st.flags.gotDot)toast(`門口放著 <b>${st.flags.gotDot}</b> 渡鴉幣。是他留的。`);if(st.flags.gotLetter)toast(`井邊有一封信，裡面是上一次留下的 <b>${st.flags.gotLetter}</b> 渡鴉幣`);save();preload();{const base=(st.chapter>=2?((D['ch'+((dv&&dv.chapter)||2)]||D.ch2).start[k]||(D['ch'+((dv&&dv.chapter)||2)]||D.ch2).start.yy):D.talk.start[k])||[];const extra=[st.persona,st.desire,st.hobby].map(t=>(D.tagLine||{})[t]).filter(Boolean).slice(0,2);{const PL=polOf(st.ch);if(PL&&st.pol>0&&PL.start[st.pol])extra.push(PL.start[st.pol]);}talk(base.concat(extra),()=>route());}}
+function startRun(k,origin,dv){dv=dv||{};st=C.newRun(D,(Date.now()%2147483647)>>>0,k,meta,{origin,chapter:dv.chapter||1,sub:dv.sub,mode:dv.mode,deck:dv.deck,trial:dv.trial,desire:dv.desire,hobby2:dv.hobby2,lean:dv.lean,deck:dv.deck,asc:dv.asc,daily:window.DAILY||undefined,persona:dv.persona||(Object.values(D.personas).find(p=>p.ch===k&&p.def)||{}).id,hobby:dv.hobby,com:meta.com&&(D.coms.find(c=>c.id===meta.com)||{}).ch!==(k==='cl'?null:'cl')?meta.com:null});if(st.flags.gotDot)toast(`門口放著 <b>${st.flags.gotDot}</b> 渡鴉幣。是他留的。`);if(st.flags.gotLetter)toast(`井邊有一封信，裡面是上一次留下的 <b>${st.flags.gotLetter}</b> 渡鴉幣`);save();preload();{const base=(st.chapter>=2?((D['ch'+((dv&&dv.chapter)||2)]||D.ch2).start[k]||(D['ch'+((dv&&dv.chapter)||2)]||D.ch2).start.yy):D.talk.start[k])||[];const extra=[st.persona,st.desire,st.hobby].map(t=>(D.tagLine||{})[t]).filter(Boolean).slice(0,2);{const PL=polOf(st.ch);if(PL&&st.pol>0&&PL.start[st.pol])extra.push(PL.start[st.pol]);}talk(base.concat(extra),()=>route());}}
 function contRun(){closeModal();const s=ls(RUNK);if(!s)return;st=C.loadRun(D,s);if(!st){ls(RUNK,null);drawTitle();return;}save();preload();route();if(st.screen==='combat')banner('第 '+st.combat.turn+' 回合');}
 function route(){const s=st.screen;if(s==='map'){drawMap();show('map');}else if(s==='prep'||s==='gnext'||s==='gpick'){drawPage();show('pg');}else if(s==='combat'){drawCombat();show('cb');}else{drawPage();show('pg');}}
 
@@ -4035,7 +4109,7 @@ function rankOf(d){return d.t==='x'?'x':d.bl?'origin':d.r;}
 function tagDef(k){return D.personas[k]||D.desires[k]||D.hobbies[k]||{n:k};}
 function tagKind(k){return D.personas[k]?'人格':D.desires[k]?'慾望':'癖好';}
 function tagShort(k){const n=tagDef(k).n;return n.length>5?n.slice(0,4)+'…':n;}
-function cardHtml(c,extra,cls){if(c.pl==null&&typeof st!=='undefined'&&st&&st.screen!=='over'&&st.polS>0&&((D.cards[c.id]||{}).bl||(D.cards[c.id]||{}).tag)&&(D.cards[c.id]||{}).t!=='x')c=Object.assign({},c,{pl:st.polS});if(c.fg==null){const F=(typeof st!=='undefined'&&st&&st.screen!=='over'&&st.fg)||(meta&&meta.forge)||{};if(F[c.id])c=Object.assign({},c,{fg:F[c.id]});}const d=C.cardDef(D,c);const k=C.cost(D,c);const rk=rankOf(d);return `<div class="card ${d.t} ch_${d.ch} rk${rk==='x'?'x':rk==='origin'?'o':rk} tier${d.basic?0:(d.r||0)} ${d.tag?'tagc':''}  ${c.fg?'fg'+c.fg:''} ${c.pl?'pl pl'+Math.min(4,polTier(c.pl))+(c.pl>=4?' plv':'')+(c.pl>=7?' plx':''):''} ${c.tax?'taxed':''} ${c.oil?'oiled':''} ${c.lock?'locked':''} ${c.ring?'ring':''} ${c.scar?'sc'+(c.scar>=9?3:c.scar>=4?2:1):''} ${cls||''}${!d.fourth&&C.desc(D,c).length>40?' lng':''}" data-cid="${c.id}" data-cup="${c.up?1:0}" data-cfg="${c.fg||0}" data-cpl="${c.pl||0}" ${d.bl&&ORC[d.bl]?`style="--oc:${ORC[d.bl]}"`:''} ${extra||''}><div class="ci" style="background-image:url(${d.img})"></div>${d.tag?`<div class="rk tg">${esc(tagShort(d.tag))}</div>`:`<div class="rk">${D.rarity[rk].n}</div>`}<div class="hn">${esc(d.n)}</div><i class="crest">${d.basic?'':d.r>=3?'✦':d.r===2?'◆':''}</i><i class="gems">${'◆'.repeat(d.basic?0:Math.max(0,Math.min(3,d.r||0)))}</i>${c.fg?`<div class="fgb">${'★'.repeat(c.fg)}</div>`:''}${c.pl?`<div class="plb">${c.pl>7?'深'+(CNN2[c.pl-7]||''):'染'+CNN2[c.pl]}</div>`:''}${d.t!=='x'?`<div class="cc">${k}</div>`:''}<div class="cn ${c.up?'up':''}">${esc(d.n)}</div>${puiNote(d)?`<i class="pnote">${esc(puiNote(d))}</i>`:''}${!d.fourth&&C.desc(D,c).length>40?'<i class="lp">長按看全部</i>':''}<div class="cd${!d.fourth&&C.desc(D,c).length>40?' long':''}">${d.fourth?esc(fourthTxt()):esc(C.desc(D,c))}${c.scar?`<br><span style="color:#ff9aa8">疤 ${c.scar}${Math.floor(c.scar/3)?'（+'+Math.min(4,Math.floor(c.scar/3))+'）':''}</span>`:''}</div></div>`;}
+function cardHtml(c,extra,cls){if(c.pl==null&&typeof st!=='undefined'&&st&&st.screen!=='over'&&st.polS>0&&((D.cards[c.id]||{}).bl||(D.cards[c.id]||{}).tag)&&(D.cards[c.id]||{}).t!=='x')c=Object.assign({},c,{pl:st.polS});if(c.fg==null){const F=(typeof st!=='undefined'&&st&&st.screen!=='over'&&st.fg)||(meta&&meta.forge)||{};if(F[c.id])c=Object.assign({},c,{fg:F[c.id]});}const d=C.cardDef(D,c);const k=C.cost(D,c,st&&st.combat?C.phaseOf(st):undefined);const rk=rankOf(d);return `<div class="card ${d.t} ch_${d.ch} rk${rk==='x'?'x':rk==='origin'?'o':rk} tier${d.basic?0:(d.r||0)} ${d.tag?'tagc':''}  ${c.fg?'fg'+c.fg:''} ${c.pl?'pl pl'+Math.min(4,polTier(c.pl))+(c.pl>=4?' plv':'')+(c.pl>=7?' plx':''):''} ${c.tax?'taxed':''} ${c.oil?'oiled':''} ${c.lock?'locked':''} ${c.ring?'ring':''} ${c.scar?'sc'+(c.scar>=9?3:c.scar>=4?2:1):''} ${cls||''}${!d.fourth&&C.desc(D,c).length>40?' lng':''}" data-cid="${c.id}" data-cup="${c.up?1:0}" data-cfg="${c.fg||0}" data-cpl="${c.pl||0}" ${d.bl&&ORC[d.bl]?`style="--oc:${ORC[d.bl]}"`:''} ${extra||''}><div class="ci" style="background-image:url(${d.img})"></div>${d.tag?`<div class="rk tg">${esc(tagShort(d.tag))}</div>`:`<div class="rk">${D.rarity[rk].n}</div>`}<div class="hn">${esc(d.n)}</div><i class="crest">${d.basic?'':d.r>=3?'✦':d.r===2?'◆':''}</i><i class="gems">${'◆'.repeat(d.basic?0:Math.max(0,Math.min(3,d.r||0)))}</i>${c.fg?`<div class="fgb">${'★'.repeat(c.fg)}</div>`:''}${c.pl?`<div class="plb">${c.pl>7?'深'+(CNN2[c.pl-7]||''):'染'+CNN2[c.pl]}</div>`:''}${d.t!=='x'?`<div class="cc">${k}</div>`:''}<div class="cn ${c.up?'up':''}">${esc(d.n)}</div>${puiNote(d)?`<i class="pnote">${esc(puiNote(d))}</i>`:''}${!d.fourth&&C.desc(D,c).length>40?'<i class="lp">長按看全部</i>':''}<div class="cd${!d.fourth&&C.desc(D,c).length>40?' long':''}">${d.fourth?esc(fourthTxt()):esc(C.desc(D,c))}${c.scar?`<br><span style="color:#ff9aa8">疤 ${c.scar}${Math.floor(c.scar/3)?'（+'+Math.min(4,Math.floor(c.scar/3))+'）':''}</span>`:''}</div></div>`;}
 function fourthTxt(){const F=D.T.FOURTH_BOWL;const n=st&&st.fourthN!=null?st.fourthN:(meta.fourth||0);return F.runs[Math.min(n,F.runs.length-1)]+(n>=8?'（這一局，可以打出一次：所有敵人停手一回合）':'（不能打出，也拿不掉）');}
 const TYPE={a:'攻擊',s:'技能',p:'能力',x:'詛咒'};
 
@@ -4215,6 +4289,7 @@ function fxOn(el,img){if(!el||!img)return;const f=document.createElement('img');
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function animate(evs,before,card){
  for(const e of evs){
+  if(e.t==='reso'){const r=(D.reso||[]).find(x=>x.id===e.id);if(r){meta.reso=meta.reso||{};const nw=!meta.reso[r.id];meta.reso[r.id]=1;save();toast(`${nw?'發現共鳴':'共鳴'}：<b>${esc(r.n)}</b>`);setTimeout(()=>bubble(r.line[0],r.line[2],4200),900);fxWord($('me'),'共鳴','#ff8fd0');}}
   if(e.t==='setOn'){fxWord($('me'),'成套','#ffd56b');sfx('sfx_unlock',1.3);}
   else if(e.t==='ifOn'){fxWord($('me'),'時機到了','#9fe8a3');}
   else if(e.t==='trait'){fxWord($('me'),e.k==='weave'?'織網':'爆破',e.k==='weave'?'#c99be2':'#ff6a6a');if(e.k==='burst'&&window.fxBurst){const r=$('foes').getBoundingClientRect();fxBurst(r.left+r.width/2,r.top+r.height/2,'#ff5a4a',26,1.4);}else if(window.fxBurst){const r=$('foes').getBoundingClientRect();for(let i=0;i<5;i++)fxTrail(r.left+Math.random()*r.width,r.top,r.left+Math.random()*r.width,r.bottom,'#c99be2',10);}}
@@ -4311,7 +4386,7 @@ function spot(k){sfx('sfx_door');const S=D.T.TOWN.spots[k];const lock=(D.town.ne
 function openHome(){const S=D.T.TOWN.spots.home;let h=`<h2 style="color:var(--gold);margin-top:0">${esc(S.n)}</h2><p class="big">${esc(dKey(S.desc))}</p><button class="opt" onclick="closeModal();openBook()">回憶之書<small>翻一翻帶回來的故事</small></button><button class="opt" onclick="closeModal();openForge('yy')">刻印坊<small>用殘響和墨晶，讓本源牌和個性牌永遠變強（墨晶 ${meta.crystal||0}）</small></button>`+polHtml()+sinHtml()+talentHtml()+`<h3 style="color:var(--gold)">本源與面貌</h3>`;
  for(const ch of ['yy','cl'])h+=originsOf(ch).map(o=>{const ok=oOpen(o);const F=D.T.FORMS[ch+'_'+o.id]||{};const w=(meta.phWins||{})[ch+'_'+o.id]||[];return `<div class="rel orow" style="${ok?'':'opacity:.5'}" ${ok&&F.story?`onclick="closeModal();talk(D.T.FORMS['${ch}_${o.id}'].story,()=>openHome())"`:''}><img src="${ok?o.img:D.chars[ch].img}" onerror="this.src='${D.chars[ch].img}'" alt=""><div><b>${D.chars[ch].name}・${esc(o.n)}</b><small>${ok?esc(F.pf||F.sub||''):'還沒買。到牌鋪用殘響買這一包。'}</small>${ok&&ch==='yy'?`<small style="color:#d9a0a8">通關過的相：${w.length?w.map(x=>PHN[x]).join('、'):'還沒有'}</small>`:''}</div></div>`;}).join('');
  modal(h+`<p><button onclick="closeModal()">關閉</button></p>`);}
-function openStudy(){const S=D.T.TOWN.spots.study;const left=meta.memory-(meta.memSpent||0);let h=`<h2 style="color:var(--gold);margin-top:0">${esc(S.n)}</h2><p class="big">${esc(dKey(S.desc))}</p><button class="opt" onclick="closeModal();openGallery()">畫廊<small>看過的立繪、本源、三相、敵人、場景（${Object.keys(meta.gal||{}).length} 張）</small></button><button class="opt" onclick="closeModal();openCardBook()">牌冊<small>收集過的牌、污染過的樣子（${cbCount()}／${cbAll().length}）</small></button><button class="opt" onclick="closeModal();openCodex()">怪物圖鑑</button><button class="opt" onclick="closeModal();openAch()">成就</button><button class="opt" onclick="showNotes()">公告</button><p class="hint">人格、慾望、癖好和本源，都改到「牌鋪」用殘響買了。</p>`;
+function openStudy(){const S=D.T.TOWN.spots.study;const left=meta.memory-(meta.memSpent||0);let h=`<h2 style="color:var(--gold);margin-top:0">${esc(S.n)}</h2><p class="big">${esc(dKey(S.desc))}</p><button class="opt" onclick="closeModal();openGallery()">畫廊<small>看過的立繪、本源、三相、敵人、場景（${Object.keys(meta.gal||{}).length} 張）</small></button><button class="opt" onclick="startDaily()">每日挑戰<small>今天：${esc(dailyToday().rule.n)}——${esc(dailyToday().rule.d)}</small></button><button class="opt" onclick="closeModal();openCardBook()">牌冊<small>收集過的牌、污染過的樣子（${cbCount()}／${cbAll().length}）</small></button><button class="opt" onclick="closeModal();openCodex()">怪物圖鑑</button><button class="opt" onclick="closeModal();openAch()">成就</button><button class="opt" onclick="showNotes()">公告</button><p class="hint">人格、慾望、癖好和本源，都改到「牌鋪」用殘響買了。</p>`;
  modal(h+`<p><button onclick="closeModal()">關閉</button></p>`);}
 function buyPersona(id){const r=C.metaUnlock(D,meta,'persona',id);if(!r.ok){flash(r.error);return;}meta=r.meta;save();sfx('sfx_unlock');const p=D.personas[id];if(p.pick)tline(p.pick);openStudy();}
 function openBoard(){const S=D.T.TOWN.spots.board;let h=`<h2 style="color:var(--gold);margin-top:0">${esc(S.n)}</h2><p class="big">${esc(dKey(S.desc))}</p><p style="color:var(--dim)">每次下潛可以帶一張。完成了，多帶回 ${D.comReward} 殘響。</p>`;
@@ -4544,6 +4619,7 @@ function runEnd(r,forced){const ev=r.events.find(e=>e.t==='runEnd');const win=st
   <div class="rel"><img src="${I}st_echo.webp" alt=""><div><b>得到回憶 ${ev?ev.memory:0}</b><small>累積 ${meta.memory}</small></div></div>
   <div class="rel"><img src="${I}i_torch.webp" alt=""><div><b>帶回殘響 ${news.echo||0}${quit?'（放棄，只剩一半）':''}</b><small>現在有 ${meta.echo}，可以到守燈處換東西</small></div></div>
   <p style="color:var(--gold);text-align:center">${esc(D.T.RUN_END_HINT[Math.floor(Math.random()*D.T.RUN_END_HINT.length)])}</p>`;
+  h+=v23End(win);
   const nk=D.keeper.filter(k=>!meta.keeper.includes(k.id)&&(!k.need||meta.keeper.includes(k.need))).sort((a,b)=>a.cost-b.cost)[0];if(nk)h+=nk.cost<=meta.echo?`<p style="color:var(--gold)">守燈處的「${esc(nk.n)}」現在買得起了。</p>`:`<p style="color:var(--dim)">再 ${nk.cost-meta.echo} 殘響，可以在守燈處換「${esc(nk.n)}」。</p>`;
   for(const id of news.unlocks){const u=D.unlocks.find(x=>x.id===id);h+=`<div class="rel" style="border-color:var(--gold)"><img src="${I}st_vow.webp" alt=""><div><b>解鎖！</b><small>${esc(u.t)}</small></div></div>`;}
   const nx=D.unlocks.filter(u=>!meta.unlocked.includes(u.id)).sort((a,b)=>a.at-b.at)[0];if(nx)h+=`<p style="color:var(--dim)">再累積 ${nx.at-meta.memory} 回憶：${esc(nx.t)}</p>`;
@@ -4563,7 +4639,7 @@ function runEnd(r,forced){const ev=r.events.find(e=>e.t==='runEnd');const win=st
 // ── 回憶之書、圖鑑、成就
 function showNotes(){modal(`<h2 style="color:var(--gold);margin-top:0">公告</h2>`+(D.notes||[]).map(n=>`<h3 style="margin:12px 0 4px;color:${n.ver===D.version?'var(--gold)':'var(--dim)'}">${n.ver}${n.ver===D.version?'（目前版本）':''}</h3><ul style="margin:0;padding-left:20px;line-height:1.7">${n.lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`).join('')+`<p><button class="main" onclick="closeModal()">知道了</button></p>`);meta.seenVer=D.version;ls(METAK,meta);}
 function openBook(){$('btitle').textContent='回憶之書';$('bbg').style.backgroundImage=`url(${I}bg_library.webp)`;
- let h=`<p style="color:var(--dim)">回憶 ${meta.memory}。每一次下潛，不管走到哪裡，都會留下回憶。</p>`;
+ let h=`<p style="color:var(--dim)">回憶 ${meta.memory}。每一次下潛，不管走到哪裡，都會留下回憶。</p>`+v23Book();
  h+=D.unlocks.map(u=>{const got=meta.unlocked.includes(u.id);const st2=D.stories[u.id];return `<div class="rel" style="${got?'':'opacity:.5'}" ${got&&st2?`onclick="readStory('${u.id}')"`:''}><img src="${I}${got?'st_vow':'st_seal'}.webp" alt=""><div><b>${got?esc(u.t):'？？？'}</b><small>${got?(st2?'點一下閱讀':'已解鎖'):'累積 '+u.at+' 回憶'}</small></div></div>`;}).join('');
  {const ks=Object.keys(D.tagMem);const got=ks.filter(k=>((meta.tm||{})[k]||{}).runs>=2);h+=`<h3 style="color:var(--gold)">她們的樣子（${got.length}／${ks.length}）</h3><p class="hint">帶著同一個人格、慾望或癖好下潛兩次，就會想起一段。</p>`+ks.map(k=>{const g=got.includes(k);const r=((meta.tm||{})[k]||{}).runs||0;return `<div class="rel" style="${g?'':'opacity:.5'}" ${g?`onclick="readTagMem('${k}')"`:''}><img src="${I}${g?'st_vow':'st_seal'}.webp" alt=""><div><b>${g?'〈'+esc(D.tagMem[k].t)+'〉':'？？？'}</b><small>${esc(tagKind(k))}「${esc(tagDef(k).n)}」・${g?'點一下閱讀':'還要下潛 '+(2-r)+' 次'}</small></div></div>`;}).join('');}
  {const P=D.pairMem||[];const gp=P.filter(pairOk);const T2=Object.keys(D.tagMem2||{});const g2=T2.filter(k=>((meta.tm||{})[k]||{}).wins>0);const OM=Object.keys(D.originMem||{});const go=OM.filter(k=>{const T=Object.keys(D.otal).filter(x=>D.otal[x].ok===k);const t3=T.find(x=>/_3$/.test(x));return t3&&((meta.om||{})[k]||{spent:[]}).spent.includes(t3);});
@@ -4706,6 +4782,25 @@ function openCardBook(f){if(f)CBF=f;$('btitle').textContent='牌冊';$('bbg').st
   h+=`<h3 class="cbh">${esc(nm)} <small>${got}／${L.length}${done?'　收齊了':''}</small></h3><div class="cbgrid">${L.map(k=>{const v=m[k];const d=D.cards[k];return v?`<div class="cbc r${d.basic?0:d.r||0}${v>1?' cbp':''}" onclick="cdetOpen({id:'${k}',up:0,pl:${v-1}||undefined})"><img src="${d.img}" alt=""><b>${esc(C.cardDef(D,{id:k,pl:v>1?v-1:undefined}).n)}</b>${v>1?`<i>染${CNN2[Math.min(10,v-1)]||''}</i>`:''}</div>`:`<div class="cbc no"><span>？</span></div>`;}).join('')}</div>`;}
  if(CBF==='t'){const hid=keys.filter(g=>!G[g].some(k=>m[k])).length;if(hid)h+=`<p class="hint">還有 ${hid} 個系列一張都沒拿過。</p>`;}
  $('bpage').innerHTML=h;show('book');}
+
+// v0.23 夜話、共鳴、每日挑戰、下一個目標
+function storyN(){return Math.min((D.story||[]).length,meta.runs||0);}
+function readNight(i){const P=D.story[i];if(!P)return;talk(P.lines.map(l=>l.slice()),()=>{});}
+function dailyToday(){const d=new Date();const k=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();return {key:k,rule:D.daily[k%D.daily.length]};}
+function startDaily(){const T=dailyToday();window.DAILY=T.rule.id;closeModal();toast(`每日挑戰：<b>${esc(T.rule.n)}</b>　${esc(T.rule.d)}`);pickOrigin(meta.lastCh||'yy');}
+function v23Book(){let h='';const n=storyN();h+=`<h3 style="color:var(--gold)">渡鴉巷夜話 <small style="color:var(--dim)">${n}／${D.story.length}</small></h3><p class="hint">每下潛一次，揭開一頁。</p>`;
+ h+=D.story.map((P,i)=>i<n?`<div class="rel" onclick="readNight(${i})"><img src="${I}st_vow.webp" alt=""><div><b>第 ${i+1} 夜・${esc(P.n)}</b><small>點一下閱讀</small></div></div>`:`<div class="rel" style="opacity:.45"><img src="${I}st_seal.webp" alt=""><div><b>第 ${i+1} 夜</b><small>再下潛 ${i+1-(meta.runs||0)} 次</small></div></div>`).join('');
+ const R=meta.reso||{};h+=`<h3 style="color:var(--gold)">共鳴 <small style="color:var(--dim)">${Object.keys(R).length}／${D.reso.length}</small></h3><p class="hint">特定的本源配上特定的人格、慾望或癖好，開戰時會共鳴。自己試出來。</p>`;
+ h+=D.reso.map(r=>R[r.id]?`<div class="rel"><img src="${I}st_vow.webp" alt=""><div><b>${esc(r.n)}</b><small>${esc((D.origins['yy_'+r.o]||{}).n||r.o)} ＋ ${esc(tagDef(r.t).n)}：「${esc(r.line[2])}」</small></div></div>`:`<div class="rel" style="opacity:.45"><img src="${I}st_seal.webp" alt=""><div><b>？？？</b><small>${esc((D.origins['yy_'+r.o]||{}).n||'某個本源')} ＋ ？</small></div></div>`).join('');
+ return h;}
+function v23End(win){let h='';const n=storyN();if(n>(meta.storySeen||0)){const P=D.story[n-1];meta.storySeen=n;save();h+=`<div class="rel" style="border-color:var(--gold)" onclick="readNight(${n-1})"><img src="${I}st_vow.webp" alt=""><div><b>新的一頁：第 ${n} 夜・${esc(P.n)}</b><small>點一下閱讀（之後也能在回憶之書裡重讀）</small></div></div>`;}
+ if(st.daily){const T=dailyToday();meta.dailyBest=meta.dailyBest||{};const v=(st.stats.floors||0)+(win?100:0);const old=meta.dailyBest[T.key]||0;if(v>old)meta.dailyBest[T.key]=v;save();h+=`<div class="rel"><img src="${I}i_torch.webp" alt=""><div><b>每日挑戰・${esc((D.daily.find(x=>x.id===st.daily)||{}).n||'')}</b><small>這次：${win?'通關':'走了 '+st.stats.floors+' 步'}${v>old?'　今天的新紀錄！':'　今天最好：'+(old>=100?'通關':old+' 步')}</small></div></div>`;window.DAILY=null;}
+ const goals=[];if(n<D.story.length)goals.push(`再下潛 1 次，揭開第 ${n+1} 夜。`);
+ const cb=meta.cb||{};let best=null;try{const G=cbGroups();for(const g in G){if((meta.cbDone||[]).includes(g)||g[0]!=='o')continue;const miss=G[g].filter(k=>!cb[k]).length;const got=G[g].length-miss;if(got&&(!best||miss<best[1]))best=[g,miss];}}catch(e){}
+ if(best)goals.push(`牌冊「${esc((D.origins['yy_'+best[0].slice(2)]||D.origins['cl_'+best[0].slice(2)]||{}).n||'')}」還差 ${best[1]} 張收齊（+50 殘響）。`);
+ const pv=(meta.pol||{})[st.ch==='cl'?'cl':'yy']||0;goals.push(`污染 ${pv}，再 ${C.polNext(pv)-pv} 點到下一階，牌會再變一次。`);
+ const left=D.reso.length-Object.keys(meta.reso||{}).length;if(left)goals.push(`還有 ${left} 種共鳴沒試出來。`);
+ h+=`<div class="rel"><img src="${I}st_seal.webp" alt=""><div><b>下一步</b><small>${goals.slice(0,3).join('<br>')}</small></div></div>`;return h;}
 </script>
 </body>
 </html>
