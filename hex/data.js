@@ -3,7 +3,7 @@
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.23',
+ version:'v0.25',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -470,7 +470,7 @@ DATA.deckRule={min:10,max:15,same:2};
 DATA.trials=[{id:'t1',n:'第一場牌局',d:'連打五場，中間不拿獎勵，每場打完回一點生命。',heal:.15,memory:10,stages:[{l:0,k:'fight'},{l:0,k:'elite'},{l:1,k:'fight'},{l:1,k:'elite'},{l:2,k:'boss'}]}];
 DATA.talents={
  yy_greed1:{ch:'yy',line:'貪',n:'順手',d:'每打倒一個敵人，多拿 3 渡鴉幣。'},
- yy_greed2:{ch:'yy',line:'貪',n:'買通',need:'yy_greed1',d:'每回合一次，可以花 25 渡鴉幣換 1 點能量。'},
+ yy_greed2:{ch:'yy',line:'貪',n:'買通',need:'yy_greed1',d:'每回合一次，可以花 30 渡鴉幣換 1 點能量。'},
  yy_grudge1:{ch:'yy',line:'記仇',n:'先記一筆',d:'每場戰鬥第一次被打，打她的敵人得到 2 層厄契。'},
  yy_grudge2:{ch:'yy',line:'記仇',n:'第三次',need:'yy_grudge1',d:'同一個敵人打到她第三次時，牠身上的厄契被裁定一次（每層 3 傷害）。'},
  yy_guard1:{ch:'yy',line:'護短',n:'還不能倒',d:'回合開始時生命低於三成，得到 4 格擋。'},
@@ -1544,6 +1544,20 @@ const sk=(ch,i,n,cost,adult)=>DATA.skins.push(Object.assign({id:ch+'_v23_'+i,ch,
 [[82, "霓虹・粉"], [89, "霓虹・藍"], [79, "雙生・白"], [95, "雙生・棕"], [100, "玻璃罐裡"]].forEach(([i,n])=>sk('yx',i,n,80));
 const CN='一二三四五六七八九十'.split('');const num=n=>n<=10?CN[n-1]:n<20?'十'+CN[n-11]:n<100?CN[Math.floor(n/10)-1]+'十'+(n%10?CN[n%10-1]:''):'百'+(n%100?num(n%100):'');
 let a0=DATA.skins.filter(k=>k.adult).length;[3, 4, 5, 6, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 45, 46, 48, 49, 50, 51, 52, 53, 54, 55, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 87].forEach((i,j)=>sk('yy',i,'夜・'+num(a0+j+1),100,1));
+})();
+// ── v0.24／v0.25 收藏小組、公告
+(function(){
+for(const k in DATA.relics)if(DATA.relics[k].ic&&DATA.relics[k].ic.includes('/.webp'))DATA.relics[k].ic=DATA.relics[k].ic.replace('/.webp','/');
+DATA.colSets=[
+ {id:'link',n:'命線',d:'把線連到敵人身上，讓傷害沿著線傳出去的牌',re:'"(lk|lk1|dLinked)"',ms:[{n:2,echo:20},{n:4,crystal:2},{n:6,echo:50}]},
+ {id:'pact',n:'厄契',d:'讓厄契纏在敵人身上、越疊越重的牌',re:'"(pact1|pact2|pactTurn)"',ms:[{n:2,echo:20},{n:4,crystal:2},{n:6,echo:50}]},
+ {id:'keep',n:'留牌',d:'能留在手上、等時機再打出去的牌',re:'"(keepOne|cp)"',ms:[{n:2,echo:20},{n:4,crystal:2},{n:6,echo:50}]},
+ {id:'block',n:'格擋',d:'把格擋留住、或拿格擋去換別的東西的牌',re:'"(hardB|dBlock)"',ms:[{n:2,echo:20},{n:4,crystal:2},{n:6,echo:50}]}
+];
+DATA.notes.unshift(
+ {ver:'v0.25',lines:['短模式：只下一層，大約十分鐘一局。入口在選單裡，和每日挑戰放在一起。短模式不給收藏，牌冊、章記、故事照算。','收藏小組：命線、厄契、留牌、格擋四組。同一種打法的牌收進收藏，到 2、4、6 張各有獎勵。在牌冊的「收藏」分頁。','結算多了三個入口：回巷整理、再試同配置、換一種打法。']},
+ {ver:'v0.24',lines:['通關後的收藏改成整副牌自由挑一張，不再隨機三選一。可以先不選，回渡鴉巷再領。','牌冊分成四種：只看過（暗的）、拿到過、永久收藏（藏）、帶著通關過（★）。','可以在牌冊追蹤一張牌。開局會照它需要的角色、本源、標籤判斷；每次沒拿到記一枚章記，三枚後下一次第一個菁英或首領的獎勵一定有它。','更新版本時會自動備份一次紀錄，設定裡可以「找回更新前的紀錄」。','修正：v0.23 新增的八件改規則遺物沒有圖。','修正：選史萊姆本源時，錨和不化的霜會被吃掉；混合型態結束後異化值歸零；半血分裂出來的敵人沒連上開局命線。','畫面：敵人意圖改成吊掛的紙籤，半妖、非人時背景會變色，重度污染時結束回合按鈕會跳動。之前半妖時的光暈其實一直沒出現，這次也一起修好了。']}
+);
 })();
 if(typeof module!=='undefined')module.exports=DATA;else root.CARD_DATA=DATA;
 })(this);
