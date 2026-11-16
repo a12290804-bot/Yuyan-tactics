@@ -29,7 +29,7 @@
 - `prof.yx` 併進 `prof.yy`：`xp`、`pts` 相加，`spent` 取聯集，然後刪掉 `prof.yx`。（現在 `profOf` 已經把 yx 導到 yy，多數存檔裡可能本來就沒有 `prof.yx`。）
 - `pol`：`pol.yy` 取兩者**較大值**。污染只往下，不能讓玩家因為合併而變乾淨。
 - `yxWins` 加進 `wins.yy`，`yxRuns` 加進角色局數；然後刪掉這兩個欄位。
-- `meta.yx`（花 150 殘響解鎖的語熙）：**使用者決定送一套語凰嫣的衣服，不退殘響。** 有 `meta.yx` 的存檔，在 `meta.skins` 加上那套衣服的 id，跳一次提示，再刪掉 `meta.yx`。衣服的 id 和圖等製圖大師出圖後再定。
+- `meta.yx`（花 150 殘響解鎖的語熙）：**使用者決定送一套語凰嫣的衣服，不退殘響。** 有 `meta.yx` 的存檔，在 `meta.skins` 加上 `y_skin_xi_gift`（規則 v0.9 定的 id，圖由製圖大師畫），跳一次提示，再刪掉 `meta.yx`。
 - `oBuy`（`yy_B11` 等）、`skins`（`yy_*`）、成就（`win_yy_<本源>`、`win_yx`）：id 都不改，直接沿用。`win_yx` 在介面上改顯示成語凰嫣的成就。
 - 個性、慾望、癖好的熟練度 `tm`：以標籤為鍵，不用動。
 ### 正在進行的一局（`migrateRun`）
@@ -40,5 +40,5 @@
 
 ## 4. 測試
 - C47、C57、C60、C81、C84 這些語熙和同體宿敵的測試要改寫，不是刪掉，改成驗證三面輪替、凰面在 60 醒來、合相兩回合後由克勞德喚回。
-- 新增遷移測試：拿一份 v0.25 的 meta（`pol.yy`=150、`pol.yx`=200、`meta.yx`=1、`yxWins`=2、`wins.yy`=3）跑 `migrateMeta`，檢查 `pol.yy`=200、`wins.yy`=5、`skins` 多一套、殘響不變、`meta.yx` 已刪，而且再跑一次結果不變。
+- 新增遷移測試：拿一份 v0.25 的 meta（`pol.yy`=150、`pol.yx`=200、`meta.yx`=1、`yxWins`=2、`wins.yy`=3）跑 `migrateMeta`，檢查 `pol.yy`=200、`wins.yy`=5、`skins` 含 `y_skin_xi_gift`、殘響不變、`meta.yx` 已刪，而且再跑一次結果不變。
 - 新增一份 `ch:'yx'`、停在戰鬥中的 run 存檔，`loadRun` 後要是 `yy`、在戰鬥開打前。
