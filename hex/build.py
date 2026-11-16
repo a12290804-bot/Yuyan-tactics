@@ -1,7 +1,7 @@
 # 把 text.js、data.js、core.js 塞進 index.html，做成單一檔案
 import re,os,sys
 h=open('index.html',encoding='utf-8').read()
-for f in ['text.js','data.js','core.js']:
+for f in ['text.js','textx.js','rulesx.js','data.js','core.js']:
     js=open(f,encoding='utf-8').read().replace('</script>','<\\/script>')
     pat=re.compile(r'<script src="'+re.escape(f)+r'"></script>')
     assert pat.search(h),f

@@ -3,7 +3,7 @@
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.25',
+ version:'v0.30',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -1545,6 +1545,86 @@ const sk=(ch,i,n,cost,adult)=>DATA.skins.push(Object.assign({id:ch+'_v23_'+i,ch,
 const CN='一二三四五六七八九十'.split('');const num=n=>n<=10?CN[n-1]:n<20?'十'+CN[n-11]:n<100?CN[Math.floor(n/10)-1]+'十'+(n%10?CN[n%10-1]:''):'百'+(n%100?num(n%100):'');
 let a0=DATA.skins.filter(k=>k.adult).length;[3, 4, 5, 6, 8, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 45, 46, 48, 49, 50, 51, 52, 53, 54, 55, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 87].forEach((i,j)=>sk('yy',i,'夜・'+num(a0+j+1),100,1));
 })();
+// ── v0.26 大師們的規則 v0.11c／v0.12 與文字 v0.29／v0.30（卡牌合併、能力牌、戒指牌、顧沉舟、大招資料）
+(function(){
+const RX=(typeof module!=='undefined')?require('./rulesx.js'):root.applyRulesX;
+DATA.TX=(typeof module!=='undefined')?require('./textx.js'):root.CARD_TEXTX;
+if(!RX)return;RX(DATA);
+for(const k in DATA.cardPatch){const c=DATA.cards[k],p=DATA.cardPatch[k];if(!c)continue;const u=(c.u||p.u)?Object.assign({},c.u,p.u):undefined;Object.assign(c,p);if(u)c.u=u;}
+Object.assign(DATA.cards,DATA.newCards,DATA.ringCards,DATA.guCards);
+const TX=DATA.TX||{};const T29=(TX.V029||{}).newCards||{},T30=(TX.V030||{}).pw2Update||{},T28=(TX.V028||{}).newCards||{};
+for(const k in DATA.newCards){const c=DATA.cards[k];const t=T30[k]||T29[k];if(t&&t.n)c.n=t.n;if(t&&t.face)c.face=t.face;}
+for(const k in DATA.ringCards){const c=DATA.cards[k];const t=T28[k];if(t&&t.n)c.n=t.n;c.img='../inbox/'+c.img+'.webp';c.rk=c.ring;delete c.ring;c.r=2;c.rr='ring';}
+for(const k of ['yy_r_envy','gu_eyeagain'])if(DATA.cards[k]&&DATA.cards[k].x){DATA.cards[k].ex=1;delete DATA.cards[k].x;}
+// 混沌詞綴（v0.10 第三段；名字照文字 v0.27）
+const TR27={};for(const t of ((TX.V027||{}).traits)||[])TR27[t.id]=t;DATA.traits={excess:{n:'過剩',d:'生命 ×1.3'},scheme:{n:'算計',d:'每 3 回合把妳 1 張手牌換成詛咒（這場戰鬥）'},rot:{n:'腐',d:'打中妳，妳下回合少 1 點能量'},rage:{n:'狂',d:'生命低於一半時，攻擊 ×1.5'}};for(const k in DATA.traits){const t=TR27[k];if(t&&(t.n||t.name))DATA.traits[k].n=t.n||t.name;if(t&&t.blurb)DATA.traits[k].blurb=t.blurb;if(t&&t.lines)DATA.traits[k].lines=t.lines;}
+// 打出時的台詞（戒指牌、顧沉舟）
+DATA.cardLine={};for(const [k,t] of Object.entries(T28))if(t.line)DATA.cardLine[k]=t.line;for(const [k,t] of Object.entries((TX.V030||{}).guCards||{}))if(t.line)DATA.cardLine[k]=t.line;
+// 首領大招：預告句和名字照 v0.30
+const UB=(TX.V030||{}).ultBoss||{};for(const k in DATA.ultBoss){const t=UB[k];if(t){DATA.ultBoss[k].tell=t.tell;DATA.ultBoss[k].n=t.ultN||DATA.ultBoss[k].n;}}
+const UD=(TX.V030||{}).ultDef||{};for(const k in DATA.ultDef){const t=UD[k];if(t){DATA.ultDef[k].tell=t.tell;DATA.ultDef[k].ultN=(t.facName||'')+'・大招';}}
+})();
+// ── v0.27 語凰嫣（規則 v0.9、文字 v0.26／v0.28）
+(function(){
+const TX=DATA.TX||{};const T26=TX.V026||{};const T28=TX.V028||{};const IN='../inbox/';
+DATA.chars.yy.name='語凰嫣';DATA.chars.yy.title='三張臉的長女';DATA.chars.yy.img=IN+'y_base.webp';DATA.chars.yy.desc='語嫣和語熙合成一個人，三張臉輪流在前。嫣把人裹起來，熙咬下去，凰削費用、回生命。凰要等異化第一次到 60 才醒。';
+if(DATA.chars.yx)DATA.chars.yx.hidden=1;
+for(const c of Object.values(DATA.cards))if(c.ch==='yx'&&!c.face)c.face='xi';
+// 十二張三面牌
+const F=(n,c,t,r,yan,xi,huang)=>({n,c,t,r,ch:'yy',gen:1,img:IN+'y_ex_'+(t==='a'?'xi':t==='p'?'huang':'yan')+'.webp',fx:yan,fc:{yan,xi,huang}});
+const N={
+ yy_f_swap:F('換臉',0,'s',1,[['faceNext'],['dr',1]],[['faceNext'],['dr',2],['hurt',2]],[['faceNext'],['heal',3]]),
+ yy_f_three:F('三聲同說',1,'a',1,[['d',6],['pa',2]],[['d',10],['hurt',2]],[['d',6],['st','weak',1,'t'],['heal',2]]),
+ yy_f_wrap:F('裹起來',1,'s',1,[['b',8],['pa',1]],[['b',5],['st','vuln',1,'t']],[['b',6],['heal',2]]),
+ yy_f_bite:F('咬',1,'a',1,[['d',4,2],['pa',2]],[['d',4,3]],[['d',5,2],['killHeal',4]]),
+ yy_f_mask:F('面具',1,'s',2,[['maskF','yan'],['b',4]],[['maskF','xi']],[['maskF','huang']]),
+ yy_f_grab:F('搶前臉',1,'s',2,[['faceLock',2],['b',6]],[['faceNow','xi'],['en',1]],[['faceNow','huang'],['dr',2]]),
+ yy_f_feed:F('餵',2,'s',2,[['pa',2,'a'],['st','weak',1,'a']],[['hurt',4],['st','str',2,'s']],[['heal',8],['exSelf']]),
+ yy_f_nails:F('指甲掐進去',2,'a',2,[['d',12,1,'pact1']],[['d',18],['hurt',3]],[['d',10],['st','weak',2,'t']]),
+ yy_f_ledger:F('記帳',1,'p',2,[['pw','ledY',1]],[['pw','ledX',1]],[['pw','ledH',1]]),
+ yy_f_blame:F('「是她！」',0,'s',3,[['blame',0]],[['blame',5]],[['blame',0],['dr',1]]),
+ yy_f_rebirth:F('純血',3,'p',3,[['rebirth',.2,3,0]],[['rebirth',.1,0,3]],[['rebirth',.3,0,0]]),
+ yy_f_one:F('只剩我一個',2,'a',3,[['dFace',8,2,0]],[['dFace',8,4,1]],[['dFace',8,2,2]])};
+const up=fx=>fx.map(f=>{const g=f.slice();if(['d','b','heal','pa','hurt'].includes(g[0])&&typeof g[1]==='number'&&g[0]!=='hurt')g[1]=Math.round(g[1]*1.4);if(g[0]==='dFace')g[1]=Math.round(g[1]*1.4);if(g[0]==='rebirth')g[1]=+(g[1]+.1).toFixed(2);return g;});
+for(const [k,c] of Object.entries(N)){const t=(T26.newCards||{})[k];if(t&&t.n)c.n=t.n;c.u={fx:up(c.fx),fc:{yan:up(c.fc.yan),xi:up(c.fc.xi),huang:up(c.fc.huang)}};if(t){c.faceLine={};for(const f of ['yan','xi','huang'])if(t[f]&&t[f].line)c.faceLine[f]=t[f].line;}}
+Object.assign(DATA.cards,N);
+Object.assign(DATA.powers,{ledY:'每回合第一次給予厄契，多給 {n} 層。',ledX:'每回合第一次失去生命，抽 {n} 張。',ledH:'每回合開始，回復 {n} 生命。'});
+const FN={yan:'嫣',xi:'熙',huang:'凰'};DATA.faceName=FN;
+DATA.opTextX=Object.assign(DATA.opTextX||{},{
+ faceNext:f=>'指定下一回合的前臉',faceNow:f=>`立刻換成${FN[f[1]]}面`,faceLock:f=>`前臉留在現在這張 ${f[1]} 回合`,
+ maskF:f=>f[1]==='yan'?'這回合敵人給妳的負面狀態，反彈回牠身上':f[1]==='xi'?'下一張攻擊牌傷害 ×2':'這回合第一次受到的傷害變 0',
+ exSelf:f=>'消耗這張牌',blame:f=>`把目標的意圖改成攻擊另一個敵人${f[1]?`，那一下傷害 +${f[1]}`:''}`,
+ rebirth:f=>`每局一次，生命歸 0 時回到 ${Math.round(f[1]*100)}%${f[2]?`，所有敵人厄契 ${f[2]}`:''}${f[3]?`，力量 +${f[3]}`:''}`,
+ dFace:f=>`對所有敵人造成 ${f[1]} 傷害；這場戰鬥前臉每換過一次 +${f[2]}${f[3]===1?'，每次失去 1 生命':f[3]===2?'，並回同樣的生命':''}`});
+// 舊牌隨前臉改名（文字 v0.26 的樣例）
+DATA.faceNames={};for(const [k,v] of Object.entries(T26.oldCardFaces||{}))if(v&&v.yan)DATA.faceNames[k]=v;
+// 立繪
+DATA.yhArt={base:IN+'y_base.webp',yan:IN+'y_ex_yan.webp',xi:IN+'y_ex_xi.webp',huang:IN+'y_ex_huang.webp',merge:IN+'y_full_merge.webp',reveal:IN+'y_reveal_huang.webp',rings:IN+'y_rings.webp'};
+DATA.yhText=T26;
+// 時裝：語熙的衣服改成熙面時裝；補償衣服、朝堂
+for(const k of Object.values(DATA.skins||{}))if(k.ch==='yx'){k.ch='yy';k.face='xi';}
+Object.assign(DATA.skins,{y_skin_xi_gift:{id:'y_skin_xi_gift',ch:'yy',n:'開背活革',cost:0,gift:1,img:IN+'y_skin_xi_gift.webp',d:'給當初解鎖語熙的人。殘響不退，衣服留給妳。'},y_skin_court:{id:'y_skin_court',ch:'yy',n:'朝堂',cost:300,img:IN+'y_skin_court.webp',d:'白袍，聖金的光。'},y_skin_platinum:{id:'y_skin_platinum',ch:'yy',n:'白金髮',cost:200,img:IN+'y_base_platinum.webp',d:'同一張臉，換成白金的頭髮。'}});
+
+})();
+// ── v0.28 深潛 20 階、混沌詞綴、七宗罪、通關後事件（規則 v0.10、文字 v0.27）
+(function(){
+const TX=DATA.TX||{};const T27=TX.V027||{};
+DATA.asc=[null,
+ {id:'asc_1',mods:{echo:.04,foeHp:1.08}},{id:'asc_2',mods:{echo:.04,eliteNodes:1}},{id:'asc_3',mods:{echo:.04,restHeal:.7}},{id:'asc_4',mods:{echo:.04,foeAtk:1.08}},{id:'asc_5',mods:{echo:.04,startCurse:1}},
+ {id:'asc_6',mods:{echo:.04,bossHp:1.15}},{id:'asc_7',mods:{echo:.04,shopMul:1.25}},{id:'asc_8',mods:{echo:.04,startAlien:20}},{id:'asc_9',mods:{echo:.04,rewardChoices:-1}},{id:'asc_10',mods:{echo:.04,eliteTrait:1}},
+ {id:'asc_11',mods:{echo:.04,startHp:-10}},{id:'asc_12',mods:{echo:.04,foeBlock:1.3}},{id:'asc_13',mods:{echo:.04,bossPhase2:1}},{id:'asc_14',mods:{echo:.04,eliteRelic:.5}},{id:'asc_15',mods:{echo:.04,chapterSin:1}},
+ {id:'asc_16',mods:{echo:.04,firstDraw:-1}},{id:'asc_17',mods:{echo:.04,enrage:12}},{id:'asc_18',mods:{echo:.04,foeTrait:.3}},{id:'asc_19',mods:{echo:.04,bossHp:1.2,foeAtk:1.08}},{id:'asc_20',mods:{echo:.04,recallOnce:1}}];
+const AD={foeHp:'所有敵人生命 ×1.08',eliteNodes:'每層地圖多 1 個菁英',restHeal:'休息回復量 ×0.7',foeAtk:'一般敵人攻擊 ×1.08',startCurse:'開局牌組多 1 張詛咒',bossHp:'首領生命 ×1.15',shopMul:'商店價格、刪牌費用 ×1.25',startAlien:'開局異化值 20（克勞德：開局污染 1 階）',rewardChoices:'一般戰鬥選牌只剩 2 張',eliteTrait:'菁英帶 2 個詞綴',startHp:'開局最大生命 -10',foeBlock:'敵人格擋 ×1.3',bossPhase2:'首領生命掉到一半進第二階段',eliteRelic:'菁英掉遺物機率減半（沒掉給 30 幣）',chapterSin:'每章醒來一宗罪',firstDraw:'每場第一回合少抽 1 張',enrage:'第 12 回合起，敵人每回合力量 +2',foeTrait:'一般敵人 30% 帶詞綴',recallOnce:'克勞德的喚回每局只有一次'};
+for(let i=1;i<DATA.asc.length;i++){const a=DATA.asc[i];const t=(T27.asc||[]).find(x=>x.id===a.id)||{};a.n=t.n||('深潛 '+i);a.flavor=t.flavor||'';a.entry=t.entry||[];a.clear=t.clear||[];a.d=Object.keys(a.mods).filter(k=>k!=='echo').map(k=>k==='bossHp'&&i===19?'首領生命再 ×1.2':k==='foeAtk'&&i===19?'一般敵人攻擊再 ×1.08':AD[k]).join('；');}
+DATA.sinCh={};const SD={pride:'敵人生命 ×1.1',greed:'敵人打中妳，搶走 3 渡鴉幣（每回合一次）',glutton:'敵人每回合回復 3 生命',envy:'敵人開戰力量 +1',wrath:'敵人生命低於一半時，攻擊 ×1.2',sloth:'妳每場第一回合少 1 點能量；敵人攻擊 ×1.15',thirst:'敵人打中妳，異化 +3（克勞德：燈芯 -1）'};
+for(const x of (T27.sins||[]))DATA.sinCh[x.id]={n:x.n,d:SD[x.id]||'',wake:x.wake||[],battle:x.battle||[]};
+DATA.recall20=T27.recall20||{};DATA.bossPhase2Text={};for(const x of (T27.bossPhase2||[]))DATA.bossPhase2Text[x.id]=x;DATA.ascBacks={};for(const x of (T27.backs||[]))DATA.ascBacks[x.id]=x;DATA.titleBottom=T27.titleBottom||null;DATA.ascTeaser=T27.teaser||[];
+// 通關後事件
+const NEED={d27_lastfall:{cleared:1},d27_halfpage:{cleared:1},d27_guildchair:{cleared:1},d27_returntag:{cleared:1},d27_blankpage:{ascMin:3},d27_stairs:{ascMin:5},d27_fifthbowl:{ascMin:7},d27_catturn:{ascMin:10},d27_undershelf:{ascMin:13},d27_halfcall:{ascMin:15}};
+const BG=['bg_dive1','bg_dive2','bg_hall','bg_library','bg_station','bg_namewall'];let bi=0;
+for(const e of (T27.events||[])){if(DATA.events.some(x=>x.id===e.id))continue;DATA.events.push({id:e.id,n:e.n,img:I+BG[(bi++)%BG.length]+'.webp',txt:e.txt,need:NEED[e.id]||e.need,opts:(e.opts||[]).map(o=>({t:o.t,r:o.r,d:o.d}))});}
+DATA.highTier={};for(const x of (T27.highTier||[]))DATA.highTier[x.id]=x;
+})();
 // ── v0.24／v0.25 收藏小組、公告
 (function(){
 for(const k in DATA.relics)if(DATA.relics[k].ic&&DATA.relics[k].ic.includes('/.webp'))DATA.relics[k].ic=DATA.relics[k].ic.replace('/.webp','/');
@@ -1559,5 +1639,59 @@ DATA.notes.unshift(
  {ver:'v0.24',lines:['通關後的收藏改成整副牌自由挑一張，不再隨機三選一。可以先不選，回渡鴉巷再領。','牌冊分成四種：只看過（暗的）、拿到過、永久收藏（藏）、帶著通關過（★）。','可以在牌冊追蹤一張牌。開局會照它需要的角色、本源、標籤判斷；每次沒拿到記一枚章記，三枚後下一次第一個菁英或首領的獎勵一定有它。','更新版本時會自動備份一次紀錄，設定裡可以「找回更新前的紀錄」。','修正：v0.23 新增的八件改規則遺物沒有圖。','修正：選史萊姆本源時，錨和不化的霜會被吃掉；混合型態結束後異化值歸零；半血分裂出來的敵人沒連上開局命線。','畫面：敵人意圖改成吊掛的紙籤，半妖、非人時背景會變色，重度污染時結束回合按鈕會跳動。之前半妖時的光暈其實一直沒出現，這次也一起修好了。']}
 );
 })();
+// ── v0.29 文字 v0.25（淺潛、釘羽、同路冊、試煉、事件鏈、怪物研究、遺物、共鳴、每日、夜話）與四場試煉（規則 v0.8）
+(function(){
+const TX=DATA.TX||{};const T=TX.V025||{};const T26=TX.V026||{};const IN='../inbox/';
+DATA.ui25=T;
+// 說話人：舊稿的 yx 改成熙面
+const fix=L=>(L||[]).map(x=>Array.isArray(x)?(x[0]==='yx'?['yy:xi',x[1]&&!/^y_/.test(x[1])?'y_ex_xi':x[1],x[2]]:x):x);
+// 遺物、共鳴、每日：照文字大師的名字與說明
+for(const [k,v] of Object.entries(T.relics||{}))if(DATA.relics[k]){if(v.n)DATA.relics[k].n=v.n;if(v.d)DATA.relics[k].d=v.d;}
+const RIC={rr_bowl:'relic_empty_bowl',rr_echo:'relic_echo_earring',rr_frost:'relic_frost',rr_clock:'relic_frozen_clock',rr_mouth:'relic_hungry_mouth',rr_twin:'relic_twin_rings',rr_mirror:'relic_mirror_person',rr_seed:'relic_abyss_seed'};for(const [k,v] of Object.entries(RIC))if(DATA.relics[k])DATA.relics[k].ic=IN+v+'.webp';
+for(const r of (T.reso||[])){const x=(DATA.reso||[]).find(y=>y.id===r.id);if(x){if(r.n)x.n=r.n;if(r.line&&r.line.length){x.lines=fix(r.line);x.line=x.lines[0];}}}
+for(const d of (T.daily||[])){const x=(DATA.daily||[]).find(y=>y.id===d.id);if(x){if(d.n)x.n=d.n;if(d.d)x.d=d.d;}}
+// 夜話第 16～20 夜
+if(DATA.story&&T.storyMore)for(const n of T.storyMore)DATA.story.push({n:n.n,lines:fix(n.lines)});
+// 同路冊
+if(T.colSets&&DATA.colSets){DATA.colTitle=T.colSets.title||'同路冊';for(const x of (T.colSets.sets||[])){const c=DATA.colSets.find(y=>y.id===x.id);if(c){c.n=x.n;c.d=x.d;c.at=x.at;}}}
+const SI={link:'icon_set_fate',pact:'icon_set_pact',keep:'icon_set_keep',block:'icon_set_block'};for(const c of DATA.colSets||[])c.ic=IN+(SI[c.id]||'icon_set_fate')+'.webp';
+DATA.icons={track:IN+'icon_track.webp',stamp:IN+'icon_stamp.webp',short:IN+'icon_short.webp'};
+// 四場試煉
+const TT={};for(const x of (T.trials||[]))TT[x.id]=x;
+const ST=(l,k,ids,rule,rd)=>({id:'',l,k,ids,rule,rd});
+const NEW=[
+ {id:'t_link',set:'link',src:'link',bg:'bg_trial_link',stages:[ST(0,'fight',['paper_twins','paperdoll'],'linkStart','開場所有敵人已經被命線連住 2 回合。'),ST(1,'fight',['hyena','hyena','rats'],'linkOnly','打在沒被連住的敵人身上，傷害減半。'),ST(1,'elite',['chorus'],'linkFull','命線分攤從一半變成全額。'),ST(2,'boss',['qianhao'],'cutline','每 2 回合，首領剪斷所有命線，並得到被剪斷條數 ×4 的格擋。')]},
+ {id:'t_keep',set:'keep',src:'keep',bg:'bg_trial_keep',stages:[ST(0,'fight',['jiangshi_boy','incense_crone'],'keep2','回合結束時，自動留住最貴的 2 張手牌。'),ST(1,'fight',['ticketer','faceless'],'draw3','每回合只抽 3 張，但能量 +1。'),ST(1,'elite',['clerk','clerk'],'pageTurn','敵人每 3 回合翻頁一次：那一回合傷害 ×2。留在手上的牌，每張在回合結束時給 3 格擋。'),ST(2,'boss',['wusign'],'lastPage','第 5 回合以後，上回合留下幾張牌，這回合第一張攻擊牌傷害就 +3 幾次。')]},
+ {id:'t_phase',set:null,src:'form',bg:'bg_trial_phase',who:['yy'],stages:[ST(0,'elite',['alchemist'],'alien40','開場異化值 40，直接進半妖。'),ST(1,'fight',['faceless','hands','hands'],'alienTide','每回合開始異化值 +10。到 100 之前，敵人受到的傷害 -25%。'),ST(2,'fight',['oilworker','stitcher'],'faceLock','前臉不輪替，只能用三面牌換臉。'),ST(2,'boss',['welleye'],'recallTest','合相結束喚回時，敵人身上的厄契全部翻倍。')]},
+ {id:'t_block',set:'block',src:'block',bg:'bg_trial_block',stages:[ST(0,'fight',['paper','paper','paperdoll'],'chip','敵人所有攻擊都拆成 2 下，每下是原本的一半。'),ST(1,'fight',['talis','widow'],'blockKeep','格擋不會在回合開始時消失。這一場不能回復生命。'),ST(2,'elite',['heartclock','ironlung'],'dBlockOnly','一般攻擊牌只造成一半傷害；格擋轉傷害和反傷不受影響。'),ST(2,'boss',['deepdrill'],'crack','回合結束時格擋超過 40，超過的部分歸零，而且失去 2 生命。')]}];
+for(const t of NEW){const x=TT[t.src]||{};t.n=x.n||t.id;t.d=(x.d||'')+'（連打四場，中間不進商店，每場打完回 15% 生命。）';t.who0=x.who||'';t.open=fix(x.open);t.win=fix(x.win);t.lose=fix(x.lose);t.heal=.15;t.memory=10;t.img=IN+t.bg+'.webp';t.stages.forEach((s,i)=>{s.id=t.id+'s'+(i+1);s.n=t.n+'・第 '+(i+1)+' 關';});if(!DATA.trials.some(y=>y.id===t.id))DATA.trials.push(t);}
+// 事件鏈
+DATA.chains=[];
+for(const ch of (T.chains||[])){const steps={};const first=ch.steps[0]&&ch.steps[0].id;
+ for(const sp of ch.steps){const txt=(sp.sc||[]).join('\n');const opts=(sp.opts||[]).map(o=>({t:o.t,res:fix(o.r),next:o.next||null,end:o.end||null,flag:o.flag||null,lead:o.lead||null}));
+  steps[sp.id]={id:sp.id,n:sp.n,txt,scBy:sp.scBy||null,r:fix(sp.r),opts};}
+ DATA.chains.push({id:ch.id,n:ch.n,kind:ch.kind,first,steps});
+ for(const sp of Object.values(steps)){const id='ch_'+sp.id;if(DATA.events.some(e=>e.id===id))continue;const opts=sp.opts.length?sp.opts.map((o,i)=>({t:o.t,r:[{chain:{c:ch.id,s:sp.id,i}}].concat(o.end==='getCard'?[{cardRare:1}]:o.end==='smallReward'?[{gold:30}]:o.end==='homeTrinket'?[{relicRandom:1}]:o.end==='codexNote'?[{heal:6}]:[]),d:o.end==='getCard'?'得到一張稀有的牌':o.end==='smallReward'?'得到 30 渡鴉幣':o.end==='homeTrinket'?'得到一件隨機遺物':'',res:o.res})):[{t:'收下',r:[{chain:{c:ch.id,s:sp.id,i:-1}},{gold:20}],d:'得到 20 渡鴉幣',res:sp.r}];
+  DATA.events.push({id,n:ch.n+'・'+sp.n,img:I+'bg_namewall.webp',txt:sp.txt||(sp.r||[]).filter(x=>typeof x==='string').join('\n'),special:1,chain:ch.id,step:sp.id,scBy:sp.scBy,opts});}}
+// 怪物研究：v0.25 十二種＋v0.26 十四妖種
+DATA.research={};for(const r of (T.research||[])){const id=r.id.replace(/^m_/,'');if(DATA.enemies[id])DATA.research[id]={n:r.n,note:r.note,done:fix([r.done])[0],need:3};}
+const R15=T26.research15||{};const E15={e01_moth:'e01',e02_snake:'e02',e03_spider:'e03',e04_jelly:'e04',e05_deer:'e05',e06_conch:'e06',e07_coral:'e07',e08_bee:'e08',e09_cicada:'e09',e10_glassfish:'e10',e11_lizard:'e11',e12_marten:'e12',e13_fungus:'e13',e14_slug:'e14'};
+for(const [k,v] of Object.entries(R15)){if(k==='note')continue;const id=Object.keys(DATA.enemies).find(x=>x===k||x===E15[k]||x.startsWith((E15[k]||'#')+'_'));if(id&&!DATA.research[id]){const L=Array.isArray(v)?v:(v.done||v.line||v.lines);const line=Array.isArray(L&&L[0])?L[0]:L;DATA.research[id]={n:DATA.enemies[id].n,note:(v&&v.note)||'',done:line?fix([line])[0]:null,need:3};}}
+})();
+// ── v0.30 補上的本源圖
+(function(){const IN='../inbox/';const O=DATA.origins;if(O.yy_B11)O.yy_B11.full=IN+'y_B11_full.webp';if(O.yy_M06)O.yy_M06.half=IN+'y_M06_half.webp';if(O.yy_M09)O.yy_M09.half=IN+'y_M09_half.webp';if(O.yy_M11)O.yy_M11.half=IN+'y_M11_half.webp';if(O.cl_line)O.cl_line.img=IN+'cl_thread.webp';})();
+// ── v0.30 大師們的新音樂、音效
+(function(){const A=DATA.audio;Object.assign(A.bgm,{bgm_town:{loopEnd:159.29},bgm_battle_3:{loopStart:74.40,loopEnd:136.40},bgm_boss_3:{loopEnd:168.31},bgm_short:{loopEnd:75.81},bgm_trial:{loopEnd:179.85},bgm_yy:{loopStart:10.31,loopEnd:163.58}});
+for(const j of ['jingle_short','jingle_daily'])if(!A.jingle.includes(j))A.jingle.push(j);
+const S=["sfx_block", "sfx_boss_phase2", "sfx_breakthrough", "sfx_button", "sfx_card_lift", "sfx_card_locked", "sfx_card_play", "sfx_card_return", "sfx_coin", "sfx_combo", "sfx_corrupt", "sfx_door", "sfx_draw", "sfx_face_huang", "sfx_face_xi", "sfx_face_yan", "sfx_form_B01", "sfx_form_B02", "sfx_form_B03", "sfx_form_B04", "sfx_form_B05", "sfx_form_B06", "sfx_form_B07", "sfx_form_B08", "sfx_form_B09", "sfx_form_B10", "sfx_form_B11", "sfx_form_M01", "sfx_form_M02", "sfx_form_M03", "sfx_form_M04", "sfx_form_M05", "sfx_form_M06", "sfx_form_M07", "sfx_form_M08", "sfx_form_M09", "sfx_form_M10", "sfx_form_M11", "sfx_form_M12", "sfx_form_ink", "sfx_form_lamp", "sfx_form_paper", "sfx_heal", "sfx_heartbeat_loop", "sfx_hit", "sfx_hit_crit", "sfx_hit_heavy", "sfx_hurt", "sfx_ink", "sfx_intent_big", "sfx_judge", "sfx_keep", "sfx_kill", "sfx_merge", "sfx_mon_eldritch_appear", "sfx_mon_eldritch_atk", "sfx_mon_eldritch_die", "sfx_mon_flesh_appear", "sfx_mon_flesh_atk", "sfx_mon_flesh_die", "sfx_mon_xian_appear", "sfx_mon_xian_atk", "sfx_mon_xian_die", "sfx_pact", "sfx_pact_cruelty", "sfx_pact_devotion", "sfx_pact_envy", "sfx_pact_glutton", "sfx_pact_greed", "sfx_pact_grudge", "sfx_pact_obsess", "sfx_pact_pride", "sfx_pact_sweetmalice", "sfx_pact_vanity", "sfx_pact_wrath", "sfx_part_break", "sfx_polup", "sfx_purify", "sfx_recall", "sfx_relic", "sfx_reso", "sfx_reveal", "sfx_reveal_huang", "sfx_ring", "sfx_ring_ten", "sfx_rule", "sfx_set_2", "sfx_set_4", "sfx_set_6", "sfx_shuffle", "sfx_sin_wake", "sfx_stamp", "sfx_steal", "sfx_stroke", "sfx_tag", "sfx_track", "sfx_trait_excess", "sfx_trait_rage", "sfx_trait_rot", "sfx_trait_scheme", "sfx_transform", "sfx_turn", "sfx_ult_eldritch", "sfx_ult_flesh", "sfx_ult_xian", "sfx_unlock", "sfx_upgrade", "sfx_well", "sfx_wish_guard", "sfx_wish_home", "sfx_wish_letter", "sfx_wish_remember"];for(const x of S)if(!A.sfx.includes(x))A.sfx.push(x);
+A.scene.town='bgm_town';A.scene.yy='bgm_yy';A.scene.ch3='bgm_battle_3';A.scene.boss3='bgm_boss_3';A.scene.short='bgm_short';A.scene.trial='bgm_trial';})();
+// ── v0.30 公告
+DATA.notes.unshift(
+ {ver:'v0.30',lines:['介面美化：卡牌照位階有不同材質（起始暗鐵、紙拉絲銀、墨暗金、緋黑漆刻金閃卡、契血漆、詛咒裂框、戒指琺瑯鑲座），三面牌多一圈三色細線，前臉用內緣顏色標出。','頂欄多了深潛徽章、污染 0～4 階、前臉。大招前一回合，敵人下面會出現一整句預告。','新音樂：渡鴉巷、第三章戰鬥與首領、淺潛、試煉、語凰嫣主題。新音效：換臉、搶牌、合相、戒指、大招蓄力、詞綴、七宗罪等。污染越深，背景音樂越走調。','手牌超過 10 張時改成兩排，十戒全開也看得清楚。']},
+ {ver:'v0.29',lines:['四場試煉：並命場、夾頁場、換相處、未碎場。同路冊收到 2 張開放對應的試煉；換相處要先進入完全非人一次。','三條事件鏈：缺的那一頁、三種處理、井沿的回禮。會跨好幾局才走完。','怪物研究：同一種敵人打倒 3 次完成研究，牌冊多了「研究」分頁。','短模式改名「淺潛」，追蹤改叫「釘羽」，章記改叫「爪印」，收藏小組改叫「同路冊」。夜話多了第 16～20 夜。']},
+ {ver:'v0.28',lines:['深潛擴充到 20 階，每一階有自己的名字和效果，會累加。第 5、10、15、20 階第一次通關給卡背，第 20 階給稱號「最底」。','菁英和第 10、18 階以後的敵人會帶混沌詞綴（過剩、算計、腐、狂）。第 13 階起首領半血進第二階段，第 15 階起每章醒來一宗罪，第 20 階喚回每局只有一次。','通關過以後，「？」裡會出現新的深層事件。']},
+ {ver:'v0.27',lines:['語嫣和語熙合成「語凰嫣」：三張臉（嫣、熙、凰）每回合輪流在前，同一張牌會跟著臉變成不同的版本。凰要等異化第一次到 60 才醒。','半妖起，後面的臉每回合搶一張手牌改用她的版本。合相兩回合後克勞德喚回，異化歸 0。','新牌：十二張三面牌。十指戒：簽下的慾望契那枚開局就亮，其他九枚要達成條件；同時亮五枚戒指牌升級，十枚全亮可以十戒全開。','之前解鎖語熙的人，殘響不退，衣鋪多一套「開背活革」。']},
+ {ver:'v0.26',lines:['怪物變強：一般和菁英生命 ×1.12、攻擊 ×1.10，菁英一定帶一個詞綴。每隻敵人都有大招，放之前一回合會「蓄力」並說清楚要做什麼。','卡牌去重：重複的牌全部改掉或重做，新增 45 張能力牌（一般牌池也抽得到）、十張戒指牌、顧沉舟補到 15 張。','九尾的被動改成每回合第一張攻擊都給厄契。']}
+);
 if(typeof module!=='undefined')module.exports=DATA;else root.CARD_DATA=DATA;
 })(this);
