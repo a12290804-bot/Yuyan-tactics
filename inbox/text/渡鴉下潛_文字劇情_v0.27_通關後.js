@@ -418,7 +418,7 @@ const TEXT_V027 = {
     ]
   },
   teaser:[
-    ['sc', null, '（深潛 20 通關。稱號「最底」落下。）'],
+    ['sc', null, '（深潛 20 通關。）'],
     ['yy:huang', 'y_ex_huang', '最底？'],
     ['yy:yan', 'y_ex_yan', '巷口的井還在跳。跳的不是這一截。'],
     ['cl', 'firm', '姐姐，燈還有一截。我沒寫完。'],
@@ -428,7 +428,7 @@ const TEXT_V027 = {
   ],
   titleBottom:{
     id:'最底',
-    when:'第一次通關 asc_20',
+    when:'第一次通關 asc_20，真潛提示 teaser 播完之後才給',
     title:'最底',
     body:'深潛二十階走完了。稱號落下。井還在跳。',
     btn:'收下',
@@ -549,7 +549,7 @@ const TEXT_V027 = {
       id:'d27_stairs',
       n:'數不準的階',
       need:{
-        ascMin:7
+        ascMin:5
       },
       txt:'井口到樓梯，妳記得是十三階。今天踩下去，多出一階。多的那一階是乾的，沒有塵。',
       opts:[
@@ -626,7 +626,7 @@ const TEXT_V027 = {
       id:'d27_fifthbowl',
       n:'多出來的碗',
       need:{
-        ascMin:11
+        ascMin:7
       },
       txt:'巷裡那張桌子，本來四副碗筷。現在是五副。第五隻碗是溫的，裡面沒有東西。',
       opts:[
@@ -662,7 +662,7 @@ const TEXT_V027 = {
       id:'d27_catturn',
       n:'井口的貓',
       need:{
-        ascMin:11
+        ascMin:10
       },
       txt:'巷尾的貓還在。牠不朝井口跪了。牠朝妳。一聲都不叫。',
       opts:[
@@ -745,7 +745,7 @@ const TEXT_V027 = {
       id:'d27_undershelf',
       n:'巢底下那一格',
       need:{
-        ascMin:10
+        ascMin:13
       },
       txt:'第九層的巢，底板有一格是空的。空格裡沒有東西，只有刮痕，從裡頭往外抓。',
       opts:[
@@ -822,7 +822,7 @@ const TEXT_V027 = {
       id:'d27_blankpage',
       n:'卷宗空白',
       need:{
-        cleared:1
+        ascMin:3
       },
       txt:'顧沉舟的卷宗又少了一頁。他說不是同一頁。空白的地方有水漬，不是墨。',
       opts:[
