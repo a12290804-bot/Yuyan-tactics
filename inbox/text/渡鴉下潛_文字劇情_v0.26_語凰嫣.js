@@ -18,7 +18,7 @@ const TEXT_V026 = {
     note:'正文寫 yy:huang：……；js 為 [\'yy:huang\',\'y_ex_huang\',\'……\']。合相不要用舊的 yy:merge。'
   },
   art:{
-    y_base:'預設立繪，嫣在前。舊語嫣立繪改叫 y_base_v10。面具版另存 y_base_mask。這三張不要對成同一張。',
+    y_base:'預設立繪，嫣在前。舊語嫣立繪改叫 y_base_v10。面具版已移到 inbox/art/_old/，不用。這兩張不要對成同一張。',
     y_ex_yan:'嫣在前。懶、得意，帶一點寵。',
     y_ex_xi:'熙在前。譏誚，虎牙露出來。',
     y_ex_huang:'凰在前。無辜的臉，算計在眼底。白金的光比較明顯。',
