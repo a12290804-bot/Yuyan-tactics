@@ -14,31 +14,32 @@
 - 拿掉程式裡寫死的「每階敵人攻擊 +5%」，改讀 `DATA.asc`。
 - 每一階是累加的：打深潛 7，就同時套用 1～7 階。
 - 程式只要一個 `ascMod(st,key)`：把 1～`st.asc` 各階 `mods[key]` 累加（乘數相乘，數字相加，旗標取有沒有）。之後調整只改資料。
-- 殘響加成照舊（每階 +10%）。
+- 上限不要寫死：`core.js` 第 850 行的 `Math.min(10,…)` 改成 `Math.min(DATA.asc.length-1,…)`。
+- 殘響加成改成資料表：每一階的 `mods` 都有 `echo:.04`（相加）。`echoOf` 的 `1+.1*asc` 改成 `1+ascMod(st,'echo')`，深潛 20 是 1.8 倍，不是 3 倍。（11/16 照遊戲程式以及代碼製作大師的建議修訂）
 
 ```js
 DATA.asc=[
  null,
- {id:'asc_1', mods:{foeHp:1.08}},
- {id:'asc_2', mods:{eliteNodes:1}},
- {id:'asc_3', mods:{restHeal:.7}},
- {id:'asc_4', mods:{foeAtk:1.08}},
- {id:'asc_5', mods:{startCurse:1}},
- {id:'asc_6', mods:{bossHp:1.15}},
- {id:'asc_7', mods:{shopMul:1.25}},
- {id:'asc_8', mods:{startAlien:20}},
- {id:'asc_9', mods:{rewardChoices:-1}},
- {id:'asc_10',mods:{eliteTrait:1}},
- {id:'asc_11',mods:{startHp:-10}},
- {id:'asc_12',mods:{foeBlock:1.3}},
- {id:'asc_13',mods:{bossPhase2:1}},
- {id:'asc_14',mods:{eliteRelic:.5}},
- {id:'asc_15',mods:{chapterSin:1}},
- {id:'asc_16',mods:{firstDraw:-1}},
- {id:'asc_17',mods:{enrage:12}},
- {id:'asc_18',mods:{foeTrait:.3}},
- {id:'asc_19',mods:{bossHp:1.2,foeAtk:1.08}},
- {id:'asc_20',mods:{recallOnce:1}}
+ {id:'asc_1', mods:{echo:.04,foeHp:1.08}},
+ {id:'asc_2', mods:{echo:.04,eliteNodes:1}},
+ {id:'asc_3', mods:{echo:.04,restHeal:.7}},
+ {id:'asc_4', mods:{echo:.04,foeAtk:1.08}},
+ {id:'asc_5', mods:{echo:.04,startCurse:1}},
+ {id:'asc_6', mods:{echo:.04,bossHp:1.15}},
+ {id:'asc_7', mods:{echo:.04,shopMul:1.25}},
+ {id:'asc_8', mods:{echo:.04,startAlien:20}},
+ {id:'asc_9', mods:{echo:.04,rewardChoices:-1}},
+ {id:'asc_10',mods:{echo:.04,eliteTrait:1}},
+ {id:'asc_11',mods:{echo:.04,startHp:-10}},
+ {id:'asc_12',mods:{echo:.04,foeBlock:1.3}},
+ {id:'asc_13',mods:{echo:.04,bossPhase2:1}},
+ {id:'asc_14',mods:{echo:.04,eliteRelic:.5}},
+ {id:'asc_15',mods:{echo:.04,chapterSin:1}},
+ {id:'asc_16',mods:{echo:.04,firstDraw:-1}},
+ {id:'asc_17',mods:{echo:.04,enrage:12}},
+ {id:'asc_18',mods:{echo:.04,foeTrait:.3}},
+ {id:'asc_19',mods:{echo:.04,bossHp:1.2,foeAtk:1.08}},
+ {id:'asc_20',mods:{echo:.04,recallOnce:1}}
 ];
 ```
 
