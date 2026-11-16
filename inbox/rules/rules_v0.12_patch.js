@@ -13,7 +13,7 @@ DATA.guCards={"gu_tear":{"n":"撕兩頁","c":1,"t":"a","r":1,"ch":"gu","img":"TB
 "gu_archive":{"n":"常備卷宗","c":1,"t":"p","r":2,"ch":"gu","img":"TBD","fx":[["pw","archive",1]],"u":{"c":0}},
 "gu_calib":{"n":"義眼校準","c":0,"t":"s","r":1,"ch":"gu","img":"TBD","fx":[["revealT"],["markD",3]],"u":{"fx":[["revealT"],["markD",5]]}},
 "gu_predict":{"n":"預判一槍","c":1,"t":"a","r":1,"ch":"gu","img":"TBD","fx":[["predict",14,5]],"u":{"fx":[["predict",19,7]]}},
-"gu_eyeagain":{"n":"義眼再開","c":0,"t":"s","r":2,"ch":"gu","x":1,"img":"TBD","fx":[["eyeReset"]],"u":{"fx":[["eyeReset"],["dr",1]]}},
+"gu_eyeagain":{"n":"義眼再開","c":0,"t":"s","r":2,"ch":"gu","ex":1,"img":"TBD","fx":[["eyeReset"]],"u":{"fx":[["eyeReset"],["dr",1]]}},
 "gu_interrupt":{"n":"打斷蓄力","c":2,"t":"a","r":2,"ch":"gu","img":"TBD","fx":[["d",10],["breakUlt"]],"u":{"fx":[["d",14],["breakUlt"]]}},
 "gu_seen":{"n":"看過的人","c":1,"t":"p","r":2,"ch":"gu","img":"TBD","fx":[["pw","seen",2]],"u":{"c":0}}};
 // 一般敵人：第 3 回合起每 3 回合
