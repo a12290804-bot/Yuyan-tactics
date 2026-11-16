@@ -4,90 +4,281 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0c0a09">
-<title>渡鴉下潛・介面樣板 v0.28</title>
+<title>渡鴉下潛・介面樣板 v0.28（位階材質修訂）</title>
 <style>
 :root{
   --bg:#0c0a09;--bg-2:#070605;--panel:#16110e;--line:#4a3a28;
   --gold:#c9a35c;--gold-2:#8a6b3a;--gold-hi:#e8d5a0;--silver:#c5c8ce;
   --ink:#eadcc4;--dim:#9a8b74;--blood:#7a1a22;--red:#c65a4a;
   --block:#6fb1e0;--pact:#c0415a;--warn:#e8c9a0;
-  --face-yan:#8e1b24;--face-yan-bg:#14080a;
-  --face-xi:#c41e3a;--face-xi-bg:#1a080c;
-  --face-huang:#d8d0bc;--face-huang-bg:#161410;
+  --face-yan:#8e1b24;--face-xi:#c41e3a;--face-huang:#d8d0bc;
   --ring-devotion:#6b5420;--ring-pride:#c9a35c;--ring-envy:#6a3a80;
   --ring-obsess:#d48aa0;--ring-cruelty:#8a3030;--ring-greed:#d4a017;
   --ring-wrath:#5a1630;--ring-sweetmalice:#e8e0d4;--ring-vanity:#d4c4e8;
   --ring-glutton:#7a1020;
   --pol-3:#7a2a6a;
+  --foil:210deg;
 }
+@property --foil{syntax:"<angle>";inherits:true;initial-value:210deg;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);
-  font-family:"Noto Serif TC","Noto Serif CJK TC","Source Han Serif TC","Songti TC","PMingLiU","PingFang TC","STSong","Noto Serif",serif;
-  overflow:hidden;}
-body{position:relative;}
-body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:80;
-  background:radial-gradient(ellipse at 50% 42%,transparent 52%,#000a 100%);}
-#cb{position:fixed;inset:0;display:flex;flex-direction:column;background:
-  radial-gradient(ellipse at 50% 18%,#1a1014 0%,#0c0a09 46%,#070605 100%);}
+html,body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Noto Serif TC","Noto Serif CJK TC","Source Han Serif TC","Songti TC","PMingLiU","PingFang TC","STSong","Noto Serif",serif;}
+body{min-height:100%;}
+button{font:inherit;}
+
+/* ===== 位階展示 ===== */
+#gallery{padding:28px 24px 36px;background:
+  radial-gradient(ellipse at 50% 0%,#1a1410 0%,#0c0a09 55%,#070605 100%);}
+#gallery h1{margin:0 0 4px;text-align:center;font-size:22px;letter-spacing:8px;font-weight:700;
+  color:var(--gold-hi);text-shadow:0 1px 0 #000;}
+#gallery .sub{text-align:center;color:var(--dim);font-size:13px;line-height:1.6;margin:0 0 22px;}
+#gallery .sub b{color:var(--gold);font-weight:700;}
+#row{display:flex;justify-content:center;align-items:flex-end;gap:22px;perspective:1100px;flex-wrap:nowrap;}
+#row figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;}
+#row figcaption{text-align:center;font-size:13px;letter-spacing:2px;color:var(--gold-hi);}
+#row figcaption small{display:block;color:var(--dim);letter-spacing:0;font-size:11px;margin-top:2px;}
+#row .card{width:168px;height:248px;transform:rotateX(5deg);}
+#row .card.rk3{transform:rotateX(6deg) rotateY(-11deg);}
+#row .card.rkring{transform:rotateX(5deg) rotateY(6deg);}
+
+/* ===== 共用卡身 ===== */
+.card{position:relative;border-radius:10px;overflow:hidden;color:var(--ink);
+  background:#14110e;
+  box-shadow:0 14px 28px #000d,0 1px 0 #ffffff10;}
+.card .ci{position:absolute;left:10px;right:10px;top:10px;height:96px;border-radius:3px;
+  box-shadow:inset 0 0 0 1px #0008,inset 0 -16px 18px #0006;}
+.card .cc{position:absolute;left:8px;top:8px;width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;
+  font-variant-numeric:tabular-nums;z-index:6;color:#2a1a05;
+  background:radial-gradient(circle at 38% 32%,#ffe2a0,#b9792a 55%,#3f2508);
+  box-shadow:inset 0 1px 0 #fff8,inset 0 -2px 2px #0007,0 0 0 1px #3a2a10,0 0 0 2px #c9a35c66;}
+.card .cn{position:absolute;left:10px;right:10px;top:110px;text-align:center;
+  font-size:14px;padding:4px 4px;letter-spacing:1px;z-index:3;}
+.card .cd{position:absolute;left:12px;right:12px;top:138px;bottom:10px;
+  font-size:12px;line-height:1.4;color:#d9ccb4;z-index:3;}
+.card .rk{position:absolute;right:8px;top:8px;font-size:10px;padding:1px 6px;border-radius:6px;
+  background:#000a;border:1px solid currentColor;z-index:6;letter-spacing:1px;}
+.card .crest{position:absolute;left:50%;top:6px;transform:translateX(-50%) rotate(45deg);
+  width:12px;height:12px;z-index:6;box-shadow:inset 0 1px 0 #fff6,0 1px 1px #0008;}
+.card .orn{position:absolute;width:18px;height:18px;pointer-events:none;z-index:5;border-style:solid;opacity:.8;}
+.card .orn.tl{left:5px;top:5px;border-width:2px 0 0 2px;}
+.card .orn.tr{right:5px;top:5px;border-width:2px 2px 0 0;}
+.card .orn.bl{left:5px;bottom:5px;border-width:0 0 2px 2px;}
+.card .orn.br{right:5px;bottom:5px;border-width:0 2px 2px 0;}
+.card .foil,.card .glare{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:4;}
+.card .glare{opacity:0;background:radial-gradient(circle at 30% 20%,#fff6 0 8%,#fff0 42%);mix-blend-mode:soft-light;transition:opacity .2s;}
+
+/* 起始：暗鐵 */
+.card.rk0{background:linear-gradient(#1c1c1e,#121214);
+  box-shadow:0 14px 28px #000d,inset 0 1px 0 #8a8a9044,inset 0 -2px 0 #000,inset 0 0 0 1px #000,
+    inset 0 0 0 2px #6a6a70,inset 0 0 0 3px #000,inset 0 0 0 7px #3e3e44;}
+.card.rk0 .orn{border-color:#8a8a90;}
+.card.rk0 .rk,.card.rk0 .crest{color:#c0c0c4;background:#2a2a2e;border-color:#6a6a70;}
+.card.rk0 .crest{background:linear-gradient(135deg,#8a8a90,#3e3e44);}
+.card.rk0 .cn{background:linear-gradient(#2e2e32,#1a1a1c);color:#d0d0d4;
+  box-shadow:inset 0 1px 0 #6668,inset 0 -1px 0 #000,0 0 0 1px #000;}
+.card.rk0 .cc{background:radial-gradient(circle at 38% 32%,#d0d0d4,#6a6a70 55%,#2a2a2e);color:#1a1a1c;
+  box-shadow:inset 0 1px 0 #fff6,inset 0 -2px 2px #0007,0 0 0 1px #000,0 0 0 2px #6a6a70;}
+.card.rk0 .ci{background:
+  repeating-linear-gradient(90deg,#2a2a2e 0 2px,#1a1a1c 2px 3px),
+  linear-gradient(#2a2c30,#141416);}
+
+/* 紙：拉絲銀 */
+.card.rk1{background:#141416;
+  box-shadow:0 14px 28px #000d,inset 0 1px 0 #f0f2f488,inset 0 -2px 0 #000,inset 0 0 0 1px #000;}
+.card.rk1::before{content:"";position:absolute;inset:2px;border-radius:8px;padding:10px;pointer-events:none;z-index:2;
+  background:repeating-linear-gradient(100deg,#7a7e84 0 1px,#e8eaee 2px,#9aa0a6 3px,#f4f5f7 4px,#8b9098 6px);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite:exclude;}
+.card.rk1 .orn{border-color:#e8eaee;z-index:5;}
+.card.rk1 .rk{color:#1a1a1c;background:#c5c8ce;border-color:#8b9098;}
+.card.rk1 .crest{background:linear-gradient(135deg,#f4f5f7,#8b9098);border-radius:1px;}
+.card.rk1 .cn{background:linear-gradient(#e8eaee,#9aa0a6);color:#161618;
+  box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #5a5e64,0 0 0 1px #000;}
+.card.rk1 .ci{background:
+  repeating-linear-gradient(180deg,#0000 0 6px,#ffffff08 6px 7px),
+  linear-gradient(180deg,#5a5e64 0%,#2a2c30 40%,#1a1c20 100%);}
+
+/* 墨：暗金框、墨黑卡身 */
+.card.rk2{background:radial-gradient(ellipse at 50% 0%,#163034 0%,#0a0c0c 55%);
+  box-shadow:0 14px 28px #000d,inset 0 1px 0 #e8d5a044,inset 0 -2px 0 #000,inset 0 0 0 1px #000,
+    inset 0 0 0 2px #8a6b3a,inset 0 0 0 3px #000,inset 0 0 0 5px #2E5E63,inset 0 0 0 7px #8a6b3a;}
+.card.rk2 .orn{border-color:#8a6b3a;}
+.card.rk2 .rk{color:#b8d4d4;border-color:#2E5E63;}
+.card.rk2 .crest{background:radial-gradient(circle at 35% 30%,#e8d5a0,#8a6b3a 55%,#3a2a10);border-radius:50%;transform:translateX(-50%);}
+.card.rk2 .cn{background:linear-gradient(#1a2828,#0e1414);color:#e8d5a0;
+  box-shadow:inset 0 0 0 1px #2E5E63,inset 0 1px 0 #8a6b3a88,0 0 0 1px #000;}
+.card.rk2 .ci{background:
+  radial-gradient(ellipse at 50% 40%,#2E5E6388,#0c1010 70%),
+  linear-gradient(#163034,#0a0c0c);}
+
+/* 緋：黑漆刻金＋閃卡 */
+.card.rk3{background:linear-gradient(180deg,#1a1410 0%,#0a0806 100%);
+  box-shadow:0 16px 32px #000e,inset 0 1px 0 #ffe7a866,inset 0 -2px 0 #000,inset 0 0 0 1px #000,
+    inset 0 0 0 2px #d6b26a,inset 0 0 0 3px #000,inset 0 0 0 4px #5a4018,inset 0 0 0 7px #c9a35c;}
+.card.rk3 .orn{border-color:#e8d5a0;width:22px;height:22px;opacity:1;
+  box-shadow:inset 8px 8px 0 -7px #e8d5a0;}
+.card.rk3 .orn.tr{box-shadow:inset -8px 8px 0 -7px #e8d5a0;}
+.card.rk3 .orn.bl{box-shadow:inset 8px -8px 0 -7px #e8d5a0;}
+.card.rk3 .orn.br{box-shadow:inset -8px -8px 0 -7px #e8d5a0;}
+.card.rk3 .rk{color:#2a1a05;background:linear-gradient(#e8d5a0,#b08a3e);border-color:#7a5a20;font-weight:700;}
+.card.rk3 .crest{width:14px;height:14px;background:conic-gradient(from 30deg,#fff4d0,#8a6b3a,#e8d5a0,#5a4018,#fff4d0);
+  box-shadow:inset 0 1px 0 #fff8,0 0 0 1px #3a2a10;}
+.card.rk3 .cn{background:linear-gradient(#1a1208,#0a0806);color:#e8d5a0;font-weight:700;letter-spacing:2px;
+  box-shadow:inset 0 1px 0 #d6b26a99,inset 0 -1px 0 #d6b26a99,0 0 0 1px #000;}
+.card.rk3 .ci{background:
+  radial-gradient(ellipse at 50% 20%,#5a401866,transparent 55%),
+  radial-gradient(circle at 50% 45%,#c9a35c22,#0000 46%),
+  linear-gradient(#2a1a10,#0c0a08);}
+.card.rk3 .foil{background:
+  conic-gradient(from 200deg at 50% 40%,
+    #c9a35c00 0deg,#e8d5a0aa 42deg,#8e1b2466 85deg,
+    #5ad0c0aa 130deg,#d8d0bc88 175deg,#8a4ac066 230deg,
+    #e8d5a0aa 300deg,#c9a35c00 360deg),
+  linear-gradient(115deg,transparent 30%,#fff8 46%,#c9a35c99 50%,#5ad0c066 54%,transparent 68%);
+  background-size:auto, 180% 100%;
+  background-position:0 0, 40% 0;
+  mix-blend-mode:color-dodge;opacity:.62;}
+
+/* 契：血漆活骨 */
+.card.rko{background:radial-gradient(ellipse at 50% 0%,#2a1012,#100808 60%);
+  box-shadow:0 14px 28px #000d,inset 0 1px 0 #e0a0a044,inset 0 -2px 0 #000,inset 0 0 0 1px #000,
+    inset 0 0 0 2px #8E1B24,inset 0 0 0 3px #000,inset 0 0 0 7px #5a1218;}
+.card.rko .orn{border-color:#c45a5a;}
+.card.rko .rk{color:#f0c0c0;border-color:#8E1B24;}
+.card.rko .crest{background:radial-gradient(circle at 35% 30%,#e8a0a0,#8E1B24 60%,#3a0808);border-radius:50%;transform:translateX(-50%);}
+.card.rko .cn{background:linear-gradient(#3a1014,#1a0808);color:#f0d0d0;
+  box-shadow:inset 0 0 0 1px #8E1B24,0 0 0 1px #000;}
+.card.rko .cc{background:radial-gradient(circle at 38% 32%,#f0c0c0,#8E1B24 55%,#3a0808);color:#fff6f6;
+  box-shadow:inset 0 1px 0 #fff5,inset 0 -2px 2px #0007,0 0 0 1px #000,0 0 0 2px #8E1B24;}
+.card.rko .ci{background:
+  radial-gradient(ellipse at 50% 30%,#8E1B2444,transparent 60%),
+  linear-gradient(#2a1012,#100808);}
+
+/* 詛咒 */
+.card.rkx{background:linear-gradient(#160e18,#0c0810);
+  box-shadow:0 14px 28px #000d,inset 0 0 0 1px #000,inset 0 0 0 2px #2E1A33,inset 0 0 0 3px #000,
+    inset 0 0 0 7px #1a1020;
+  border:1.5px dashed #4a2a55;}
+.card.rkx .orn{border-color:#6a3a80;opacity:.5;border-style:dashed;}
+.card.rkx .rk{color:#b48cc4;border-color:#4a2a55;border-style:dashed;}
+.card.rkx .crest{background:#2E1A33;transform:translateX(-50%) rotate(45deg) scaleX(.4);opacity:.7;box-shadow:none;}
+.card.rkx .cn{background:linear-gradient(#1a1020,#0c0810);color:#c4b0cc;
+  box-shadow:inset 0 0 0 1px #4a2a55;font-style:italic;}
+.card.rkx .cc{background:radial-gradient(circle at 38% 32%,#6a4a70,#2E1A33 60%,#0c0810);color:#e0d0e8;
+  box-shadow:inset 0 1px 0 #fff2,0 0 0 1px #000,0 0 0 2px #4a2a55;}
+.card.rkx .ci{background:repeating-linear-gradient(115deg,#1a1020 0 8px,#120c16 8px 9px);filter:saturate(.6);}
+.card.rkx .cd{color:#a898b0;}
+
+/* 戒：琺瑯鑲座 */
+.card.rkring{background:radial-gradient(ellipse at 50% 0%,#1a1610,#0c0a08 60%);
+  box-shadow:0 14px 28px #000d,inset 0 1px 0 #e8d5a055,inset 0 -2px 0 #000,inset 0 0 0 1px #000,
+    inset 0 0 0 5px var(--rc,var(--gold)),inset 0 0 0 6px #000,inset 0 0 0 8px #c9a35c,inset 0 0 0 10px #1a1208;
+  border-radius:12px;}
+.card.rkring .orn{border-color:var(--rc,var(--gold));border-radius:2px;}
+.card.rkring .rk{color:#2a1a05;background:linear-gradient(#e8d5a0,#8a6b3a);border-color:var(--rc,var(--gold));font-weight:700;}
+.card.rkring .crest{width:16px;height:16px;border-radius:50%;transform:translateX(-50%);
+  background:radial-gradient(circle at 35% 30%,#fff8,var(--rc,var(--gold)) 45%,#1a1208);
+  box-shadow:0 0 0 2px #c9a35c,0 0 0 3px #000;}
+.card.rkring .cn{background:linear-gradient(#2a2210,#14100a);color:#e8d5a0;
+  box-shadow:inset 0 0 0 1px var(--rc,var(--gold)),0 0 0 1px #000;}
+.card.rkring .ci{background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--rc,var(--gold)) 35%,#1a1208),#0c0a08 70%);}
+
+/* 三面：疊在原位階上的三色內框 */
+.card.fthree .tri{position:absolute;left:9px;right:9px;top:9px;bottom:9px;pointer-events:none;z-index:5;
+  border-radius:4px;padding:3px;border:0;
+  background:linear-gradient(90deg,var(--face-yan),var(--face-xi),var(--face-huang));
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  mask-composite:exclude;}
+.card.fthree .crest{width:24px;height:8px;transform:translateX(-50%)!important;border-radius:0;background:none!important;box-shadow:none;
+  display:flex;gap:4px;top:8px;justify-content:center;}
+.card.fthree .crest i{display:block;width:7px;height:7px;flex:none;transform:rotate(45deg);
+  box-shadow:0 0 0 1px #0008;}
+.card.fthree .crest i:nth-child(1){background:var(--face-yan);}
+.card.fthree .crest i:nth-child(2){background:var(--face-xi);}
+.card.fthree .crest i:nth-child(3){background:var(--face-huang);}
+
+/* 臉：內緣，不蓋外框 */
+.card.face_yan{box-shadow:0 14px 28px #000d,inset 0 0 0 9px transparent,inset 0 0 0 10px var(--face-yan);}
+.card.face_xi::after{content:"";position:absolute;left:0;top:28px;width:5px;height:56px;z-index:5;pointer-events:none;
+  background:linear-gradient(180deg,#c41e3a,#7a1020 70%,#c41e3a00);border-radius:0 2px 6px 0;}
+.card.face_huang{/* inner platinum handled by extra inset in battle if needed */}
+
+@media (hover:hover) and (prefers-reduced-motion:no-preference){
+  #row .card{transition:transform .25s ease;}
+  #row .card:hover{transform:rotateY(10deg) rotateX(-6deg) translateY(-10px) scale(1.04);z-index:8;}
+  #row .card:hover .glare{opacity:1;}
+  #row .card.rk3:hover .foil, .card.rk3.sel .foil{
+    animation:foilspin 3.2s linear infinite, sheen 2.4s linear infinite;
+  }
+}
+@keyframes foilspin{to{--foil:570deg;}}
+@keyframes sheen{to{background-position:0 0, -40% 0;}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;}
+  #row .card,#row .card.rk3,#row .card.rkring{transform:none;}
+}
+
+/* ===== 戰鬥 ===== */
+#cb{position:relative;width:420px;height:900px;margin:0 auto 40px;display:flex;flex-direction:column;
+  background:radial-gradient(ellipse at 50% 18%,#1a1014 0%,#0c0a09 46%,#070605 100%);
+  overflow:hidden;box-shadow:0 0 0 1px #4a3a2855,0 24px 60px #000;}
 #cb:before{content:"";position:absolute;inset:48px 8px 196px;border:1px solid #d6b26a22;
   box-shadow:inset 0 0 50px #000c;pointer-events:none;z-index:1;}
-
-/* top bar */
-.bar{display:flex;align-items:center;gap:5px;padding:calc(8px + env(safe-area-inset-top,0px)) 8px 6px 8px;
-  background:linear-gradient(#070605,#0a0807e6 70%,#0a080700);position:relative;z-index:5;
-  border-bottom:1px solid #4a3a2844;flex-wrap:nowrap;padding-right:52px;}
+.bar{display:flex;align-items:center;gap:5px;padding:8px 52px 6px 8px;position:relative;z-index:5;
+  background:linear-gradient(#070605,#0a0807e6 70%,#0a080700);border-bottom:1px solid #4a3a2844;flex-wrap:nowrap;}
 .pill{display:flex;align-items:center;gap:3px;padding:3px 7px;border:1px solid var(--line);
-  background:#0a0807d0;border-radius:3px;font-size:12px;white-space:nowrap;
-  box-shadow:inset 0 0 0 1px #000;}
+  background:linear-gradient(#161310,#0a0807);border-radius:3px;font-size:12px;white-space:nowrap;
+  box-shadow:inset 0 1px 0 #ffffff10,inset 0 -1px 0 #000,0 0 0 1px #000;}
 .pill b{color:var(--gold);font-weight:700;letter-spacing:1px;}
-.badge-asc{border-color:var(--gold-2);color:var(--gold-hi);letter-spacing:1px;}
+.badge-asc{border-color:var(--gold-2);color:var(--gold-hi);}
 .badge-pol{border-color:var(--pol-3);color:#e0b8f0;}
-.badge-face{border-color:var(--face-huang);color:var(--face-huang);}
-.lampB{position:absolute;right:8px;top:calc(6px + env(safe-area-inset-top,0px));
-  background:linear-gradient(#251d17,#16110d);border:1px solid var(--gold-2);
-  color:var(--gold-hi);border-radius:6px;padding:6px 10px;font:inherit;letter-spacing:2px;min-height:40px;min-width:44px;}
-
-/* rings */
+.lampB{position:absolute;right:8px;top:6px;background:linear-gradient(#251d17,#16110d);
+  border:1px solid var(--gold-2);color:var(--gold-hi);border-radius:6px;padding:6px 10px;font:inherit;
+  letter-spacing:2px;min-height:40px;min-width:44px;
+  box-shadow:inset 0 1px 0 #ffffff14,inset 0 -1px 0 #000;}
 #rings{position:relative;z-index:5;margin:2px 10px 0;padding:7px 10px 8px;
   background:linear-gradient(180deg,#1a1410ee,#100c0ae8);
   border:1px solid var(--face-huang);border-radius:4px;
-  box-shadow:inset 0 0 0 1px #000,0 0 0 1px #d8d0bc33,0 8px 20px #000a;}
+  box-shadow:inset 0 0 0 1px #000,inset 0 1px 0 #ffffff10,0 0 0 1px #d8d0bc33,0 8px 20px #000a;}
 .rings-row{display:flex;align-items:center;gap:8px;}
 .hand-slots{display:flex;gap:5px;align-items:flex-end;flex:1;justify-content:center;}
 .hand-slots.left{padding-right:4px;border-right:1px solid #4a3a2866;}
 .ring{width:22px;height:22px;border-radius:50%;border:2px solid #2a2218;background:#0a0807;
-  position:relative;box-shadow:inset 0 0 0 1px #000;}
-.ring.lit{box-shadow:0 0 0 1px #000,0 0 6px color-mix(in srgb,var(--c,#c9a35c) 55%,transparent);}
+  position:relative;box-shadow:inset 0 0 0 1px #000,inset 0 1px 0 #fff2;}
+.ring.lit{box-shadow:0 0 0 1px #000,inset 0 1px 0 #fff4;}
 .ring.lit:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--c);opacity:.95;}
 .ring[data-id="devotion"]{width:26px;height:26px;border-color:var(--gold);}
-.ring-lab{display:block;text-align:center;font-size:9px;color:var(--dim);margin-top:4px;letter-spacing:0;}
+.ring-lab{display:block;text-align:center;font-size:9px;color:var(--dim);margin-top:4px;}
 #ringlink{margin-left:auto;text-align:right;min-width:86px;}
 #ringlink .n{font-size:20px;color:var(--gold);letter-spacing:1px;font-variant-numeric:tabular-nums;
   text-shadow:0 1px 0 #000;font-weight:700;}
 #ringlink small{display:block;color:var(--dim);font-size:11px;margin-top:1px;}
 .ten-turn{color:var(--face-huang);font-size:11px;letter-spacing:2px;margin:0 0 5px;text-align:center;}
-
-/* foes */
 #foes{flex:1;display:flex;justify-content:center;align-items:flex-end;gap:8px;
   padding:10px 16px 0;min-height:0;position:relative;z-index:2;overflow:hidden;}
 .foe{width:min(56vw,260px);display:flex;flex-direction:column;align-items:center;position:relative;}
 .intent{position:relative;z-index:3;display:flex;align-items:center;gap:5px;
   background:linear-gradient(180deg,#3a1116,#180709);border:1px solid #a8323c;
-  border-top:2px solid #ff6a78;color:#ffd6d0;border-radius:2px 2px 6px 6px;
+  border-top:2px solid #c65a4a;color:#ffd6d0;border-radius:2px 2px 6px 6px;
   padding:3px 10px;font-size:15px;font-variant-numeric:tabular-nums;
-  box-shadow:0 4px 16px #8e1b2488,inset 0 0 8px #5a0a12;}
+  box-shadow:0 4px 16px #000a,inset 0 0 8px #5a0a12,inset 0 1px 0 #fff2;}
 .intent:before{content:"";position:absolute;top:-12px;left:50%;width:1px;height:12px;
   background:linear-gradient(transparent,#8e1b24);transform:translateX(-50%);}
 .intent i{font-style:normal;width:16px;height:16px;border-radius:50%;
-  background:conic-gradient(#c65a4a,#7a1a22,#c65a4a);display:inline-block;}
-.intent-warn{margin:4px 0 4px;max-width:100%;padding:6px 8px;text-align:center;
+  background:conic-gradient(#c65a4a,#7a1a22,#c65a4a);display:inline-block;
+  box-shadow:inset 0 1px 0 #fff4;}
+.intent-warn{margin:4px 0;max-width:100%;padding:6px 8px;text-align:center;
   font-size:14px;line-height:1.45;color:var(--warn);
   background:linear-gradient(180deg,#1f1712ee,#0d0a08f0);
   border:1px solid #6b5232;border-left:3px solid var(--red);border-radius:2px;
-  box-shadow:0 4px 12px #000c;}
+  box-shadow:0 4px 12px #000c,inset 0 1px 0 #ffffff10;}
 .art{width:100%;aspect-ratio:3/4;max-height:22vh;border-radius:8px;position:relative;overflow:hidden;
-  background:
-    radial-gradient(ellipse at 50% 78%,#2a0a0c 0%,transparent 50%),
+  background:radial-gradient(ellipse at 50% 78%,#2a0a0c 0%,transparent 50%),
     radial-gradient(ellipse at 50% 30%,#3a2024 0%,#14080a 55%,#070405 100%);
   -webkit-mask-image:radial-gradient(ellipse at 50% 48%,#000 60%,transparent 84%);
           mask-image:radial-gradient(ellipse at 50% 48%,#000 60%,transparent 84%);}
@@ -95,35 +286,31 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:80;
   background:radial-gradient(ellipse at 50% 40%,#4a2a2c,#1a0a0c 70%);
   border-radius:50% 50% 42% 42%;box-shadow:inset 0 -12px 16px #0008,0 10px 18px #0006;}
 .art .jaw{position:absolute;left:24%;right:24%;top:48%;height:32%;}
-.art .jaw:before,.art .jaw:after{content:"";position:absolute;left:0;right:0;
-  background:#1a0a0c;border:2px solid #5a2424;}
+.art .jaw:before,.art .jaw:after{content:"";position:absolute;left:0;right:0;background:#1a0a0c;border:2px solid #5a2424;}
 .art .jaw:before{top:0;height:36%;border-radius:0 0 8% 8%;}
-.art .jaw:after{top:48%;height:52%;border-radius:8% 8% 50% 50%;
-  box-shadow:inset 0 8px 0 #2a0a0c;}
-.art .eye{position:absolute;width:13px;height:11px;background:#c9a35c;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;
-  top:28%;z-index:2;box-shadow:inset 0 0 0 3px #140808;} /* matte gold iris, dark pupil, no glow */
+.art .jaw:after{top:48%;height:52%;border-radius:8% 8% 50% 50%;box-shadow:inset 0 8px 0 #2a0a0c;}
+.art .eye{position:absolute;width:13px;height:11px;background:#c9a35c;border-radius:50%;
+  top:28%;z-index:2;box-shadow:inset 0 0 0 3px #140808;}
 .art .eye.l{left:30%;}.art .eye.r{right:30%;}
 .art .teeth{position:absolute;left:30%;right:30%;top:58%;height:10px;display:flex;justify-content:space-between;z-index:2;}
 .art .teeth b{width:5px;height:10px;background:#c9b896;clip-path:polygon(50% 100%,0 0,100% 0);}
 .nm{font-size:13px;margin-top:2px;text-align:center;}
 .blk{color:var(--block);font-size:12px;margin-left:6px;}
-.hpbar{position:relative;height:8px;width:90%;background:#2a0f0e;border:1px solid #000;border-radius:2px;overflow:hidden;margin-top:3px;}
+.hpbar{position:relative;height:8px;width:90%;background:#2a0f0e;border:1px solid #000;border-radius:2px;overflow:hidden;margin-top:3px;
+  box-shadow:inset 0 1px 2px #0008;}
 .hpbar i{display:block;height:100%;width:62%;background:linear-gradient(#b8463a,#6e1c16);}
 .hpt{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums;}
-
-/* me */
 #me{display:flex;align-items:center;gap:10px;padding:6px 12px 2px;position:relative;z-index:5;}
 #me .pme{width:54px;height:72px;border-radius:6px;flex:0 0 auto;border:1px solid var(--face-huang);
-  background:
-    linear-gradient(180deg,#2a2420 0%,#1a1410 40%,#100c0a 100%);
-  position:relative;overflow:hidden;box-shadow:0 0 0 1px #000;}
+  background:linear-gradient(180deg,#2a2420 0%,#1a1410 40%,#100c0a 100%);
+  position:relative;overflow:hidden;box-shadow:0 0 0 1px #000,inset 0 1px 0 #fff2;}
 #me .pme:before{content:"";position:absolute;left:50%;top:22%;width:22px;height:22px;margin-left:-11px;
   border-radius:50%;background:#eadcc4;box-shadow:0 28px 0 8px #1a1210,inset 0 0 0 6px #1a1210;}
 #me .pme:after{content:"";position:absolute;left:50%;top:28%;width:6px;height:6px;margin-left:-3px;
-  border-radius:50%;background:#c9a35c;box-shadow:8px 0 0 #c9a35c,inset 0 0 0 2px #1a1210;} /* gold irises, no glow */
+  border-radius:50%;background:#c9a35c;box-shadow:8px 0 0 #c9a35c,inset 0 0 0 2px #1a1210;}
 .orb{width:50px;height:50px;border-radius:50%;flex:0 0 auto;
   background:radial-gradient(circle at 40% 35%,#ffe2a0,#b9792a 55%,#3f2508);
-  border:1px solid #000;box-shadow:0 0 0 2px #6b4f2a,0 0 14px #e9b44a55;
+  border:1px solid #000;box-shadow:inset 0 1px 0 #fff6,0 0 0 2px #6b4f2a,0 0 14px #e9b44a44;
   display:flex;align-items:center;justify-content:center;font-size:20px;color:#2a1a05;font-weight:700;
   font-variant-numeric:tabular-nums;}
 #me .info{flex:1;min-width:0;}
@@ -133,158 +320,252 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:80;
 #me .hpbar i{width:59%;}
 .alt{font-size:12px;color:#d9a0a8;margin-top:1px;}
 
-/* hand */
-#hand{position:relative;height:210px;overflow:visible;z-index:6;}
-.card{position:absolute;bottom:22px;width:104px;height:164px;border-radius:8px;
-  background:#211a14;border:2px solid #6b5537;overflow:hidden;
-  box-shadow:-4px 6px 14px #000e,inset 0 0 0 1px #000,inset 0 0 0 2px #2b2118;
-  transform-origin:50% 100%;}
-.card .ci{position:absolute;left:0;right:0;top:0;height:72px;background:center/cover no-repeat;}
-.card .cc{position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;
-  background:#e4b75e;color:#2a1a05;font-weight:700;display:flex;align-items:center;justify-content:center;
-  font-size:15px;border:2px solid #1d1408;font-variant-numeric:tabular-nums;z-index:3;}
-.card .cn{position:absolute;left:0;right:0;top:72px;text-align:center;font-size:12px;padding:3px 3px;
-  background:#0008;color:#f3e3c2;letter-spacing:0;white-space:nowrap;overflow:hidden;}
-.card .cd{position:absolute;left:5px;right:5px;top:94px;bottom:5px;font-size:12px;line-height:1.35;color:#d9ccb4;}
-.card .rk{position:absolute;right:3px;top:3px;font-size:10px;padding:1px 5px;border-radius:6px;
-  background:#000a;border:1px solid currentColor;z-index:3;}
-.card.face_yan{border-color:var(--face-yan);background:var(--face-yan-bg);}
-.card.face_yan .cn{background:#3a0f18cc;color:#f3d0d0;}
-.card.face_xi{border-color:var(--face-xi);background:var(--face-xi-bg);}
-.card.face_xi:before{content:"";position:absolute;left:0;top:20px;width:5px;height:52px;z-index:3;
-  background:linear-gradient(180deg,#c41e3a,#7a1020 70%,#c41e3a00);border-radius:0 2px 6px 0;}
-.card.face_xi .cn{background:#4a1018cc;color:#ffd0d6;}
-.card.face_huang{border-color:var(--face-huang);background:var(--face-huang-bg);}
-.card.face_huang .cn{background:#2a2620cc;color:#f3ead4;}
-.card.face_all{border-color:var(--gold-2);
-  box-shadow:-4px 6px 14px #000e,inset 0 0 0 1px #000,inset 0 0 0 2px var(--face-yan),inset 0 0 0 3px var(--face-huang);}
-.card.rkring{box-shadow:-4px 6px 14px #000e,inset 0 0 0 1px #000,inset 0 0 0 3px var(--rc,var(--gold)),0 0 10px color-mix(in srgb,var(--rc,var(--gold)) 35%,transparent);}
-.card.rkring .rk{color:var(--rc,var(--gold));}
-.ci-yan{background:linear-gradient(180deg,#2a1216,#14080a);}
-.ci-xi{background:linear-gradient(180deg,#3a1016,#1a080c);}
-.ci-huang{background:linear-gradient(180deg,#2a2820,#161410);}
-.ci-greed{background:radial-gradient(circle at 50% 40%,#d4a01766,#2a1a08 70%);}
-.ci-wrath{background:radial-gradient(circle at 50% 40%,#5a163088,#14080a 70%);}
-.ci-glutton{background:radial-gradient(circle at 50% 40%,#7a102066,#14080a 70%);}
-.ci-lock{background:radial-gradient(circle at 50% 40%,#6b542088,#100c0a 70%);}
+#hand{position:relative;height:210px;overflow:visible;z-index:6;perspective:800px;}
+#hand .card{position:absolute;bottom:22px;width:104px;height:164px;transform-origin:50% 100%;}
+#hand .card .ci{left:7px;right:7px;top:7px;height:62px;}
+#hand .card .cn{left:7px;right:7px;top:72px;font-size:12px;padding:3px 2px;letter-spacing:0;white-space:nowrap;overflow:hidden;}
+#hand .card .cd{left:8px;right:8px;top:94px;bottom:7px;font-size:11.5px;line-height:1.35;}
+#hand .card .cc{width:24px;height:24px;font-size:14px;left:6px;top:6px;}
+#hand .card .crest{top:5px;width:10px;height:10px;}
+#hand .card.fthree .crest{width:18px;height:7px;}
+#hand .card .orn{width:12px;height:12px;}
 
-/* bottom */
-#cbtm{display:flex;align-items:center;gap:8px;padding:4px 10px calc(env(safe-area-inset-bottom,0px) + 8px);
+#cbtm{display:flex;align-items:center;gap:8px;padding:4px 10px 8px;
   background:linear-gradient(#0000,#070605 50%);position:relative;z-index:7;}
 .pile{font-size:12px;color:var(--dim);}
 .grow{flex:1;}
-button{font:inherit;color:var(--ink);background:linear-gradient(#251d17,#16110d);
-  border:1px solid var(--line);border-radius:6px;padding:8px 14px;font-size:15px;letter-spacing:1px;min-height:44px;}
-button.main{background:linear-gradient(#6a2a22,#3b1310);border-color:#c79a52;color:#fbe9c6;
-  box-shadow:inset 0 0 0 1px #000,inset 0 0 0 2px #c79a5244,0 0 14px #7a1a2266;}
+#cbtm button{color:var(--ink);background:linear-gradient(#251d17,#16110d);
+  border:1px solid var(--line);border-radius:6px;padding:8px 14px;font-size:15px;letter-spacing:1px;min-height:44px;
+  box-shadow:inset 0 1px 0 #ffffff14,inset 0 -1px 0 #000;}
+#cbtm button.main{background:linear-gradient(#6a2a22,#3b1310);border-color:#c79a52;color:#fbe9c6;
+  box-shadow:inset 0 0 0 1px #000,inset 0 1px 0 #ffffff20,inset 0 0 0 2px #c79a5244;}
 
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important;}
-}
+.battle-wrap{padding:28px 0 48px;background:#070605;}
+.battle-wrap h2{text-align:center;color:var(--gold);letter-spacing:6px;font-size:16px;margin:0 0 16px;font-weight:700;}
+
+/* 單頁截圖用 */
+body[data-view=gallery] .battle-wrap{display:none;}
+body[data-view=battle] #gallery{display:none;}
+body[data-view=battle]{background:#070605;}
+body[data-view=battle] .battle-wrap{padding:0;background:transparent;}
+body[data-view=battle] .battle-wrap h2{display:none;}
+body[data-view=battle] #cb{margin:0;}
 </style>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  var v=(location.hash||"").replace("#","");
+  if(v==="gallery"||v==="battle")document.body.dataset.view=v;
+});
+</script>
 </head>
 <body>
-<section id="cb">
-  <div class="bar" id="cbar">
-    <span class="pill"><b>語凰嫣・凰</b></span>
-    <span class="pill">生命 47／80</span>
-    <span class="pill badge-asc">深潛 12</span>
-    <span class="pill badge-pol">污染 三階</span>
-    <button class="lampB" type="button">燈</button>
-  </div>
+<section id="gallery">
+  <h1>卡牌位階</h1>
+  <p class="sub">對應 <b>DATA.rarity</b> 與 <b>rankOf</b>：欄位 <b>d.r</b> 為 0／1／2／3（起始、紙、墨、緋）。<br>
+    詛咒看 <b>d.t==='x'</b>，契看 <b>d.bl</b>，戒指看 <b>d.r==='ring'</b>。三面牌疊在紙、墨或緋之上，不是新的數字位階。</p>
+  <div id="row">
 
-  <div id="rings">
-    <div class="ten-turn">十戒全開　第 2／3 回合</div>
-    <div class="rings-row">
-      <div>
-        <div class="hand-slots left" aria-label="左手，從無名指婚戒起">
-          <span class="ring lit" data-id="devotion" style="--c:var(--ring-devotion)" title="渡鴉之鎖"></span>
-          <span class="ring lit" data-id="pride" style="--c:var(--ring-pride)" title="星核黑洞戒"></span>
-          <span class="ring lit" data-id="envy" style="--c:var(--ring-envy)" title="轉動的眼珠戒"></span>
-          <span class="ring lit" data-id="obsess" style="--c:var(--ring-obsess)" title="觸手神經戒"></span>
-          <span class="ring lit" data-id="cruelty" style="--c:var(--ring-cruelty)" title="人臉血肉戒"></span>
-        </div>
-        <span class="ring-lab">左手</span>
-      </div>
-      <div>
-        <div class="hand-slots" aria-label="右手">
-          <span class="ring lit" data-id="greed" style="--c:var(--ring-greed)" title="黃金咬指口"></span>
-          <span class="ring lit" data-id="wrath" style="--c:var(--ring-wrath)" title="荊棘詛咒戒"></span>
-          <span class="ring lit" data-id="sweetmalice" style="--c:var(--ring-sweetmalice)" title="藏針珍珠戒"></span>
-          <span class="ring lit" data-id="vanity" style="--c:var(--ring-vanity)" title="碎鑽磷光戒"></span>
-          <span class="ring lit" data-id="glutton" style="--c:var(--ring-glutton)" title="血果凍戒"></span>
-        </div>
-        <span class="ring-lab">右手</span>
-      </div>
-      <div id="ringlink">
-        <div class="n">連動 +8</div>
-        <small>已疊 4 層，傷害和格擋各 +8，最多 +18。</small>
-      </div>
-    </div>
-  </div>
+    <figure>
+      <article class="card rk0">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">起始</div><div class="cc">1</div>
+        <div class="cn">打擊</div>
+        <div class="cd">造成 6 點傷害。開局就帶在身上的牌。</div>
+        <div class="glare"></div>
+      </article>
+      <figcaption>起始<small>d.r === 0　暗鐵</small></figcaption>
+    </figure>
 
-  <div id="foes">
-    <div class="foe">
-      <div class="intent atk"><i></i> 攻擊 18</div>
-      <p class="intent-warn">牠把嘴張到下巴裂開。下回合吞掉妳一張手牌。</p>
-      <div class="art" aria-hidden="true">
-        <div class="head"></div>
-        <span class="eye l"></span><span class="eye r"></span>
-        <div class="jaw"></div>
-        <div class="teeth"><b></b><b></b><b></b><b></b><b></b></div>
-      </div>
-      <div class="nm">裂頷　<span class="blk">格擋 4</span></div>
-      <div class="hpbar"><i></i></div>
-      <div class="hpt">74／120</div>
-    </div>
-  </div>
+    <figure>
+      <article class="card rk1">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">紙</div><div class="cc">1</div>
+        <div class="cn">裹起來</div>
+        <div class="cd">格擋 8，目標厄契 1。銀框拉絲，是最常見的位階。</div>
+        <div class="glare"></div>
+      </article>
+      <figcaption>紙<small>d.r === 1　拉絲銀</small></figcaption>
+    </figure>
 
-  <div id="me">
-    <div class="pme" aria-label="語凰嫣立繪位置"></div>
-    <div class="orb">3</div>
-    <div class="info">
-      <div class="row"><b>語凰嫣</b><span>生命 47／80</span><span class="blk">格擋 10</span></div>
-      <div class="hpbar"><i></i></div>
-      <div class="alt">十戒全開・異化 100・前臉三面同時</div>
-    </div>
-  </div>
+    <figure>
+      <article class="card rk2">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">墨</div><div class="cc">1</div>
+        <div class="cn">命線</div>
+        <div class="cd">格擋 5。命線連住的敵人，受到的傷害增加。</div>
+        <div class="glare"></div>
+      </article>
+      <figcaption>墨<small>d.r === 2　暗金、墨黑</small></figcaption>
+    </figure>
 
-  <div id="hand">
-    <!-- 已打出四張戒指牌後，連動 +8；手上仍有戒與三張臉的牌 -->
-    <article class="card rkring face_all" style="--rc:var(--ring-greed);left:calc(50% - 202px);transform:translateY(8px) rotate(-6deg);z-index:11">
-      <div class="ci ci-greed"></div><div class="rk">戒</div><div class="cc">0</div>
-      <div class="cn">黃金咬指口</div>
-      <div class="cd">失去 2 生命，5 傷害。打倒目標得 15 渡鴉幣。</div>
-    </article>
-    <article class="card rkring face_all" style="--rc:var(--ring-wrath);left:calc(50% - 126px);transform:translateY(3px) rotate(-3deg);z-index:12">
-      <div class="ci ci-wrath"></div><div class="rk">戒</div><div class="cc">0</div>
-      <div class="cn">荊棘詛咒戒</div>
-      <div class="cd">8 傷害。這回合自己每失去過一次生命 +4。</div>
-    </article>
-    <article class="card face_yan" style="left:calc(50% - 50px);transform:translateY(0);z-index:13">
-      <div class="ci ci-yan"></div><div class="rk">技</div><div class="cc">1</div>
-      <div class="cn">裹起來</div>
-      <div class="cd">格擋 8，目標厄契 1。嫣面：把人裹住。</div>
-    </article>
-    <article class="card face_xi" style="left:calc(50% + 26px);transform:translateY(3px) rotate(3deg);z-index:14">
-      <div class="ci ci-xi"></div><div class="rk">攻</div><div class="cc">1</div>
-      <div class="cn">咬</div>
-      <div class="cd">4×3 傷害。熙面：多一段，自己也見血。</div>
-    </article>
-    <article class="card rkring face_all" style="--rc:var(--ring-glutton);left:calc(50% + 102px);transform:translateY(8px) rotate(6deg);z-index:15">
-      <div class="ci ci-glutton"></div><div class="rk">戒</div><div class="cc">0</div>
-      <div class="cn">血果凍戒</div>
-      <div class="cd">7 傷害，回復造成傷害的一半。消耗。</div>
-    </article>
-  </div>
+    <figure>
+      <article class="card rk3">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">緋</div><div class="cc">2</div>
+        <div class="cn">裁定</div>
+        <div class="cd">造成 14 點傷害。黑漆刻金，暗虹在漆面上走。</div>
+        <div class="foil"></div><div class="glare"></div>
+      </article>
+      <figcaption>緋<small>d.r === 3　黑漆刻金、閃卡</small></figcaption>
+    </figure>
 
-  <div id="cbtm">
-    <span class="pile">抽牌堆 9</span>
-    <span class="pile">棄牌堆 6</span>
-    <span class="grow"></span>
-    <button type="button">牌組</button>
-    <button class="main" type="button">結束回合</button>
+    <figure>
+      <article class="card rko">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">契</div><div class="cc">2</div>
+        <div class="cn">無貌之神</div>
+        <div class="cd">本源的招牌。血漆活骨，顏色跟本源走。</div>
+        <div class="glare"></div>
+      </article>
+      <figcaption>契<small>d.bl　血漆活骨</small></figcaption>
+    </figure>
+
+    <figure>
+      <article class="card rkx">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">詛咒</div><div class="cc">—</div>
+        <div class="cn">耳邊的低語</div>
+        <div class="cd">這張牌不該在妳手上。框是裂的，不要華麗。</div>
+        <div class="glare"></div>
+      </article>
+      <figcaption>詛咒<small>d.t === 'x'　裂框</small></figcaption>
+    </figure>
+
+    <figure>
+      <article class="card rkring" style="--rc:var(--ring-devotion)">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">戒</div><div class="cc">1</div>
+        <div class="cn">渡鴉之鎖</div>
+        <div class="cd">格擋 10，這次的格擋留到下一回合。琺瑯鑲座。</div>
+        <div class="glare"></div>
+      </article>
+      <figcaption>戒<small>d.r === 'ring'　琺瑯鑲座</small></figcaption>
+    </figure>
+
+    <figure>
+      <article class="card rk1 fthree">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="tri"></div>
+        <div class="ci"></div>
+        <i class="crest"><i></i><i></i><i></i></i>
+        <div class="rk">紙</div><div class="cc">1</div>
+        <div class="cn">三聲同說</div>
+        <div class="cd">照前臉選一種效果。紙的銀框還在，內緣是三色刻線。</div>
+        <div class="glare"></div>
+      </article>
+      <figcaption>三面<small>yy_f_*　疊在紙／墨／緋上</small></figcaption>
+    </figure>
+
   </div>
 </section>
+
+<div class="battle-wrap">
+  <h2>戰鬥畫面</h2>
+  <section id="cb">
+    <div class="bar" id="cbar">
+      <span class="pill"><b>語凰嫣・凰</b></span>
+      <span class="pill">生命 47／80</span>
+      <span class="pill badge-asc">深潛 12</span>
+      <span class="pill badge-pol">污染 三階</span>
+      <button class="lampB" type="button">燈</button>
+    </div>
+    <div id="rings">
+      <div class="ten-turn">十戒全開　第 2／3 回合</div>
+      <div class="rings-row">
+        <div>
+          <div class="hand-slots left" aria-label="左手，從無名指婚戒起">
+            <span class="ring lit" data-id="devotion" style="--c:var(--ring-devotion)" title="渡鴉之鎖"></span>
+            <span class="ring lit" data-id="pride" style="--c:var(--ring-pride)" title="星核黑洞戒"></span>
+            <span class="ring lit" data-id="envy" style="--c:var(--ring-envy)" title="轉動的眼珠戒"></span>
+            <span class="ring lit" data-id="obsess" style="--c:var(--ring-obsess)" title="觸手神經戒"></span>
+            <span class="ring lit" data-id="cruelty" style="--c:var(--ring-cruelty)" title="人臉血肉戒"></span>
+          </div>
+          <span class="ring-lab">左手</span>
+        </div>
+        <div>
+          <div class="hand-slots" aria-label="右手">
+            <span class="ring lit" data-id="greed" style="--c:var(--ring-greed)" title="黃金咬指口"></span>
+            <span class="ring lit" data-id="wrath" style="--c:var(--ring-wrath)" title="荊棘詛咒戒"></span>
+            <span class="ring lit" data-id="sweetmalice" style="--c:var(--ring-sweetmalice)" title="藏針珍珠戒"></span>
+            <span class="ring lit" data-id="vanity" style="--c:var(--ring-vanity)" title="碎鑽磷光戒"></span>
+            <span class="ring lit" data-id="glutton" style="--c:var(--ring-glutton)" title="血果凍戒"></span>
+          </div>
+          <span class="ring-lab">右手</span>
+        </div>
+        <div id="ringlink">
+          <div class="n">連動 +8</div>
+          <small>已疊 4 層，傷害和格擋各 +8，最多 +18。</small>
+        </div>
+      </div>
+    </div>
+    <div id="foes">
+      <div class="foe">
+        <div class="intent atk"><i></i> 攻擊 18</div>
+        <p class="intent-warn">牠把嘴張到下巴裂開。下回合吞掉妳一張手牌。</p>
+        <div class="art" aria-hidden="true">
+          <div class="head"></div>
+          <span class="eye l"></span><span class="eye r"></span>
+          <div class="jaw"></div>
+          <div class="teeth"><b></b><b></b><b></b><b></b><b></b></div>
+        </div>
+        <div class="nm">裂頷　<span class="blk">格擋 4</span></div>
+        <div class="hpbar"><i></i></div>
+        <div class="hpt">74／120</div>
+      </div>
+    </div>
+    <div id="me">
+      <div class="pme" aria-label="語凰嫣立繪位置"></div>
+      <div class="orb">3</div>
+      <div class="info">
+        <div class="row"><b>語凰嫣</b><span>生命 47／80</span><span class="blk">格擋 10</span></div>
+        <div class="hpbar"><i></i></div>
+        <div class="alt">十戒全開・異化 100・前臉三面同時</div>
+      </div>
+    </div>
+    <div id="hand">
+      <article class="card rkring face_all" style="--rc:var(--ring-greed);left:calc(50% - 202px);transform:translateY(8px) rotate(-6deg);z-index:11">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">戒</div><div class="cc">0</div>
+        <div class="cn">黃金咬指口</div>
+        <div class="cd">失去 2 生命，5 傷害。打倒目標得 15 渡鴉幣。</div>
+      </article>
+      <article class="card rk2 face_yan" style="left:calc(50% - 126px);transform:translateY(3px) rotate(-3deg);z-index:12">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">墨</div><div class="cc">1</div>
+        <div class="cn">命線</div>
+        <div class="cd">格擋 5。命線連住的敵人，受傷增加。</div>
+      </article>
+      <article class="card rk3 face_huang" style="left:calc(50% - 50px);transform:translateY(0);z-index:13">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">緋</div><div class="cc">2</div>
+        <div class="cn">裁定</div>
+        <div class="cd">造成 14 點傷害。</div>
+        <div class="foil"></div>
+      </article>
+      <article class="card rk1 fthree" style="left:calc(50% + 26px);transform:translateY(3px) rotate(3deg);z-index:14">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="tri"></div>
+        <div class="ci"></div>
+        <i class="crest"><i></i><i></i><i></i></i>
+        <div class="rk">紙</div><div class="cc">1</div>
+        <div class="cn">三聲同說</div>
+        <div class="cd">6 傷害，厄契 2。照前臉變。</div>
+      </article>
+      <article class="card rkring" style="--rc:var(--ring-glutton);left:calc(50% + 102px);transform:translateY(8px) rotate(6deg);z-index:15">
+        <span class="orn tl"></span><span class="orn tr"></span><span class="orn bl"></span><span class="orn br"></span>
+        <div class="ci"></div><i class="crest"></i><div class="rk">戒</div><div class="cc">0</div>
+        <div class="cn">血果凍戒</div>
+        <div class="cd">7 傷害，回復一半。消耗。</div>
+      </article>
+    </div>
+    <div id="cbtm">
+      <span class="pile">抽牌堆 9</span>
+      <span class="pile">棄牌堆 6</span>
+      <span class="grow"></span>
+      <button type="button">牌組</button>
+      <button class="main" type="button">結束回合</button>
+    </div>
+  </section>
+</div>
 </body>
 </html>
