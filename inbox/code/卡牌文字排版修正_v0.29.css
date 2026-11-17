@@ -1,0 +1,26 @@
+/* v0.29 卡牌文字排版修正：貼在 hex/index.html 最後一個 style 區塊的結尾（要排在所有 html body .card 規則之後） */
+/* 1. 牌名：不換行，太長由 fitCardText 自動縮字，最後才省略號 */
+html body .card .cn{top:74px;height:20px;line-height:17px;padding:1px 3px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;z-index:2}
+/* 2. 位階徽章：整顆放在圖上，底邊貼牌名上緣，不再蓋住牌名中間 */
+html body .card .crest{top:auto;bottom:calc(162px - 74px + 1px)}
+html body .card.tier3 .crest{top:auto;bottom:calc(162px - 74px + 1px)}
+/* 3. 效果文字：預設 11px，區塊固定在牌名下方到底部資訊列上方，讓 JS 縮字有固定高度可量 */
+html body .card .cd{top:96px;bottom:14px;font-size:11px;line-height:1.32;word-break:break-all;overflow-wrap:anywhere;overflow:hidden}
+html body .card .cd.long{bottom:14px;-webkit-mask-image:none;mask-image:none}
+html body .card .cd.fit-cut{-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+/* 4. 底部資訊列 14px：寶石置中、染度靠右、長按提示靠左，三者不再疊在 bottom:2px 同一點 */
+html body .card .gems{bottom:2px;left:30px;right:30px;line-height:10px}
+html body .card .plb{bottom:2px;right:3px;font-size:9px;line-height:10px}
+html body .card .lp{bottom:2px;left:3px;right:auto;font-size:8.5px;line-height:10px;letter-spacing:0;text-align:left}
+/* 5. 慾望註記：改成貼在效果區上方的單行條，不壓效果文字 */
+html body .card .pnote{top:auto;bottom:14px;font-size:8.5px;line-height:11px;background:#000a;padding:0 2px}
+html body .card.has-pnote .cd{bottom:26px}
+/* 6. 手牌直排牌名不碰費用球 */
+#hand .card .hn{top:58px;max-height:36px;font-size:11px}
+/* 7. 長文卡（9px 還裝不下）：JS 加 fit-tall，圖縮成 56px、牌名上移，效果區多出 18px */
+html body .card.fit-tall .ci{height:56px}
+html body .card.fit-tall .cn{top:56px}
+html body .card.fit-tall .cd{top:77px}
+html body .card.fit-tall .crest{bottom:calc(162px - 56px + 1px);width:18px;height:18px;font-size:10px}
+html body .card.lng .gems{left:auto;right:4px;text-align:right;letter-spacing:1px}
+html body .card.lng.pl .gems{right:30px}
