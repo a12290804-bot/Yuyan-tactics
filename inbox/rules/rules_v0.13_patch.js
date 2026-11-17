@@ -10,7 +10,7 @@ DATA.taint={
  fullToAlien:1,         // 滿血時的治療改成等量異化值
  mergeTaint:2,          // 每次異化值到 100（合相）隨機 2 張牌污染 +1
  restPurify:1,          // 休息點新選項「斷」：放棄回血，選 1 張牌污染歸 0
- img:'card_<id>_t'      // 有這張圖就用，沒有就疊 fx_taint 遮罩
+ img:'card_<id>_x'      // 有這張圖就用，沒有就疊 fx_taint 遮罩
 };
 DATA.taintCards={
 yy_t_feed:{n:'餵我',c:0,t:'s',r:1,ch:'yy',img:'TBD',fx:[["taint",1],["heal",3]],u:{fx:[["taint",1],["heal",5]]}},
