@@ -3,7 +3,7 @@
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.30',
+ version:'v0.31',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -1693,5 +1693,26 @@ DATA.notes.unshift(
  {ver:'v0.27',lines:['語嫣和語熙合成「語凰嫣」：三張臉（嫣、熙、凰）每回合輪流在前，同一張牌會跟著臉變成不同的版本。凰要等異化第一次到 60 才醒。','半妖起，後面的臉每回合搶一張手牌改用她的版本。合相兩回合後克勞德喚回，異化歸 0。','新牌：十二張三面牌。十指戒：簽下的慾望契那枚開局就亮，其他九枚要達成條件；同時亮五枚戒指牌升級，十枚全亮可以十戒全開。','之前解鎖語熙的人，殘響不退，衣鋪多一套「開背活革」。']},
  {ver:'v0.26',lines:['怪物變強：一般和菁英生命 ×1.12、攻擊 ×1.10，菁英一定帶一個詞綴。每隻敵人都有大招，放之前一回合會「蓄力」並說清楚要做什麼。','卡牌去重：重複的牌全部改掉或重做，新增 45 張能力牌（一般牌池也抽得到）、十張戒指牌、顧沉舟補到 15 張。','九尾的被動改成每回合第一張攻擊都給厄契。']}
 );
+// ── v0.31 污染化（規則 v0.13）與語凰嫣慾望（文字 v0.31）
+(function(){
+const TX=DATA.TX||{};const T=TX.V031||{};const IN='../inbox/';
+// 八張污染牌
+if(DATA.taintCards){const TC=T.taintCards||{};const ART={yy_t_feed:'y_ex_yan',yy_t_more:'y_ex_xi',yy_t_devour:'y_ex_xi',yy_t_empty:'y_ex_huang',yy_t_crave:'y_ex_huang',yy_t_hoard:'y_ex_yan',yy_t_binge:'y_ex_xi',yy_t_hollow:'y_ex_huang'};
+ for(const [k,c] of Object.entries(DATA.taintCards)){c.gen=1;c.taintCard=1;c.img=IN+(ART[k]||'y_ex_yan')+'.webp';const t=TC[k];if(t){if(t.n)c.n=t.n;if(t.fl)c.fl=t.fl;if(t.line)(DATA.cardLine=DATA.cardLine||{})[k]=t.line;}}
+ Object.assign(DATA.cards,DATA.taintCards);Object.assign(DATA.powers,DATA.taintPowers||{});}
+// 有污染版卡面的牌
+DATA.taintArt={};for(const k of ['yy_queen','yy_bloodpact','yy_sliteye','yy_redfate','yy_judge','yy_lastknot'])if(DATA.cards[k])DATA.taintArt[k]=IN+'card_'+k+'_x.webp';
+// 核心台詞
+if(T.talk){for(const k of ['start','win','lose','winMore','loseMore'])if(T.talk[k]&&T.talk[k].yy&&DATA.talk[k])DATA.talk[k].yy=T.talk[k].yy;}
+if(T.chars&&T.chars.yy&&T.chars.yy.line)DATA.chars.yy.line=T.chars.yy.line;
+if(T.alien&&DATA.T&&DATA.T.ALIEN)for(const k of Object.keys(T.alien))if(DATA.T.ALIEN[k]&&T.alien[k].lines)DATA.T.ALIEN[k].lines=T.alien[k].lines;
+if(DATA.yhText){const Y=DATA.yhText=Object.assign({},DATA.yhText);for(const k of ['rotateStart','wakeHuang','steal','merge','callback'])if(T[k])Y[k]=T[k];}
+// 十個戒指慾望契：名字、說明、開局短句
+for(const [k,v] of Object.entries(T.desire||{})){const d=DATA.desires[k];if(!d)continue;if(v.n)d.n=v.n;if(v.d)d.d=v.d;if(v.pick)d.pick=v.pick;if(v.yx)d.pickXi=v.yx;}
+DATA.desireState=T.desireState||{};DATA.battleBark=T.battle||{};DATA.taintText=T.taint||{};
+// 短文（不寫進卡面效果）
+for(const [k,v] of Object.entries(T.cardFlavor||{}))if(DATA.cards[k])DATA.cards[k].fl=v;
+})();
+DATA.notes.unshift({ver:'v0.31',lines:['污染化：語凰嫣的牌被慾望吃過會變強（最多兩倍），但每打一張都要失去生命、漲異化值，並累積「饜」。三層污染的牌打完會停不下來，手上的污染牌自己一張接一張打出去。','戒斷：這回合一張污染牌都沒打，回合結束失去「饜」那麼多生命。滿血時的治療會變成異化值。休息點多了「斷」：不回血，把一張牌的污染清掉。','新牌 8 張：餵我、還要、自噬、越吃越空、渴、都是我的、停不下來、空心。六張舊牌有污染版卡面。','語凰嫣的台詞重寫：出發、回來、換臉、合相、十種慾望人格各有一段狀態劇情。','卡牌文字排版：長的效果文字自動縮小，牌名、位階、底部標籤不再疊在一起。','介面：整體換成華麗詭異的樣子——金絲框、血絲、會呼吸的暗角、眼睛紋的分隔線。']});
 if(typeof module!=='undefined')module.exports=DATA;else root.CARD_DATA=DATA;
 })(this);

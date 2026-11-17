@@ -555,9 +555,123 @@ body.pk4::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:40
 /* 減少動態 */
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}#bossin,#inkveil,#fxdust{display:none}}
 button.main,#bEnd,.lampB{min-height:44px}
+
+/* v0.29 卡牌文字排版修正：貼在 hex/index.html 最後一個 style 區塊的結尾（要排在所有 html body .card 規則之後） */
+/* 1. 牌名：不換行，太長由 fitCardText 自動縮字，最後才省略號 */
+html body .card .cn{top:74px;height:20px;line-height:17px;padding:1px 3px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;z-index:2}
+/* 2. 位階徽章：整顆放在圖上，底邊貼牌名上緣，不再蓋住牌名中間 */
+html body .card .crest{top:auto;bottom:calc(162px - 74px + 1px)}
+html body .card.tier3 .crest{top:auto;bottom:calc(162px - 74px + 1px)}
+/* 3. 效果文字：預設 11px，區塊固定在牌名下方到底部資訊列上方，讓 JS 縮字有固定高度可量 */
+html body .card .cd{top:96px;bottom:14px;font-size:11px;line-height:1.32;word-break:break-all;overflow-wrap:anywhere;overflow:hidden}
+html body .card .cd.long{bottom:14px;-webkit-mask-image:none;mask-image:none}
+html body .card .cd.fit-cut{-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+/* 4. 底部資訊列 14px：寶石置中、染度靠右、長按提示靠左，三者不再疊在 bottom:2px 同一點 */
+html body .card .gems{bottom:2px;left:30px;right:30px;line-height:10px}
+html body .card .plb{bottom:2px;right:3px;font-size:9px;line-height:10px}
+html body .card .lp{bottom:2px;left:3px;right:auto;font-size:8.5px;line-height:10px;letter-spacing:0;text-align:left}
+/* 5. 慾望註記：改成貼在效果區上方的單行條，不壓效果文字 */
+html body .card .pnote{top:auto;bottom:14px;font-size:8.5px;line-height:11px;background:#000a;padding:0 2px}
+html body .card.has-pnote .cd{bottom:26px}
+/* 6. 手牌直排牌名不碰費用球 */
+#hand .card .hn{top:58px;max-height:36px;font-size:11px}
+/* 7. 長文卡（9px 還裝不下）：JS 加 fit-tall，圖縮成 56px、牌名上移，效果區多出 18px */
+html body .card.fit-tall .ci{height:56px}
+html body .card.fit-tall .cn{top:56px}
+html body .card.fit-tall .cd{top:77px}
+html body .card.fit-tall .crest{bottom:calc(162px - 56px + 1px);width:18px;height:18px;font-size:10px}
+html body .card.lng .gems{left:auto;right:4px;text-align:right;letter-spacing:1px}
+html body .card.lng.pl .gems{right:30px}
+
+
+/* ── v0.31 華麗詭異：金絲框、血絲、眼紋分隔線（最後一層） */
+::selection{background:#7a1a22;color:#ffe9c6}
+*{scrollbar-width:thin;scrollbar-color:#6b4f2a #0a0807}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:linear-gradient(#8a6b3a,#4a3a28);border-radius:3px}::-webkit-scrollbar-track{background:#0a0807}
+/* 整個畫面的金絲框 */
+#gframe{position:fixed;inset:3px;z-index:44;pointer-events:none;border:1px solid #8a6b3a55;box-shadow:inset 0 0 0 3px #00000088,inset 0 0 0 4px #c9a35c22,inset 0 0 90px #1a000466;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E") top left/38px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E") top right/38px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E") bottom left/38px no-repeat,url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E") bottom right/38px no-repeat}
+#gframe{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:38px;background-position:top left,top right,bottom left,bottom right}
+#gframe i{position:absolute;width:38px;height:38px}
+#gveil{position:fixed;inset:0;z-index:43;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,transparent 52%,#2a000a55 82%,#12000699 100%);animation:veilBreath 7s ease-in-out infinite}
+@keyframes veilBreath{0%,100%{opacity:.75}50%{opacity:1}}
+/* 標題與分隔 */
+h2{font-weight:700;letter-spacing:6px;background:linear-gradient(#fff4dc,#d8b46a 55%,#8a6532);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;filter:drop-shadow(0 2px 3px #000) drop-shadow(0 0 10px #7a1a2266);padding-bottom:26px;position:relative}
+h2::after{content:'';position:absolute;left:50%;bottom:0;width:220px;max-width:90%;height:22px;transform:translateX(-50%);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='22' viewBox='0 0 220 22' fill='none'%3E%3Cpath d='M0 11h78M142 11h78' stroke='%238a6b3a' stroke-width='1'/%3E%3Cpath d='M70 11l6-4 6 4-6 4zM138 11l6-4 6 4-6 4z' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.8'/%3E%3Cpath d='M90 11c6-8 14-9 20-9s14 1 20 9c-6 8-14 9-20 9s-14-1-20-9z' fill='%230a0807' stroke='%23c9a35c' stroke-width='1.1'/%3E%3Ccircle cx='110' cy='11' r='6.2' fill='%233a1012' stroke='%23c9a35c' stroke-width='.9'/%3E%3Cellipse cx='110' cy='11' rx='1.5' ry='5.4' fill='%23000'/%3E%3Cpath d='M96 6l-3-4M103 3l-1-3M117 3l1-3M124 6l3-4' stroke='%238a6b3a' stroke-width='.8'/%3E%3C/svg%3E") center/contain no-repeat;animation:eyeBlink 9s infinite}
+@keyframes eyeBlink{0%,93%,100%{transform:translateX(-50%) scaleY(1)}95.5%{transform:translateX(-50%) scaleY(.08)}}
+h3{letter-spacing:3px;color:var(--gold-hi);text-shadow:0 1px 0 #000,0 0 12px #7a1a2255}
+h3::before,h3::after{content:'◆';font-size:8px;color:#7a1a22;-webkit-text-stroke:.5px #c9a35c;vertical-align:middle;margin:0 8px}
+#title h1{letter-spacing:10px;background:linear-gradient(175deg,#fff8e6 8%,#e8d5a0 32%,#b08a3e 55%,#5a3a12 72%,#d8b46a 92%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 2px #000) drop-shadow(0 0 22px #7a1a2288)}
+/* 按鈕：黑漆金邊 */
+button{background:linear-gradient(180deg,#221a14 0%,#120e0b 55%,#0a0807 100%);border:1px solid #6b4f2a;color:var(--ink);border-radius:3px;box-shadow:inset 0 1px 0 #ffe7a822,inset 0 -1px 0 #000,inset 0 0 0 1px #000,0 2px 6px #000a;letter-spacing:1px;transition:border-color .2s,box-shadow .2s,transform .12s;white-space:nowrap}
+button:active{transform:translateY(1px) scale(.985);border-color:#e8d5a0;box-shadow:inset 0 0 12px #7a1a2288,0 0 10px #c9a35c55}
+button:disabled{opacity:.45;filter:grayscale(.6)}
+button.main{background:linear-gradient(180deg,#8a2a26 0%,#4a1412 48%,#2a0808 100%);border-color:#d6b26a;color:#fff1d4;box-shadow:inset 0 1px 0 #ffb0a044,inset 0 -1px 0 #000,inset 0 0 0 1px #000,inset 0 0 0 2px #c9a35c44,0 0 16px #7a1a2277,0 3px 8px #000c;text-shadow:0 1px 2px #000;position:relative}
+button.main::before,button.main::after{content:'❖';position:absolute;top:50%;transform:translateY(-50%);font-size:9px;color:#e8d5a0;opacity:.75}
+button.main::before{left:8px}button.main::after{right:8px}
+button.opt,.opt{white-space:normal;text-align:left;border-left:3px solid #8a6b3a;background:linear-gradient(90deg,#221812 0%,#120e0b 40%,#0a0807 100%);position:relative}
+button.opt:active{border-left-color:#c41e3a}
+.tabs button{background:none;box-shadow:none;border:0;border-bottom:2px solid transparent}
+.tabs button.on{background:linear-gradient(180deg,transparent,#7a1a2233);color:var(--gold-hi);border-bottom-color:var(--gold);text-shadow:0 0 8px #c9a35c66}
+/* 面板：四角金絲、暗紋 */
+.modal .box,#talk .box,.toast{background-color:#120e0b;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 44 44' fill='none' stroke='%23c9a35c' stroke-width='1.2'%3E%3Cpath d='M2 42V14C2 7 7 2 14 2h28'/%3E%3Cpath d='M6 42V16c0-6 4-10 10-10h26' stroke='%238a6b3a' stroke-width='.8'/%3E%3Cpath d='M2 20c6 0 10-3 10-8s-5-6-7-3 1 5 3 4' /%3E%3Cpath d='M20 2c0 6-3 10-8 10' stroke='%238a6b3a'/%3E%3Ccircle cx='12' cy='12' r='1.6' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.6'/%3E%3Cpath d='M26 2l2 3 2-3M2 26l3 2-3 2' stroke='%23e8d5a0' stroke-width='.8'/%3E%3C/svg%3E"),repeating-radial-gradient(circle at 0 0,#c9a35c08 0 1px,transparent 1px 14px),repeating-radial-gradient(circle at 14px 14px,#7a1a220a 0 1px,transparent 1px 14px),linear-gradient(#1c1511,#0c0908);background-repeat:no-repeat,no-repeat,no-repeat,no-repeat,repeat,repeat,no-repeat;background-size:30px,30px,30px,30px,auto,auto,auto;background-position:2px 2px,calc(100% - 2px) 2px,2px calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),0 0,0 0,0 0;border:1px solid #8a6b3a;box-shadow:inset 0 0 0 1px #000,inset 0 0 0 3px #1a1410,inset 0 0 0 4px #c9a35c33,inset 0 0 40px #00000099,0 0 0 1px #000,0 12px 40px #000e,0 0 30px #7a1a2233}
+.toast{background-size:18px,18px,18px,18px,auto,auto,auto;padding-left:22px;padding-right:22px}
+.modal .box::before{content:'';position:absolute;left:14%;right:14%;top:-1px;height:10px;pointer-events:none;background:radial-gradient(ellipse 5px 9px at 12% 0,#7a1a22 60%,transparent 62%),radial-gradient(ellipse 3px 6px at 30% 0,#5a0f16 60%,transparent 62%),radial-gradient(ellipse 6px 10px at 55% 0,#7a1a22 60%,transparent 62%),radial-gradient(ellipse 3px 5px at 74% 0,#5a0f16 60%,transparent 62%),radial-gradient(ellipse 4px 8px at 90% 0,#7a1a22 60%,transparent 62%);opacity:.85}
+.rel{background:linear-gradient(90deg,#221812ee 0%,#130e0be8 30%,#0b0807e6 100%);border:1px solid #4a3a28;border-left:3px solid #8a6b3a;box-shadow:inset 0 1px 0 #ffe7a811,inset 0 0 0 1px #000,0 2px 8px #0009;position:relative}
+.rel img{border-radius:3px;box-shadow:0 0 0 1px #000,0 0 0 2px #6b4f2a,0 2px 6px #000}
+.pill{background:linear-gradient(#1a1410,#0a0807);border:1px solid #5a4630;border-radius:2px;box-shadow:inset 0 1px 0 #ffe7a814,inset 0 0 0 1px #000;white-space:nowrap}
+.bar{flex-wrap:nowrap;gap:5px;overflow:hidden}.bar button{flex:0 0 auto;padding:6px 8px;min-height:36px}.bar .pill{flex:0 0 auto}
+/* 能量：一顆金色的眼 */
+.orb{position:relative;background:radial-gradient(circle at 50% 50%,#1a0a04 0 18%,#b9792a 20%,#ffe2a0 34%,#c9892f 52%,#5a3410 70%,#1a0e04 100%);border:1px solid #000;box-shadow:0 0 0 2px #6b4f2a,0 0 0 3px #000,0 0 0 4px #c9a35c66,0 0 20px #e9b44a55,inset 0 0 10px #000;color:#fff8e6;text-shadow:0 0 4px #000,0 1px 2px #000,0 0 10px #000;overflow:hidden}
+.orb::before{content:'';position:absolute;left:50%;top:8%;bottom:8%;width:22%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,#000 55%,#2a0a04 100%);opacity:.72;z-index:0;animation:pupil 5.5s ease-in-out infinite}
+@keyframes pupil{0%,100%{width:22%}45%{width:12%}60%{width:30%}}
+.orb>*{position:relative;z-index:1}
+/* 血條：液體 */
+.hpbar{border-radius:2px;background:#16080a;border:1px solid #000;box-shadow:0 0 0 1px #5a2a22,inset 0 2px 3px #000}
+.hpbar i{background:linear-gradient(180deg,#ff8a7a 0,#c8382c 22%,#7a1a16 70%,#3a0808 100%);box-shadow:inset 0 1px 0 #ffffff55,0 0 8px #c8382c66}
+.hpbar i::after{content:'';position:absolute;right:-1px;top:-1px;bottom:-1px;width:3px;background:#ffd0c0;border-radius:2px;opacity:.7;filter:blur(.5px)}
+/* 地圖節點 */
+.node{filter:drop-shadow(0 2px 4px #000)}
+/* 對話框 */
+#talk .who{color:var(--gold-hi);letter-spacing:3px;text-shadow:0 1px 0 #000,0 0 10px #7a1a2266}
+#talk .who:not(:empty)::before{content:'❖ ';color:#7a1a22;-webkit-text-stroke:.5px #c9a35c}
+#talk .say{line-height:1.8}
+.big{line-height:1.75}
+/* 污染牌：血絲爬上卡面 */
+html body .card.tnt::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:4;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='112' height='162' viewBox='0 0 112 162' fill='none' stroke='%23b0182a' stroke-linecap='round'%3E%3Cpath d='M0 30c14 2 20 12 34 10s14-16 30-12 18 18 48 10' stroke-width='1.4' opacity='.8'/%3E%3Cpath d='M34 40c2 12-6 18-2 30s16 10 18 24-10 20-6 36' stroke-width='1.1' opacity='.7'/%3E%3Cpath d='M64 28c6 10 0 18 8 26s20 4 24 16-6 18-2 30' stroke-width='.9' opacity='.65'/%3E%3Cpath d='M0 96c10-2 16 6 26 2s8-14 22-10' stroke-width='.9' opacity='.6'/%3E%3Cpath d='M112 120c-12 0-16 10-28 8s-12-12-24-8' stroke-width='1' opacity='.6'/%3E%3Ccircle cx='34' cy='40' r='2.2' fill='%23e03a4a' stroke='none' opacity='.8'/%3E%3Ccircle cx='72' cy='54' r='1.6' fill='%23e03a4a' stroke='none' opacity='.7'/%3E%3Ccircle cx='50' cy='94' r='1.8' fill='%23e03a4a' stroke='none' opacity='.7'/%3E%3C/svg%3E") center/cover no-repeat;mix-blend-mode:screen;opacity:.55}
+html body .card.tn2::after{opacity:.8}
+html body .card.tn3::after{opacity:1;animation:veinPulse 1.1s ease-in-out infinite}
+@keyframes veinPulse{0%,100%{filter:brightness(1)}35%{filter:brightness(1.7)}55%{filter:brightness(1.1)}}
+html body .card.tnt{box-shadow:0 10px 20px #000d,0 0 0 1px #000,0 0 0 2px #7a1020,0 0 14px #c0182a66,inset 0 0 18px #5a0a1299}
+html body .card.tn3{box-shadow:0 10px 20px #000d,0 0 0 1px #000,0 0 0 2px #c41e3a,0 0 20px #ff2a55aa,inset 0 0 22px #7a0a16cc}
+.card .ci.tntfx{filter:saturate(1.3) contrast(1.15) hue-rotate(-12deg)}
+.card .tnb{position:absolute;left:3px;bottom:3px;z-index:7;font-size:8px;letter-spacing:1px;color:#ff3a55;text-shadow:0 0 4px #000,0 0 6px #ff2a55;background:#000c;padding:0 3px;border-radius:6px;border:1px solid #7a1020}
+html body .card.tnt .lp{left:26px}
+.kw.tnk{border-left:3px solid #c41e3a;background:#2a060a66}.cfl{font-style:italic;color:#b9a888;border-top:1px solid #4a3a2866;padding-top:8px;margin-top:10px;text-align:center}
+.satb{position:absolute;right:-4px;top:-12px;z-index:6;font-size:12px;letter-spacing:1px;color:#ffd6d0;background:linear-gradient(#5a0a12,#2a0408);border:1px solid #c41e3a;border-radius:10px;padding:1px 8px;box-shadow:0 0 10px #c41e3a88,inset 0 1px 0 #ffffff22;animation:satThrob 1.6s ease-in-out infinite}.satb b{color:#fff;font-size:14px}
+@keyframes satThrob{0%,100%{transform:scale(1)}20%{transform:scale(1.08)}40%{transform:scale(1)}}
+/* 意圖吊牌、提示 */
+.intent{box-shadow:0 6px 14px #000d,inset 0 0 0 1px #000,inset 0 1px 0 #ffe7a822}
+.hint{border-left:2px solid #4a3a28;padding-left:8px}
+#modal{backdrop-filter:blur(2px) saturate(.8)}
+@media (prefers-reduced-motion:reduce){#gveil{animation:none}}
+
+/* v0.31 修正 */
+html body .page h2::after,html body .modal .box h2::after,html body #mbox h2::after,html body h2::after{content:'';display:block;position:absolute;left:50%;bottom:0;width:220px;max-width:90%;height:22px;margin:0;font-size:0;opacity:1;transform:translateX(-50%);background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='22' viewBox='0 0 220 22' fill='none'%3E%3Cpath d='M0 11h78M142 11h78' stroke='%238a6b3a' stroke-width='1'/%3E%3Cpath d='M70 11l6-4 6 4-6 4zM138 11l6-4 6 4-6 4z' fill='%237a1a22' stroke='%23c9a35c' stroke-width='.8'/%3E%3Cpath d='M90 11c6-8 14-9 20-9s14 1 20 9c-6 8-14 9-20 9s-14-1-20-9z' fill='%230a0807' stroke='%23c9a35c' stroke-width='1.1'/%3E%3Ccircle cx='110' cy='11' r='6.2' fill='%233a1012' stroke='%23c9a35c' stroke-width='.9'/%3E%3Cellipse cx='110' cy='11' rx='1.5' ry='5.4' fill='%23000'/%3E%3Cpath d='M96 6l-3-4M103 3l-1-3M117 3l1-3M124 6l3-4' stroke='%238a6b3a' stroke-width='.8'/%3E%3C/svg%3E") center/contain no-repeat;animation:eyeBlink 9s infinite}
+.orb{background:linear-gradient(90deg,transparent 41%,#000000b0 46%,#000000b0 54%,transparent 59%),radial-gradient(circle at 50% 50%,#3a1a06 0 14%,#b9792a 22%,#ffe2a0 36%,#c9892f 54%,#5a3410 72%,#1a0e04 100%);-webkit-text-stroke:.6px #000;font-weight:700}
+.orb::before{content:none}
+#bEnd::before,#bEnd::after,.lampB::before,.lampB::after,.bar button.main::before,.bar button.main::after{content:none}
+#bEnd{padding-left:10px;padding-right:10px}
+#gframe{background-size:28px;inset:2px;opacity:.9}
+.lampB{z-index:46;position:relative}
+.bar{padding-right:10px}
+
+.bar .lampB{margin-left:auto;flex:0 0 auto}.bar .pill{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}.bar .relics{flex:1 1 20px}
+
+.bar .pill{font-size:11.5px;padding:3px 5px}
 </style>
 </head>
 <body>
+<div id="gveil"></div><div id="gframe"></div>
 <!-- 標題 -->
 <section id="title" class="scr on"><div class="bg" id="tbg"></div>
  <h1>渡鴉下潛</h1>
@@ -6317,7 +6431,418 @@ const TEXT_V030 = {
 
 if (typeof module !== 'undefined') module.exports = TEXT_V030;
 
-const X={V025:TEXT_V025,V026:TEXT_V026,V027:TEXT_V027,V028:TEXT_V028,V029:TEXT_V029,V030:TEXT_V030};
+// ── 渡鴉下潛_文字劇情_v0.31_語凰嫣慾望.js
+// 《渡鴉下潛》文字劇情 v0.31　語凰嫣慾望
+// 對齊規則 v0.13 污染化（e74d5be）。重寫語凰嫣核心台詞與卡牌短文，並加上十種慾望人格狀態劇情。
+// 本檔取代：DATA.talk.start/win/lose 與 winMore/loseMore 的語凰嫣句、DATA.chars.yy.line、
+// ALIEN 語凰嫣句、v0.26 換臉／醒來／搶牌／合相語凰嫣句、DESIRE（改為十個戒指契）。
+// 新：battle 短句、desireState、八張 yy_t_* 與污染相關句子。
+// 三面牌與戒指牌只補 fl，卡面效果與原打出句不改。喚回主句不動。
+// 說明見同目錄「文字_v0.31_語凰嫣慾望.md」。
+
+const TEXT_V031 = {
+  ver:'v0.31',
+  title:'語凰嫣慾望',
+  rules:'v0.13',
+  replaces:'talk.start/win/lose + winMore/loseMore (yy lines); chars.yy.line; ALIEN yy lines; v0.26 rotate/wake/steal/merge yy lines; DESIRE (10 ring pacts). New: battle barks, desireState, yy_t_* cards, taint lines. Ring and yy_f_* get fl only.',
+  speaker:{
+    'yy:huang':'凰',
+    'yy:yan':'嫣',
+    'yy:xi':'熙',
+    'yy:all':'合相',
+    cl:'克勞德'
+  },
+  note:'現行 DATA.talk 仍用 [\'yy\',\'smug\',句子]。新系統用 yy:yan／y_ex_yan。打出句不報數字。喚回主句「姐姐，看我。是我。」不要改。',
+
+  talk:{
+    start:{
+      yy:[['yy','smug','下去。下面有我還沒吃到的。'],['cl',null,'姐姐，燈給妳。我在上面等妳。'],['yy','laugh','等著。吃完我就回來。回來還是餓。']]
+    },
+    win:{
+      yy:[['yy','laugh','吃完了。還餓。'],['cl',null,'姐姐！……歡迎回來。']]
+    },
+    lose:{
+      yy:[['yy','pout','還沒吃夠。線斷了，下次再咬。'],['cl',null,'姐姐回來就好。']]
+    },
+    winMore:{
+      yy:[
+        [['yy','smug','這一層吃乾了。手還是空的。'],['cl',null,'姐姐，妳衣服上沾了紙灰，還有一點紅的。我幫妳擦掉。']],
+        [['yy','laugh','妹妹，燈還亮著吧？'],['cl',null,'一直亮著。只是剛剛，妳的影子比妳先回來。'],['yy','smug','它先回去搶位子。桌上沒剩給我的。']]
+      ]
+    },
+    loseMore:{
+      yy:[
+        [['yy','annoy','不是輸。是還沒吃完，線先斷了。'],['cl',null,'嗯。斷掉的地方，我幫妳打了一個結。']],
+        [['yy','pout','妹妹，別看我的嘴。……還沒擦乾淨。'],['cl',null,'我不看。我只是很高興妳回來了。']]
+      ]
+    }
+  },
+
+  chars:{
+    yy:{
+      line:'下去。下面有我還沒吃到的。'
+    }
+  },
+
+  alien:{
+    s0:{
+      lines:[
+        ['yy','smug','今天還餓得有禮貌。先走。'],
+        ['yy','pout','裙子是乾的。這一層會補上。'],
+        ['yy',null,'妹妹，燈提好。下面的留給我。']
+      ]
+    },
+    s40:{
+      lines:[
+        ['yy','annoy','別盯著我的影子。它比我先伸出手。'],
+        ['yy',null,'我剛剛咽了一下。手上什麼都沒有。'],
+        ['yy','smug','走快點。下面在叫我，這次叫對了。']
+      ]
+    },
+    s60:{
+      lines:[
+        ['yy',null,'妹妹，退後。'],
+        ['yy',null,'餓了。不是肚子。'],
+        ['yy',null,'這張牌被我看過一眼，字就糊了。']
+      ]
+    },
+    s100:{
+      lines:[
+        ['yy',null,'不用輪了。三張嘴一起餓。'],
+        ['yy',null,'吃進去的全漏出去。再餵。'],
+        ['yy',null,'滿了？沒有。再來。']
+      ]
+    }
+  },
+
+  rotateStart:{
+    yan:[
+      ['yy:yan','y_ex_yan','呵。又輪到我了。先吃。'],
+      ['yy:yan','y_ex_yan','來得正好。這張嘴，他們比較熟。'],
+      ['yy:yan','y_ex_yan','……讓我再賴一會兒。吃可以，別催。']
+    ],
+    xi:[
+      ['yy:xi','y_ex_xi','終於♡ 輪到我下口。'],
+      ['yy:xi','y_ex_xi','雜魚看清楚，現在這張嘴是我的。'],
+      ['yy:xi','y_ex_xi','笑一聲給你們聽。牙是尖的。']
+    ],
+    huang:[
+      ['yy:huang','y_ex_huang','讓路。這一口我來算。'],
+      ['yy:huang','y_ex_huang','吵夠了。從這裡起，聽我的。'],
+      ['yy:huang','y_ex_huang','冠上的縫線在跳。站直。']
+    ]
+  },
+
+  wakeHuang:{
+    when:'每一局第一次異化值到 60',
+    flash:'y_reveal_huang',
+    flashSec:0.8,
+    sfx:'sfx_reveal_huang',
+    lines:[
+      ['yy:huang','y_ex_huang','我醒了。這張嘴也餓。'],
+      ['yy:yan','y_ex_yan','……這張臉，還早。'],
+      ['yy:huang','y_ex_huang','這一局我會走到結束。讓路。'],
+      ['yy:xi','y_ex_xi','呵♡ 白金色的也會餓。歡迎。']
+    ]
+  },
+
+  steal:{
+    yan:[
+      ['yy:yan','y_ex_yan','這張，先借我吃一口。'],
+      ['yy:yan','y_ex_yan','線在我手上更穩。'],
+      ['yy:yan','y_ex_yan','呵。妳們打，我來改。']
+    ],
+    xi:[
+      ['yy:xi','y_ex_xi','搶走了♡ 這張歸我。'],
+      ['yy:xi','y_ex_xi','手鬆一點。我要這張下口。'],
+      ['yy:xi','y_ex_xi','謝啦。疼的那一下，記我帳上。']
+    ],
+    huang:[
+      ['yy:huang','y_ex_huang','這張，換一種吃法。'],
+      ['yy:huang','y_ex_huang','費用我來削。牌還妳，效果不還。'],
+      ['yy:huang','y_ex_huang','看清楚。下一拍是我的版本。']
+    ]
+  },
+
+  merge:{
+    turns:2,
+    art:'y_full_merge',
+    then:'callback',
+    lines:[
+      ['yy:all','y_full_merge','不用輪了。'],
+      ['yy:all','y_full_merge','三張嘴疊在同一張上面。一起要。'],
+      ['yy:all','y_full_merge','碎骨冠的縫線在數拍。同一個字：還要。'],
+      ['yy:all','y_full_merge','回來？現在沒有人排在後面。']
+    ]
+  },
+
+  callback:{
+    sfx:'sfx_recall',
+    sfxSec:0.9,
+    mainKeep:'姐姐，看我。是我。',
+    lines:[
+      ['cl','firm','姐姐，看我。是我。'],
+      ['cl','worry','燈在這裡。前臉是誰都好，往亮的地方走。'],
+      ['cl','firm','妳是姐姐。三張臉，我都認得。回來。'],
+      ['cl','smile','晚餐還熱著。回來吧。']
+    ],
+    after:['yy:yan','y_ex_yan','……回來了。嘴還是空的。']
+  },
+
+  battle:{
+    play:[
+      ['yy:yan','y_ex_yan','這張，吃掉。'],
+      ['yy:yan','y_ex_yan','還要。'],
+      ['yy:xi','y_ex_xi','進嘴♡'],
+      ['yy:huang','y_ex_huang','不夠。下一張。'],
+      ['yy:yan','y_ex_yan','這也是我的。']
+    ],
+    hurt:[
+      ['yy:yan','y_ex_yan','這口我記著。'],
+      ['yy:xi','y_ex_xi','疼。還能吃♡'],
+      ['yy:huang','y_ex_huang','咬回來。']
+    ],
+    lowHp:[
+      ['yy:yan','y_ex_yan','空了。再餵我。'],
+      ['yy:xi','y_ex_xi','血少了。更餓♡'],
+      ['yy:huang','y_ex_huang','還沒倒。再給我一口。']
+    ],
+    death:[
+      ['yy:yan','y_ex_yan','還能再咬一口。……咬不到了。'],
+      ['yy:xi','y_ex_xi','空了。真的空了。']
+    ]
+  },
+
+  desire:{
+    devotion:{n:'獻',pick:['yy:yan','y_ex_yan','這一局，鎖扣在我自己手上。渡鴉不在，也別想拿走。'],yx:['yy:xi','y_ex_xi','鎖歸她？我也扣得上。'],d:'鎖扣在自己手上。渡鴉不在，也不讓人拿走。'},
+    pride:{n:'傲',pick:['yy:huang','y_ex_huang','跪著求我的，我可以看一眼。站著擋路的，不必了。'],yx:['yy:xi','y_ex_xi','低頭？她不會，我更不會。'],d:'不逃、不讓步，只跟夠格的對手算帳。'},
+    envy:{n:'妒',pick:['yy:yan','y_ex_yan','別人手上的，我看著就餓。這一局，拿過來。'],yx:['yy:xi','y_ex_xi','牠有的，我們都要。'],d:'看見別人有什麼，就想搶過來。'},
+    obsess:{n:'執',pick:['yy:yan','y_ex_yan','認定的東西，我不放手。手鬆了會更空。'],yx:['yy:xi','y_ex_xi','抓住了就別鬆。'],d:'盯上的東西不肯放。放了會更空。'},
+    cruelty:{n:'虐',pick:['yy:xi','y_ex_xi','踩過一隻就膩。下一隻呢♡'],yx:['yy:xi','y_ex_xi','打完就膩。再找下一隻。'],d:'下手很重，打完就膩，再找下一隻。'},
+    greed:{n:'貪',pick:['yy:yan','y_ex_yan','我要的，從來不是一點點。看得見的，全部扒過來。'],yx:['yy:xi','y_ex_xi','只拿這些？她太客氣了。'],d:'看得見的都想要。扒到手裡，手心還是空的。'},
+    wrath:{n:'怒',pick:['yy:xi','y_ex_xi','氣吃不飽。這一局我不壓著了♡'],yx:['yy:xi','y_ex_xi','全部，打爛。'],d:'怒火沒有開關。只在熙面前臉時發動。'},
+    sweetmalice:{n:'甜毒',pick:['yy:yan','y_ex_yan','茶先給你。杯底那口，是我的。'],yx:['yy:xi','y_ex_xi','甜的給你。苦的我留著♡'],d:'先給你甜的。杯底是空的，也是她的。'},
+    vanity:{n:'虛',pick:['yy:huang','y_ex_huang','這一局我要是最好看的那一個。少一滴都不行。'],yx:['yy:xi','y_ex_xi','鏡子裡那個不夠。換一張。'],d:'滿著的時候最強。少一點，就討厭現在這張臉。'},
+    glutton:{n:'饞',pick:['yy:xi','y_ex_xi','餓了。下面的東西先吃，吃完再問是什麼♡'],yx:['yy:xi','y_ex_xi','先吃。吃完再問是什麼。'],d:'吃完了還餓。飢餓從來不會停。'}
+  },
+
+  desireState:{
+    devotion:{
+      id:'devotion',
+      n:'獻',
+      art:'y_desire_devotion',
+      finger:'左無名指',
+      ring:'渡鴉之鎖',
+      see:'她跪在血燭圈裡，頭仰著看你。左手無名指的渡鴉之鎖對著光，淚順著臉往下走，領圈跟著心跳脹縮。蠟燭一排排燒短，蠟油落到她膝蓋上，她不擦。圈外空著一個位置，她一直看著那裡。',
+      line:['yy:yan','y_ex_yan','渡鴉，鎖還在。你不在，我自己扣上。']
+    },
+    pride:{
+      id:'pride',
+      n:'傲',
+      art:'y_desire_pride',
+      finger:'左拇指',
+      ring:'星核黑洞戒',
+      see:'她靠在顱骨椅上，一條腿疊著，下巴擱在手指邊。極樂黑銀長髮垂過扶手，她從高處往下看你。椅子很大，她坐不滿，把背又往上靠了一點，空出來的那一截跟著變大。',
+      line:['yy:huang','y_ex_huang','小的站遠一點。夠格的，上來。']
+    },
+    envy:{
+      id:'envy',
+      n:'妒',
+      art:'y_desire_envy',
+      finger:'左食指',
+      ring:'轉動的眼珠戒',
+      see:'她側身擠在門框裡，身體貼著門邊，門框壓出一道痕。門縫後面有光，她盯著那道光，牙咬著下唇。門上的玻璃裡有她的倒影，倒影也在看同一處。門沒有開，她還是不走。',
+      line:['yy:yan','y_ex_yan','裡面那件是我的。還沒拿到而已。']
+    },
+    obsess:{
+      id:'obsess',
+      n:'執',
+      art:'y_desire_obsess',
+      finger:'左中指',
+      ring:'觸手神經戒',
+      see:'她把兩隻手抬到臉旁邊，長指甲上還掛著血。項圈正中那隻眼睛睜著，對準你。她不眨眼。指甲在空中收緊，沒抓到東西，她把手再伸近一點。',
+      line:['yy:yan','y_ex_yan','就你了。視線不准離開。']
+    },
+    cruelty:{
+      id:'cruelty',
+      n:'虐',
+      art:'y_desire_cruelty',
+      finger:'左小指',
+      ring:'人臉血肉戒',
+      see:'她一腳踩在被鎖住的怪物背上，神經鞭鬆鬆捲在手上。臉很平，一點也不興奮。鞭子打下去一下，她打了個哈欠。怪物不動了，她把腳拿開，又去找下一隻。',
+      line:['yy:xi','y_ex_xi','叫啊。叫完還是這個樣子。']
+    },
+    greed:{
+      id:'greed',
+      n:'貪',
+      art:'y_desire_greed',
+      finger:'右拇指',
+      ring:'黃金咬指口',
+      see:'她趴在金幣堆上，兩手把幣往自己身上扒。十枚戒指都戴著，每扒一次，戒指就撞出一聲。金幣已經蓋過腰，她還在扒。扒完這一堆，手底下又空了一塊，她皺眉，繼續扒。',
+      line:['yy:yan','y_ex_yan','這也是我的。那個也是。']
+    },
+    wrath:{
+      id:'wrath',
+      n:'怒',
+      art:'y_desire_wrath',
+      finger:'右食指',
+      ring:'荊棘詛咒戒',
+      see:'她整個人撲過來，帶血的手朝你抓。紅裙子被帶起來，碎石在旁邊飛。抓空了一次，她更氣，指甲在空氣裡又劃一回。牆面裂了，氣沒有變少。',
+      line:['yy:xi','y_ex_xi','我流的，全部還你♡']
+    },
+    sweetmalice:{
+      id:'sweetmalice',
+      n:'甜毒',
+      art:'y_desire_sweetmalice',
+      finger:'右中指',
+      ring:'藏針珍珠戒',
+      see:'她穿著粉黑的洋娃娃裙，把一杯茶遞到你面前。嘴角掛下一絲黑的，滴在茶面上，茶還在響。你要是不接，她就把杯子又往前送一寸。黑絲還在滴，杯子一直不滿。',
+      line:['yy:yan','y_ex_yan','喝啊。苦的留給我，甜的給你。']
+    },
+    vanity:{
+      id:'vanity',
+      n:'虛',
+      art:'y_desire_vanity',
+      finger:'右無名指',
+      ring:'碎鑽磷光戒',
+      see:'她背對你，側過臉去看鏡子。脊骨上一排骨環扣著，手指點在自己嘴唇上。鏡子裡的那張臉在笑，她這邊還沒笑完。她擦掉嘴角一點紅，鏡子裡的紅還在。她繼續看。',
+      line:['yy:huang','y_ex_huang','再好看一點。現在這張不夠。']
+    },
+    glutton:{
+      id:'glutton',
+      n:'饞',
+      art:'y_desire_glutton',
+      finger:'右小指',
+      ring:'血果凍戒',
+      see:'她躺在一堆切開的石榴中間，正把一顆塞進嘴裡，紅汁沿著下巴往下走。盤子還滿著，杯子倒在旁邊。她吃完這一口，眼神還在找下一顆。桌子兩邊都是吃到一半的東西，沒有一盤是空的。',
+      line:['yy:xi','y_ex_xi','吃完了。還餓♡']
+    }
+  },
+
+  cardFlavor:{
+    yy_f_swap:'換一張臉，餓的還是同一張嘴。',
+    yy_f_three:'三張嘴一起要。',
+    yy_f_wrap:'裹住了。裡面的也不准走。',
+    yy_f_bite:'咬下去。鬆口會空。',
+    yy_f_mask:'這張臉給你看。底下那張還在餓。',
+    yy_f_grab:'前臉是我的。這幾口歸我。',
+    yy_f_feed:'張嘴。先餵進去。',
+    yy_f_nails:'掐進去就不放。',
+    yy_f_ledger:'每一筆都記加的。沒有減。',
+    yy_f_blame:'是她。別看我這張空的。',
+    yy_f_rebirth:'倒下可以。起來還要再吃。',
+    yy_f_one:'換來換去，最後只剩一張還餓的嘴。',
+    yy_r_devotion:'鎖扣上了。空的那一邊，還在等。',
+    yy_r_pride:'小的不算數。大的才配被我看一眼。',
+    yy_r_envy:'妳手上那件，我看著就餓。',
+    yy_r_obsess:'盯上了就不放。放了會更空。',
+    yy_r_cruelty:'打完一隻，興趣就沒了。再找下一隻。',
+    yy_r_greed:'扒到手裡，手心還是凹的。',
+    yy_r_wrath:'氣吃不飽。越打越餓。',
+    yy_r_sweetmalice:'茶是甜的。杯底是空的。',
+    yy_r_vanity:'鏡子裡那張，永遠比現在這張多一點。',
+    yy_r_glutton:'先把這張吃掉。吃完還要下一張。'
+  },
+
+  taint:{
+    polluted:[
+      ['yy:yan','y_ex_yan','這張被我吃過了。再打更重，也更要血。'],
+      ['yy:xi','y_ex_xi','沾上了♡ 以後這張歸餓的那張嘴。'],
+      ['yy:huang','y_ex_huang','污染留下了。這局不退。']
+    ],
+    mergeTaint:{
+      n:2,
+      keep:'run',
+      line:['yy:all','y_full_merge','兩張被一起吃過。這局跟著走。']
+    },
+    chain:[
+      ['yy:xi','y_ex_xi','停不下來。下一張，自己出去了♡'],
+      ['yy:yan','y_ex_yan','手自己在動。別攔。'],
+      ['yy:huang','y_ex_huang','還有。繼續。']
+    ],
+    withdrawal:[
+      ['yy:yan','y_ex_yan','這一回合沒吃。手在抖。'],
+      ['yy:xi','y_ex_xi','空著會疼。是妳自己不餵♡'],
+      ['yy:huang','y_ex_huang','饜還在。沒吃，就用這個數來扣。']
+    ],
+    fullToAlien:[
+      ['yy:huang','y_ex_huang','血是滿的。補進來的，全變成外漏。'],
+      ['yy:yan','y_ex_yan','裝不下了。漏出去的，我還要。'],
+      ['yy:xi','y_ex_xi','滿了更空♡ 再餵啊。']
+    ],
+    restPurify:{
+      opt:'斷',
+      d:'不回血。選 1 張牌，污染歸 0。',
+      lines:[
+        ['yy:yan','y_ex_yan','這一張，我吐出來。不回血。'],
+        ['yy:huang','y_ex_huang','斷掉。下一口會少，先忍著。']
+      ]
+    }
+  },
+
+  taintCards:{
+    yy_t_feed:{
+      n:'餵我',c:0,t:'技',r:'普通',
+      d:'選手上 1 張牌，污染 +1。回復 3 生命。',
+      u:{d:'選手上 1 張牌，污染 +1。回復 5 生命。'},
+      fl:'先餵我一口。這張以後更重。',
+      line:['yy:yan','y_ex_yan','張嘴。餵我。']
+    },
+    yy_t_more:{
+      n:'還要',c:1,t:'攻',r:'普通',
+      d:'造成 6 傷害。這回合打過污染牌時，這張回到手上，費用 +1。',
+      u:{d:'造成 8 傷害。這回合打過污染牌時，這張回到手上，費用 +1。'},
+      fl:'不夠。再來一次。',
+      line:['yy:xi','y_ex_xi','還要♡ 這張我會再抓回來。']
+    },
+    yy_t_devour:{
+      n:'自噬',c:0,t:'技',r:'普通',
+      d:'失去 4 生命，得到 2 能量，異化值 +5。',
+      u:{d:'失去 3 生命，得到 2 能量，異化值 +5。'},
+      fl:'先咬我自己。咬完才有下一手。',
+      line:['yy:huang','y_ex_huang','先咬我自己。']
+    },
+    yy_t_empty:{
+      n:'越吃越空',c:1,t:'攻',r:'罕見',
+      d:'造成 3 傷害。這場戰鬥每打過 1 張污染牌，再加 4 傷害。',
+      u:{d:'造成 5 傷害。這場戰鬥每打過 1 張污染牌，再加 5 傷害。'},
+      fl:'吃過的每一張，這一擊全吐在妳身上。',
+      line:['yy:yan','y_ex_yan','吃完了。裡面還是空的。']
+    },
+    yy_t_crave:{
+      n:'渴',c:1,t:'能力',r:'罕見',
+      d:'每回合開始，手上隨機 1 張牌污染 +1。只到這場戰鬥結束。',
+      u:{d:'費用變 0。每回合開始，手上隨機 1 張牌污染 +1。只到這場戰鬥結束。'},
+      fl:'每回合都要再沾一口。這場結束才停。',
+      line:['yy:xi','y_ex_xi','渴。停不了♡']
+    },
+    yy_t_hoard:{
+      n:'都是我的',c:1,t:'技',r:'罕見',
+      d:'把棄牌堆所有污染牌拿回手上，每張失去 1 生命。',
+      u:{d:'把棄牌堆所有污染牌拿回手上，每張失去 1 生命。再獲得 5 格擋。'},
+      fl:'丟掉的也是我的。還我。',
+      line:['yy:yan','y_ex_yan','丟掉的也是我的。還我。']
+    },
+    yy_t_binge:{
+      n:'停不下來',c:2,t:'攻',r:'罕見',
+      d:'造成 7 傷害。接著自動打出抽牌堆頂的攻擊牌，直到翻到不是攻擊的牌為止。每多打一張失去 2 生命。',
+      u:{d:'造成 10 傷害。接著自動打出抽牌堆頂的攻擊牌，直到翻到不是攻擊的牌為止。每多打一張失去 2 生命。'},
+      fl:'手不會停。不是攻擊的那張，才是煞車。',
+      line:['yy:xi','y_ex_xi','手自己在動。別攔♡']
+    },
+    yy_t_hollow:{
+      n:'空心',c:1,t:'技',r:'普通',
+      d:'獲得「饜 ×3」格擋，然後饜歸 0。',
+      u:{d:'獲得「饜 ×4」格擋，然後饜歸 0。'},
+      fl:'用餓撐住。撐完，餓清掉。',
+      line:['yy:huang','y_ex_huang','撐起來了。裡面沒東西。']
+    }
+  }
+};
+
+if (typeof module !== 'undefined') module.exports = TEXT_V031;
+
+const X={V025:TEXT_V025,V026:TEXT_V026,V027:TEXT_V027,V028:TEXT_V028,V029:TEXT_V029,V030:TEXT_V030,V031:TEXT_V031};
 if(typeof module!=='undefined')module.exports=X;else root.CARD_TEXTX=X;
 })(this);
 
@@ -6766,6 +7291,41 @@ eyeReset:f=>`這場戰鬥的義眼可以再用一次。`,
 breakUlt:f=>`目標正在蓄力或下一步是攻擊時，把牠的意圖改成防禦。`
 };
 
+// ── rules_v0.13_patch.js
+// 規則 v0.13：污染化。合併：Object.assign(DATA.cards,DATA.taintCards); Object.assign(DATA.powers,DATA.taintPowers);
+DATA.taint={
+ max:3,                 // 污染層數 0..3，記在牌的實例上 card.tn
+ mul:[1,1.3,1.6,2.0],   // 主要數值倍率（d/da/b/heal/hardB）
+ hpCost:[0,1,2,3],      // 打出時失去生命
+ alien:[0,1,2,4],       // 打出時異化值增加
+ chainAt:3,             // 3 層起「停不下來」
+ chainHp:2,             // 連鎖每多打一張失去的生命
+ withdrawal:1,          // 戒斷：這回合沒打污染牌，回合結束失去「饜 ×1」生命
+ fullToAlien:1,         // 滿血時的治療改成等量異化值
+ mergeTaint:2,          // 每次異化值到 100（合相）隨機 2 張牌污染 +1
+ restPurify:1,          // 休息點新選項「斷」：放棄回血，選 1 張牌污染歸 0
+ img:'card_<id>_x'      // 有這張圖就用，沒有就疊 fx_taint 遮罩
+};
+DATA.taintCards={
+yy_t_feed:{n:'餵我',c:0,t:'s',r:1,ch:'yy',img:'TBD',fx:[["taint",1],["heal",3]],u:{fx:[["taint",1],["heal",5]]}},
+yy_t_more:{n:'還要',c:1,t:'a',r:1,ch:'yy',img:'TBD',fx:[["d",6],["moreIfTaint"]],u:{fx:[["d",8],["moreIfTaint"]]}},
+yy_t_devour:{n:'自噬',c:0,t:'s',r:1,ch:'yy',img:'TBD',fx:[["hurt",4],["en",2],["al",5]],u:{fx:[["hurt",3],["en",2],["al",5]]}},
+yy_t_empty:{n:'越吃越空',c:1,t:'a',r:2,ch:'yy',img:'TBD',fx:[["dTaint",3,4]],u:{fx:[["dTaint",5,5]]}},
+yy_t_crave:{n:'渴',c:1,t:'p',r:2,ch:'yy',img:'TBD',fx:[["pw","crave",1]],u:{c:0}},
+yy_t_hoard:{n:'都是我的',c:1,t:'s',r:2,ch:'yy',img:'TBD',fx:[["hoardTaint",1]],u:{fx:[["hoardTaint",1],["b",5]]}},
+yy_t_binge:{n:'停不下來',c:2,t:'a',r:2,ch:'yy',img:'TBD',fx:[["d",7],["binge",2]],u:{fx:[["d",10],["binge",2]]}},
+yy_t_hollow:{n:'空心',c:1,t:'s',r:1,ch:'yy',img:'TBD',fx:[["hollowB",3]],u:{fx:[["hollowB",4]]}}
+};
+DATA.taintPowers={crave:'每回合開始，手上隨機 {n} 張牌污染 +1（只到這場戰鬥結束）。'};
+DATA.opTextX=Object.assign(DATA.opTextX||{},{
+taint:f=>`選手上 ${f[1]} 張牌，污染 +1。`,
+moreIfTaint:f=>`這回合打過污染牌時，這張回到手上，費用 +1。`,
+dTaint:f=>`造成 ${f[1]} 傷害，這場戰鬥每打過 1 張污染牌再 +${f[2]}。`,
+hoardTaint:f=>`把棄牌堆所有污染牌拿回手上，每張失去 ${f[1]} 生命。`,
+binge:f=>`接著自動打出抽牌堆頂的攻擊牌，直到翻到不是攻擊的牌為止，每多打一張失去 ${f[1]} 生命。`,
+hollowB:f=>`獲得「饜 ×${f[1]}」格擋，然後饜歸 0。`
+});
+
 }
 if(typeof module!=='undefined')module.exports=applyRulesX;else root.applyRulesX=applyRulesX;
 })(this);
@@ -6777,7 +7337,7 @@ if(typeof module!=='undefined')module.exports=applyRulesX;else root.applyRulesX=
 const I='../../raven-guild/images/';
 const sk=n=>I+'sk_'+n+'.webp',m=n=>I+'m_'+n+'.webp';
 const DATA={
- version:'v0.30',
+ version:'v0.31',
  title:'渡鴉下潛',
  img:I,
  // ── 角色
@@ -8467,6 +9027,27 @@ DATA.notes.unshift(
  {ver:'v0.27',lines:['語嫣和語熙合成「語凰嫣」：三張臉（嫣、熙、凰）每回合輪流在前，同一張牌會跟著臉變成不同的版本。凰要等異化第一次到 60 才醒。','半妖起，後面的臉每回合搶一張手牌改用她的版本。合相兩回合後克勞德喚回，異化歸 0。','新牌：十二張三面牌。十指戒：簽下的慾望契那枚開局就亮，其他九枚要達成條件；同時亮五枚戒指牌升級，十枚全亮可以十戒全開。','之前解鎖語熙的人，殘響不退，衣鋪多一套「開背活革」。']},
  {ver:'v0.26',lines:['怪物變強：一般和菁英生命 ×1.12、攻擊 ×1.10，菁英一定帶一個詞綴。每隻敵人都有大招，放之前一回合會「蓄力」並說清楚要做什麼。','卡牌去重：重複的牌全部改掉或重做，新增 45 張能力牌（一般牌池也抽得到）、十張戒指牌、顧沉舟補到 15 張。','九尾的被動改成每回合第一張攻擊都給厄契。']}
 );
+// ── v0.31 污染化（規則 v0.13）與語凰嫣慾望（文字 v0.31）
+(function(){
+const TX=DATA.TX||{};const T=TX.V031||{};const IN='../inbox/';
+// 八張污染牌
+if(DATA.taintCards){const TC=T.taintCards||{};const ART={yy_t_feed:'y_ex_yan',yy_t_more:'y_ex_xi',yy_t_devour:'y_ex_xi',yy_t_empty:'y_ex_huang',yy_t_crave:'y_ex_huang',yy_t_hoard:'y_ex_yan',yy_t_binge:'y_ex_xi',yy_t_hollow:'y_ex_huang'};
+ for(const [k,c] of Object.entries(DATA.taintCards)){c.gen=1;c.taintCard=1;c.img=IN+(ART[k]||'y_ex_yan')+'.webp';const t=TC[k];if(t){if(t.n)c.n=t.n;if(t.fl)c.fl=t.fl;if(t.line)(DATA.cardLine=DATA.cardLine||{})[k]=t.line;}}
+ Object.assign(DATA.cards,DATA.taintCards);Object.assign(DATA.powers,DATA.taintPowers||{});}
+// 有污染版卡面的牌
+DATA.taintArt={};for(const k of ['yy_queen','yy_bloodpact','yy_sliteye','yy_redfate','yy_judge','yy_lastknot'])if(DATA.cards[k])DATA.taintArt[k]=IN+'card_'+k+'_x.webp';
+// 核心台詞
+if(T.talk){for(const k of ['start','win','lose','winMore','loseMore'])if(T.talk[k]&&T.talk[k].yy&&DATA.talk[k])DATA.talk[k].yy=T.talk[k].yy;}
+if(T.chars&&T.chars.yy&&T.chars.yy.line)DATA.chars.yy.line=T.chars.yy.line;
+if(T.alien&&DATA.T&&DATA.T.ALIEN)for(const k of Object.keys(T.alien))if(DATA.T.ALIEN[k]&&T.alien[k].lines)DATA.T.ALIEN[k].lines=T.alien[k].lines;
+if(DATA.yhText){const Y=DATA.yhText=Object.assign({},DATA.yhText);for(const k of ['rotateStart','wakeHuang','steal','merge','callback'])if(T[k])Y[k]=T[k];}
+// 十個戒指慾望契：名字、說明、開局短句
+for(const [k,v] of Object.entries(T.desire||{})){const d=DATA.desires[k];if(!d)continue;if(v.n)d.n=v.n;if(v.d)d.d=v.d;if(v.pick)d.pick=v.pick;if(v.yx)d.pickXi=v.yx;}
+DATA.desireState=T.desireState||{};DATA.battleBark=T.battle||{};DATA.taintText=T.taint||{};
+// 短文（不寫進卡面效果）
+for(const [k,v] of Object.entries(T.cardFlavor||{}))if(DATA.cards[k])DATA.cards[k].fl=v;
+})();
+DATA.notes.unshift({ver:'v0.31',lines:['污染化：語凰嫣的牌被慾望吃過會變強（最多兩倍），但每打一張都要失去生命、漲異化值，並累積「饜」。三層污染的牌打完會停不下來，手上的污染牌自己一張接一張打出去。','戒斷：這回合一張污染牌都沒打，回合結束失去「饜」那麼多生命。滿血時的治療會變成異化值。休息點多了「斷」：不回血，把一張牌的污染清掉。','新牌 8 張：餵我、還要、自噬、越吃越空、渴、都是我的、停不下來、空心。六張舊牌有污染版卡面。','語凰嫣的台詞重寫：出發、回來、換臉、合相、十種慾望人格各有一段狀態劇情。','卡牌文字排版：長的效果文字自動縮小，牌名、位階、底部標籤不再疊在一起。','介面：整體換成華麗詭異的樣子——金絲框、血絲、會呼吸的暗角、眼睛紋的分隔線。']});
 if(typeof module!=='undefined')module.exports=DATA;else root.CARD_DATA=DATA;
 })(this);
 
@@ -8483,7 +9064,7 @@ const pick=(st,arr)=>arr[Math.floor(R(st)*arr.length)];
 function pickW(st,obj){let tot=0;for(const k in obj)tot+=obj[k];let v=R(st)*tot;for(const k in obj){v-=obj[k];if(v<0)return k;}return Object.keys(obj)[0];}
 function shuffle(st,a){for(let i=a.length-1;i>0;i--){const j=Math.floor(R(st)*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 const clone=o=>JSON.parse(JSON.stringify(o));
-const strip=x=>{const o={uid:x.uid,id:x.id,up:x.up};if(x.oil)o.oil=x.oil;if(x.scar)o.scar=x.scar;if(x.left)o.left=1;if(x.pl)o.pl=x.pl;if(x.fg)o.fg=x.fg;return o;};
+const strip=x=>{const o={uid:x.uid,id:x.id,up:x.up};if(x.oil)o.oil=x.oil;if(x.scar)o.scar=x.scar;if(x.left)o.left=1;if(x.pl)o.pl=x.pl;if(x.fg)o.fg=x.fg;if(x.tn)o.tn=x.tn;if(x.cu)o.cu=x.cu;return o;};
 const TIMED=['vuln','weak','link','regen'];
 
 // ── 卡牌
@@ -8493,6 +9074,7 @@ const scarB=c=>Math.min(4,Math.floor((c.scar||0)/3));
 function cardDef(D,c,ph){const b=D.cards[c.id];let d=(!c.up||!b.u)?b:Object.assign({},b,b.u,{n:b.n+'+'});
  if(c.scar>=9&&D.scarNames&&D.scarNames[c.id])d=Object.assign({},d,{n:D.scarNames[c.id]+(c.up&&b.u?'+':'')});
  if(c.left)d=Object.assign({},d,{n:'她留下的'+d.n});
+ if(c.tn&&D.taint&&d.t!=='x'){const m=D.taint.mul[Math.min(D.taint.max,c.tn)]||1;if(m!==1)d=Object.assign({},d,{fx:d.fx.map(f=>(['d','da','b','heal','hardB'].includes(f[0])&&typeof f[1]==='number')?[f[0],Math.round(f[1]*m)].concat(f.slice(2)):f)});}
  {const F=c.fa||c.fc;if(F&&d.t!=='x'){if(b.fc){const V=(c.up&&b.u&&b.u.fc)||b.fc;d=Object.assign({},d,{fx:F==='all'?(V.yan||d.fx):(V[F]||d.fx)});if(F==='all')d=Object.assign({},d,{fx:faceFx(faceFx(d.fx,d,'xi'),d,'huang')});}else d=Object.assign({},d,{fx:F==='all'?faceFx(faceFx(faceFx(d.fx,d,'yan'),d,'xi'),d,'huang'):faceFx(d.fx,d,F)});}if(F&&F!=='all'&&D.faceNames&&D.faceNames[c.id]&&D.faceNames[c.id][F]&&D.faceNames[c.id][F].n)d=Object.assign({},d,{n:D.faceNames[c.id][F].n+(c.up&&b.u?'+':'')});}
  if(d.bl&&!d.basic&&ph&&ph!=='h'){const P=ph==='mix'?'full':ph;const o=(b.ph&&b.ph[P])||{};d=Object.assign({},d,{fx:o.fx||phFx(d.fx,P)},o.img?{img:o.img}:{});}if(c.pl>0&&(d.bl||d.tag)&&d.t!=='x')d=polFx(d,c.pl);if(c.fg>0)d=fgFx(d,c.fg);return d;}
 let CARDS_REF=null;
@@ -8532,7 +9114,7 @@ function fgFx(d,lv){const fx=d.fx.map(f=>f.slice());let k=d.c;let hit=0;for(cons
 function fgCost(lv){return [[20,1],[40,3],[80,6]][lv-1];}
 function metaForge(D,meta0,id){const meta=migrateMeta(meta0);const c=D.cards[id];if(!c||!(c.bl||c.tag))return {ok:false,error:'這張牌不能刻印'};meta.forge=meta.forge||{};const lv=(meta.forge[id]||0)+1;if(lv>3)return {ok:false,error:'已經刻滿了'};const [e,x]=fgCost(lv);if((meta.echo||0)<e)return {ok:false,error:'殘響不夠（要 '+e+'）'};if((meta.crystal||0)<x)return {ok:false,error:'墨晶不夠（要 '+x+'）'};meta.echo-=e;meta.crystal-=x;meta.forge[id]=lv;return {ok:true,meta,lv};}
 function metaSalvage(D,meta0){const meta=migrateMeta(meta0);const cnt={};const keep=[];let n=0;for(const x of meta.col||[]){const k=x.id+'|'+(x.up?1:0);cnt[k]=(cnt[k]||0)+1;if(cnt[k]>2)n++;else keep.push(x);}if(!n)return {ok:false,error:'沒有多出來的收藏'};meta.col=keep;meta.crystal=(meta.crystal||0)+n;return {ok:true,meta,n};}
-function cost(D,c,ph){if(c.free)return 0;const k=cardDef(D,c).c;if(k<0)return k;const C0=CUR&&CUR.combat;let v=Math.max(0,k+(c.tax||0)+(c.oil||0)-(c.kd||0));if(ph==='full'&&!(C0&&C0.full===2))v=Math.max(0,v-1);if(C0&&CUR.relics&&CUR.relics.includes('rr_bowl')&&!C0.firstCard)v=0;if(CUR&&CUR.daily==='free')v=Math.max(0,v-1);if(C0&&(c.fa||c.fc)&&((c.fa||c.fc)==='huang'||(c.fa||c.fc)==='all')&&C0.hcT!==C0.turn&&k>=2)v=Math.max(0,v-1);return v;}
+function cost(D,c,ph){if(c.free)return 0;const k=cardDef(D,c).c;if(k<0)return k;const C0=CUR&&CUR.combat;let v=Math.max(0,k+(c.tax||0)+(c.oil||0)-(c.kd||0));if(ph==='full'&&!(C0&&C0.full===2))v=Math.max(0,v-1);if(C0&&CUR.relics&&CUR.relics.includes('rr_bowl')&&!C0.firstCard)v=0;if(c.cu)v+=c.cu;if(CUR&&CUR.daily==='free')v=Math.max(0,v-1);if(C0&&(c.fa||c.fc)&&((c.fa||c.fc)==='huang'||(c.fa||c.fc)==='all')&&C0.hcT!==C0.turn&&k>=2)v=Math.max(0,v-1);return v;}
 const isYY=st=>st.ch==='yy'||st.ch==='yx';
 const baseCh=st=>st.ch==='yx'?'yy':st.ch;
 // 慾望契／心願（st.desire）、個性（st.persona）、癖好（st.hobby）
@@ -8553,6 +9135,11 @@ function faceNow(st){const c=st.combat;if(!c||!isYY(st)||c.noFace)return null;if
 function stampFace(st){const c=st.combat;if(!c||!isYY(st))return;const F=faceNow(st);for(const x of c.hand){if(F)x.fc=F;else delete x.fc;if(c.full||!F)delete x.fa;}}
 function awake(st){return st.huang?FACES:['yan','xi'];}
 function setFace(D,st,F,E){const c=st.combat;if(!c||!F||c.face===F)return;c.face=F;c.faceN=(c.faceN||0)+1;E&&E.push({t:'face',f:F});stampFace(st);}
+let DREF=null;
+// ── 污染化（規則 v0.13）
+function canTaint(D,st,x){const d=D.cards[x.id];return !!(D.taint&&isYY(st)&&d&&d.t!=='x'&&(x.tn||0)<D.taint.max);}
+function taintCard(D,st,x,persist,E){if(!canTaint(D,st,x))return false;x.tn=(x.tn||0)+1;if(persist){const o=st.deck.find(y=>y.uid===x.uid);if(o&&o!==x)o.tn=Math.max(o.tn||0,x.tn);}E&&E.push({t:'taint',id:x.id,uid:x.uid,n:x.tn});return true;}
+function taintPay(D,st,card,E){const c=st.combat,T=D.taint;const n=Math.min(T.max,card.tn||0);if(!n)return;c.sat=(c.sat||0)+1;c.tnT=c.turn;c.tnN=(c.tnN||0)+1;E.push({t:'taintPlay',n,sat:c.sat});if(T.hpCost[n])selfHurt(D,st,T.hpCost[n],E,false,true);if(T.alien[n])addAlien(D,st,T.alien[n],E);if(n>=T.chainAt)c.chain=1;}
 // ── 十指戒（規則 v0.9 第九～十一段）
 const RINGS=['devotion','pride','envy','obsess','cruelty','greed','wrath','sweetmalice','vanity','glutton'];
 function ringLight(D,st,id,E){if(!isYY(st)||st.mode==='g'||!RINGS.includes(id))return;st.rings=st.rings||{};if(st.rings[id])return;st.rings[id]=1;const cid='yy_r_'+id;if(D.cards[cid]){st.deck.push({uid:st.uid++,id:cid,up:st.flags.halfPalm?1:0});}E&&E.push({t:'ringLit',id});
@@ -8569,7 +9156,7 @@ function addAlien(D,st,n,E){if(!isYY(st)||!n)return;if(st.daily==='alien'&&n>0)n
  if(a0<60&&a>=60&&!st.huang&&st.mode!=='g'){st.huang=1;E&&E.push({t:'wakeHuang'});}
  if(a>=100)fullCheck(st,E);}
 function fullCheck(st,E){if(isYY(st)&&(st.alien||0)>=100&&st.combat&&!st.combat.full&&!st.combat.fullNext&&!st.combat.fullUsed){st.combat.fullNext=1;E&&E.push({t:'fullSoon'});}}
-function needsTarget(D,c,ph){const F=[];for(const f of (cardDef(D,c,ph).fx||[])){if(f[0]==='set'||f[0]==='if')F.push(...f[2]);else F.push(f);}return F.some(f=>(['blame','markD','obsMark','dElite','dPerDebuff','dHurtTurn','reflectNext','thinD','crossDos','dPage','revealT','predict','breakUlt','d','jd','dBlock','dGold','dLost','dAl','dVine','vineX2','dLure','lk','px2','ep','stun','lk1','wrap','tails','lie','constrict','needle','taste','sign','paIf','dKept','dInk','dLow','dDebuff','dSkill','dIfN'].includes(f[0])||(f[0]==='st'&&f[3]==='t'))||((f[0]==='st'||f[0]==='pa')&&(f[f.length-1]==='t')));}
+function needsTarget(D,c,ph){const F=[];for(const f of (cardDef(D,c,ph).fx||[])){if(f[0]==='set'||f[0]==='if')F.push(...f[2]);else F.push(f);}return F.some(f=>(['dTaint','blame','markD','obsMark','dElite','dPerDebuff','dHurtTurn','reflectNext','thinD','crossDos','dPage','revealT','predict','breakUlt','d','jd','dBlock','dGold','dLost','dAl','dVine','vineX2','dLure','lk','px2','ep','stun','lk1','wrap','tails','lie','constrict','needle','taste','sign','paIf','dKept','dInk','dLow','dDebuff','dSkill','dIfN'].includes(f[0])||(f[0]==='st'&&f[3]==='t'))||((f[0]==='st'||f[0]==='pa')&&(f[f.length-1]==='t')));}
 const CONDT={first:'這是本回合第一張牌',n3:'本回合已經打過 2 張牌',low:'生命在一半以下',full:'生命是滿的',atk:'敵人正要攻擊',deb:'目標有虛弱或易傷',blk:'身上有格擋',lone:'只剩一個敵人',many:'敵人有兩個以上',last:'這是最後一張手牌',ph:'異化 40 以上（克勞德：墨 3 以上）',noblk:'身上沒有格擋',rich:'渡鴉幣 100 以上'};
 function condOk(D,st,c,tg,k){const A=alive(c);switch(k){case 'first':return (c.nPlay||0)===0;case 'n3':return (c.nPlay||0)>=2;case 'low':return st.hp<=st.maxHp/2;case 'full':return st.hp>=st.maxHp;case 'atk':return tg?!!(tg.intent&&tg.intent.a):A.some(e=>e.intent&&e.intent.a);case 'deb':return tg?!!(tg.st.weak||tg.st.vuln):A.some(e=>e.st.weak||e.st.vuln);case 'blk':return c.block>0;case 'noblk':return !c.block;case 'lone':return A.length===1;case 'many':return A.length>=2;case 'last':return c.hand.length===0;case 'ph':return st.ch==='cl'?(c.ink||0)>=3:(st.alien||0)>=40;case 'rich':return st.gold>=100;}return false;}
 function setN(D,st,d){if(!st||!st.deck)return 0;return st.deck.filter(x=>{const o=D.cards[x.id];return o&&((d.tag&&o.tag===d.tag)||(d.bl&&o.bl===d.bl));}).length;}
@@ -8660,7 +9247,7 @@ function opText(D,f){if(D.opTextX&&D.opTextX[f[0]])return D.opTextX[f[0]](f);con
 function desc(D,c,ph){const d=cardDef(D,c,ph);if(d.t==='x'){let s='不能打出。';if(d.onDraw)s+=`抽到時，失去 ${d.onDraw[1]} 生命。`;if(d.endHand)s+=`回合結束時還在手上，失去 ${d.endHand[1]} 生命。`;if(d.noRemove)s+='不能被移除。';if(d.lockAtk)s='在手上時，不能打出攻擊牌。花 1 能量撕掉。';return s;}if(!d.fx.length)return '沒有效果。'+(d.ex?'消耗。':'');let s=d.fx.map(f=>opText(D,f).replace(/。$/,'')).join('。')+'。';if(d.keep)s+='保留。';if(d.ex)s+='消耗。';return s;}
 
 // ── 開新的一局
-function newRun(D,seed,ch,meta,opt){CARDS_REF=D.cards;seed=seed>>>0||1;opt=opt||{};if(ch==='yx'){ch='yy';opt=Object.assign({},opt,{faceXi:1});}const C=D.chars[ch];
+function newRun(D,seed,ch,meta,opt){CARDS_REF=D.cards;DREF=D;seed=seed>>>0||1;opt=opt||{};if(ch==='yx'){ch='yy';opt=Object.assign({},opt,{faceXi:1});}const C=D.chars[ch];
  const st={v:1,seed,n:0,ch,hp:C.hp,maxHp:C.hp,gold:99,deck:[],relics:[],layer:0,row:-1,col:null,maps:[],screen:'map',combat:null,reward:null,event:null,shop:null,pick:null,
   stats:{floors:0,elites:0,bosses:0,kills:0,dmgMax:0,cards:0},flags:{},uid:1,seenEv:[],unlocked:(meta&&meta.unlocked||[]).slice(),result:null,log:[]};
  for(const id of C.deck)addCard(st,id);
@@ -8809,7 +9396,7 @@ function startCombat(D,st,ids,kind){const ens=ids.map((id,i)=>mkEnemy(D,st,id,i)
 let CUR=null;
 function addSt(u,k,n){const c=CUR&&CUR.combat;if(k==='pact'&&n>0&&c&&u!==c){if(u.shutNoPact&&u.intent&&u.intent.shut)return;if(c.pw.hiss&&(u.st.pact||0)>=3&&(u.hissN||0)<(c.pw.hissMax?2:1)){u.hissN=(u.hissN||0)+1;n+=1;}}
  u.st[k]=(u.st[k]||0)+n;if(k==='str'?u.st[k]===0:u.st[k]<=0)delete u.st[k];}
-function healP(st,n,E){const c=st.combat;if(c&&c.rule==='blockKeep')return 0;const h=Math.min(n,st.maxHp-st.hp);if(h<=0)return 0;st.hp+=h;E&&E.push({t:'heal',n:h});if(c){c.healedT=1;if(c.pool){c.block+=h;E&&E.push({t:'block',n:h});}}return h;}
+function healP(st,n,E){const c=st.combat;if(c&&c.rule==='blockKeep')return 0;if(c&&n>0&&DREF&&DREF.taint&&DREF.taint.fullToAlien&&isYY(st)&&st.hp>=st.maxHp&&st.mode!=='g'){E&&E.push({t:'fullAlien',n});addAlien(DREF,st,n,E);return 0;}const h=Math.min(n,st.maxHp-st.hp);if(h<=0)return 0;st.hp+=h;E&&E.push({t:'heal',n:h});if(c){c.healedT=1;if(c.pool){c.block+=h;E&&E.push({t:'block',n:h});}}return h;}
 function gainInk(st,c,n,E){c.ink+=n;if(c.pw.inkBlock)c.block+=c.pw.inkBlock*n;if(c.ink>=10)E.push({t:'ach',id:'ink10'});}
 function draw(D,st,n,E){const c=st.combat;for(let i=0;i<n;i++){if(c.hand.length>=handMax(D,st))break;if(!c.draw.length){if(!c.disc.length)break;c.draw=shuffle(st,c.disc);c.disc=[];E&&E.push({t:'shuffle'});}const x=c.draw.pop();c.hand.push(x);const xd=D.cards[x.id];if(xd&&xd.t==='x'&&E)addAlien(D,st,5,E);if(xd&&xd.onDraw&&xd.onDraw[0]==='hurt'&&E)selfHurt(D,st,xd.onDraw[1],E);}}
 function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
@@ -8831,6 +9418,7 @@ function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
  if(c.keptB){c.block+=c.keptB;E.push({t:'block',n:c.keptB});c.keptB=0;}
  if(isYY(st)){if(st.hp<st.maxHp/2)addAlien(D,st,5,E);
   if(c.fullNext&&st.tenReady&&!st.flags.tenUsed&&!c.mix){st.flags.tenUsed=1;st.tenReady=0;c.ten=1;c.tenLeft=2;c.tenChain=0;const pull=[];for(const P of [c.draw,c.disc])for(let j=P.length-1;j>=0;j--)if((D.cards[P[j].id]||{}).rr==='ring')pull.push(P.splice(j,1)[0]);for(const x of pull){x.free=1;c.hand.push(x);}E.push({t:'tenOpen',n:pull.length});}
+  if(c.fullNext&&D.taint&&isYY(st)&&st.mode!=='g'){const P0=[...c.hand,...c.draw,...c.disc].filter(x=>canTaint(D,st,x)&&st.deck.some(y=>y.uid===x.uid));let k=0;for(let j=0;j<(D.taint.mergeTaint||0)&&P0.length;j++){const x=P0.splice(Math.floor(R(st)*P0.length),1)[0];if(taintCard(D,st,x,true,null))k++;}if(k)E.push({t:'mergeTaint',n:k});}
   if(c.fullNext){c.fullNext=0;c.full=1;c.fullUsed=1;st.flags.transformed=1;st.stats.trans=(st.stats.trans||0)+1;if(D.sisters&&st.mode!=='g'&&R(st)<.25){c.duo=1;for(const e of alive(c)){addSt(e,'weak',2);addSt(e,'vuln',2);}c.drawLess=(c.drawLess||0)-2;E.push({t:'duo'});}if(st.sub&&st.ch==='yy'){c.mix=1;c.mixT=2;const a=catOf(st.origin),b=catOf(st.sub);c.pair=a==='B'&&b==='B'?'BB':a==='M'&&b==='M'?'MM':'BM';}E.push({t:'transform',origin:st.origin,mix:c.mix?st.sub:null,pair:c.pair});}
   c.yx=0;
   {for(const x of c.hand)delete x.fa;let nf=null;if(c.turn===1)nf=c.face0||'yan';else if(c.faceLock>0){c.faceLock--;}else if(c.faceNext){nf=c.faceNext;c.faceNext=null;}else{const A=awake(st);nf=A[(A.indexOf(c.face)+1)%A.length]||'yan';}if(nf){if(c.turn===1){c.face=nf;}else setFace(D,st,nf,E);}
@@ -8852,6 +9440,7 @@ function startTurn(D,st,E){const c=st.combat;c.turn++;c.atkN=0;
  if(c.guE)c.energy++;
  if(M(st,'sloth')&&c.turn===1)c.slothT=1;
  draw(D,st,Math.max(0,(c.rule==='draw3'?3:5)-(c.drawLess||0)-(c.turn===1?(c.drawLessT1||0):0))+(pas(D,st,'hand12')?(pe(E,'hand12'),1):0)+(c.turn===1?(c.extraDraw||0)+(c.extraDraw0||0):0)+(phaseOf(st)==='half'?1:0)+(c.turn===1&&has(st,'feather')?2:0)+(c.turn===1&&has(st,'tornphoto')?3:0)+(c.pw.drawTurn||0),E);
+ if(c.pw.crave&&isYY(st)){for(let j=0;j<c.pw.crave;j++){const P1=c.hand.filter(x=>canTaint(D,st,x));if(P1.length)taintCard(D,st,pick(st,P1),false,E);}}
  if(isYY(st)){stampFace(st);if(phaseOf(st)==='half'&&!c.full&&st.mode!=='g'){const can=c.hand.filter(x=>D.cards[x.id].t!=='x');const O=awake(st).filter(f=>f!==c.face);if(can.length&&O.length){const x=pick(st,can);x.fa=pick(st,O);E.push({t:'faceSteal',f:x.fa,id:x.id});}}if(c.pw.ledH){healP(st,c.pw.ledH,E);}}
  if(c.turn%3===0&&alive(c).some(e=>e.traits&&e.traits.includes('scheme'))&&c.hand.length){const j=Math.floor(R(st)*c.hand.length);const o=c.hand[j];if(!o.temp){c.hand[j]={uid:'x'+st.uid++,id:'x_whisper',up:0,temp:1};c.disc.push(o);E.push({t:'scheme',id:o.id});}}
  {let xd=0;if(c.slimeDraw){c.slimeDraw=0;xd++;}if(c.moltDraw){c.moltDraw=0;xd++;}if(c.paperDraw){c.paperDraw=0;xd++;}if(c.turn===1&&OT(D,st,'M07',1))xd++;if(xd)draw(D,st,xd,E);if(OT(D,st,'M07',3)&&c.hand.length>=8){c.energy++;pe(E,'hand12');}}
@@ -8929,7 +9518,7 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  let tg=null;if(needsTarget(D,card,ph)){tg=c.enemies.find(e=>e.uid===target&&e.hp>0);if(!tg){const a=alive(c);if(a.length===1)tg=a[0];else return '請選一個目標';}}
  if(d.fx.some(f=>f[0]==='eatX2')){const x=c.hand.find(y=>y.uid===c.eatPick&&y!==card);if(!x)return '請選一張要吃掉的手牌';if(cardDef(D,x).t==='x')return '詛咒吃不下去';}
  if(isYY(st)&&['huang','all'].includes(card.fa||card.fc)&&cardDef(D,card).c>=2)c.hcT=c.turn;c.playCnt=c.playCnt||{};c.playCnt[card.id]=(c.playCnt[card.id]||0)+1;if(c.playCnt[card.id]>=3)c.ringObs=1;const tenB=(c.ten&&d.rr==='ring')?(c.tenChain||0):0;if(c.ten&&d.rr==='ring')c.tenChain=Math.min(18,(c.tenChain||0)+2);
- c.energy-=k;c.hand.splice(i,1);st.stats.cards++;E.push({t:'play',id:card.id,up:card.up,tg:tg&&tg.uid});
+ c.energy-=k;c.hand.splice(i,1);st.stats.cards++;if(card.tn&&D.taint&&isYY(st)){taintPay(D,st,card,E);if(st.hp<=0){loseRun(D,st,E);return null;}}E.push({t:'play',id:card.id,up:card.up,tg:tg&&tg.uid});
  let total=0,gk=(d.fx.find(f=>f[0]==='gk')||[0,0])[1];
  const hasDmg=d.fx.some(f=>f[0]==='d'||f[0]==='da');const sb=isYY(st)?scarB(card):0;let scarN=0;
  if(c.echoT!==c.turn){c.echoT=c.turn;c.echoN=0;}c.echoN++;if(st.daily==='free'&&d.t!=='x')selfHurt(D,st,1,E,false,true);const echoNow=has(st,'rr_echo')&&c.echoN===3&&d.t!=='x';if(echoNow)E.push({t:'relic',id:'rr_echo'});if(has(st,'rr_mirror')&&!c.mirU&&d.t!=='x'&&!card.temp){c.mirU=1;c.hand.push({uid:st.uid++,id:card.id,up:card.up,temp:1,free:1});E.push({t:'relic',id:'rr_mirror'});}
@@ -8963,6 +9552,12 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
    case 'ka':c.keepAll=1;break;
    case 'hurt':selfHurt(D,st,f[1],E);scarN+=f[1];break;
    case 'dos':c.tmpDos=(c.tmpDos||0)+f[1];break;
+   case 'taint':{const x=c.hand.find(y=>y.uid===c.eatPick&&y!==card)||c.hand.find(y=>canTaint(D,st,y));c.eatPick=null;if(x)taintCard(D,st,x,true,E);break;}
+   case 'moreIfTaint':if(c.tnT===c.turn)c.backHand=1;break;
+   case 'dTaint':{total+=hitEnemy(D,st,tg,dmgCalc((f[1]+f[2]*(c.tnN||0)+bonusOf()+gr(tg))*dbl*wr,c,tg),E);break;}
+   case 'hoardTaint':{let k=0;for(let j=c.disc.length-1;j>=0&&c.hand.length<handMax(D,st);j--)if(c.disc[j].tn){c.hand.push(c.disc.splice(j,1)[0]);k++;}if(k){E.push({t:'hoard',n:k});selfHurt(D,st,k*f[1],E,false,true);}break;}
+   case 'binge':c.binge=f[1];break;
+   case 'hollowB':{const n=(c.sat||0)*f[1];if(n>0){c.block+=n;E.push({t:'block',n});}c.sat=0;E.push({t:'sat',n:0});break;}
    case 'faceNext':{const A=awake(st);let F=c.pickFace&&A.includes(c.pickFace)?c.pickFace:null;if(!F){const nx=A[(A.indexOf(c.face)+1)%A.length];F=A[(A.indexOf(nx)+1)%A.length];}c.faceNext=F;c.faceLock=0;E.push({t:'faceSet',f:F});break;}
    case 'faceNow':setFace(D,st,f[1],E);break;
    case 'faceLock':c.faceLock=f[1];E.push({t:'faceSet',f:c.face});break;
@@ -9082,7 +9677,7 @@ function play(D,st,i,target,E){const c=st.combat;const card=c.hand[i];if(!card)r
  if(d.t==='s'&&pas(D,st,'call')&&(c.voiced||0)<(OT(D,st,'voice',2)?2:1)){c.voiced=(c.voiced||0)+1;pe(E,'call');draw(D,st,1,E);if(c.voiced===1&&OT(D,st,'voice',1)){c.block+=2;E.push({t:'block',n:2});}if(c.voiced===1&&OT(D,st,'voice',3)){const a=alive(c);if(a.length)addSt(pick(st,a),'weak',1);}}
  if(d.t==='s'&&pas(D,st,'moth')&&c.mothT!==c.turn){c.mothT=c.turn;draw(D,st,1,E);pe(E,'moth');if(OT(D,st,'M10',1)){const a=alive(c);if(a.length)addSt(pick(st,a),'weak',1);}if(OT(D,st,'M10',2)){c.block+=3;E.push({t:'block',n:3});}if(OT(D,st,'M10',3)&&phaseOf(st)!=='h')draw(D,st,1,E);}
  if(M(st,'obsess')&&!c.obs){c.obs=card.uid;}else if(c.obs2===1&&!card.temp){c.obs2=card.uid;}
- if(d.t!=='p'&&!card.temp){{const o=strip(card);delete o.oil;delete o.fc;delete o.fa;((d.ex||c.exSelf)?c.exh:c.disc).push(o);c.exSelf=0;}}
+ if(d.t!=='p'&&!card.temp){{const o=strip(card);delete o.oil;delete o.fc;delete o.fa;if(c.backHand&&c.hand.length<handMax(D,st)){c.backHand=0;o.cu=(card.cu||0)+1;o.fc=card.fc;c.hand.push(o);}else{c.backHand=0;((d.ex||c.exSelf)?c.exh:c.disc).push(o);}c.exSelf=0;}}
  killCheck(D,st,E);return null;}
 
 function endTurn(D,st,E){const c=st.combat;
@@ -9097,6 +9692,7 @@ function endTurn(D,st,E){const c=st.combat;
  if(has(st,'candle')&&c.energy>0){c.block+=4*c.energy;E.push({t:'block',n:4*c.energy});}
  for(const x of c.hand){const xd=D.cards[x.id];if(xd&&xd.endHand&&xd.endHand[0]==='hurt')selfHurt(D,st,xd.endHand[1],E);}
  if(st.hp<=0){loseRun(D,st,E);return;}
+ if(D.taint&&isYY(st)&&(c.sat||0)>0&&c.tnT!==c.turn){const n=(c.sat||0)*(D.taint.withdrawal||1);E.push({t:'withdrawal',n});selfHurt(D,st,n,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}}
  if(c.rule==='keep2'||c.rule==='lastPage'){const H=c.hand.filter(x=>!x.temp&&cardDef(D,x).t!=='x').sort((a,b)=>cardDef(D,b).c-cardDef(D,a).c);H.slice(0,2).forEach(x=>x.hold=1);}
  const kp=x=>c.keepAll?!x.temp:(cardDef(D,x).keep||x.hold);if(c.rule==='pageTurn'){const kn=c.hand.filter(kp).length;if(kn){c.block+=3*kn;E.push({t:'block',n:3*kn});}}c.keptN=c.hand.filter(kp).length;const keep=c.hand.filter(kp).map(x=>{delete x.tax;delete x.free;delete x.hold;return x;});c.disc.push(...c.hand.filter(x=>!kp(x)&&!x.temp).map(strip));c.hand=keep;c.keepAll=0;
  if(c.obs2&&c.obs2!==1&&c.obs2!==2){const k=c.disc.findIndex(x=>x.uid===c.obs2);if(k>=0){c.hand.push(c.disc.splice(k,1)[0]);E.push({t:'obsess'});}c.obs2=2;}
@@ -9111,7 +9707,7 @@ function endTurn(D,st,E){const c=st.combat;
  if(pas(D,st,'coral')&&c.energy>0){pe(E,'coral');const n=c.energy*(OT(D,st,'M11',1)?5:4);c.block+=n;c.hard=(c.hard||0)+n;E.push({t:'block',n});}
  if(c.full&&c.mix){c.mixT--;if(c.mixT<=0){selfHurt(D,st,6,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}c.full=0;c.mix=0;st.alien=0;ringLight(D,st,'devotion',E);st.flags['full'+st.layer]=1;st.flags.mixUsed=1;E.push({t:'recall'});}}
  else if(c.full){selfHurt(D,st,c.denied?3:8,E,false,true);if(st.hp<=0){loseRun(D,st,E);return;}
-  if(c.full<2||has(st,'rr_clock')||c.denied){c.full=2;}else{if(c.ten&&(c.tenLeft=(c.tenLeft||2)-1)>0){c.full=2;}else if(isYY(st)&&ascMod(D,st,'recallOnce')&&(st.recallN||0)>=1){c.full=2;c.ten=0;c.denied=1;st.alien=100;E.push({t:'recallDenied'});}else{c.full=0;c.ten=0;st.alien=0;st.flags['full'+st.layer]=1;E.push({t:'recall'});stampFace(st);ringLight(D,st,'devotion',E);if(c.rule==='recallTest')for(const e of alive(c))if(e.st.pact)e.st.pact*=2;if(ascMod(D,st,'recallOnce'))st.recallN=(st.recallN||0)+1;}}}
+  if(c.full<2||has(st,'rr_clock')||c.denied){c.full=2;}else{if(c.ten&&(c.tenLeft=(c.tenLeft||2)-1)>0){c.full=2;}else if(isYY(st)&&ascMod(D,st,'recallOnce')&&(st.recallN||0)>=1){c.full=2;c.ten=0;c.denied=1;st.alien=100;E.push({t:'recallDenied'});}else{c.full=0;c.ten=0;st.alien=0;st.flags['full'+st.layer]=1;if(c.sat){c.sat=0;E.push({t:'sat',n:0,recall:1});}E.push({t:'recall'});stampFace(st);ringLight(D,st,'devotion',E);if(c.rule==='recallTest')for(const e of alive(c))if(e.st.pact)e.st.pact*=2;if(ascMod(D,st,'recallOnce'))st.recallN=(st.recallN||0)+1;}}}
  if(keep.length&&has(st,'redbookmark')){c.block+=3;E.push({t:'block',n:3});}
  // 敵人回合
  for(const e of alive(c)){if(e.pblock){e.block=Math.min(e.block,e.pblock);e.pblock=e.block;}else e.block=0;}
@@ -9259,11 +9855,17 @@ function applyEvent(D,st,opt,E){const out=[];let pend=null;
  return {out,pend};}
 
 // ── 主要入口
-function apply(D,st0,a){CARDS_REF=D.cards;const st=clone(st0);CUR=st;const E=[];const fail=e=>({ok:false,error:e});
+function apply(D,st0,a){CARDS_REF=D.cards;DREF=D;const st=clone(st0);CUR=st;const E=[];const fail=e=>({ok:false,error:e});
  if(st.screen==='over')return fail('這一局已經結束');
  switch(a.type){
   case 'MOVE':if(st.screen!=='map')return fail('現在不能移動');if(!canMove(D,st,a.c))return fail('走不到那裡');enter(D,st,a.c,E);break;
-  case 'PLAY':{if(st.screen!=='combat')return fail('不在戰鬥中');st.combat.eatPick=a.cardUid;st.combat.pickFace=a.face;const e=play(D,st,a.i,a.target,E);if(e)return fail(e);break;}
+  case 'PLAY':{if(st.screen!=='combat')return fail('不在戰鬥中');st.combat.eatPick=a.cardUid;st.combat.pickFace=a.face;st.combat.chain=0;st.combat.binge=0;const e=play(D,st,a.i,a.target,E);if(e)return fail(e);
+   {let guard=0;const tgt=()=>{const A=st.combat?alive(st.combat):[];return (A.find(x=>x.uid===a.target)||A[0]||{}).uid;};
+    while(st.screen==='combat'&&st.combat&&st.hp>0&&guard++<12){const c=st.combat;
+     if(c.binge){const top=c.draw[c.draw.length-1];if(top&&cardDef(D,top).t==='a'){const b=c.binge;c.draw.pop();top.free=1;c.hand.push(top);stampFace(st);selfHurt(D,st,b,E,false,true);if(st.hp<=0){loseRun(D,st,E);break;}E.push({t:'binge',id:top.id});c.eatPick=null;c.chain0=c.chain;const er=play(D,st,c.hand.length-1,tgt(),E);if(er){const k=c.hand.indexOf(top);if(k>=0){c.hand.splice(k,1);delete top.free;c.disc.push(top);}c.binge=0;}else if(st.combat)st.combat.binge=b;continue;}c.binge=0;}
+     if(c.chain){c.chain=0;const j=c.hand.findIndex(x=>x.tn>0&&cardDef(D,x).t!=='x');if(j<0)break;const x=c.hand[j];x.free=1;selfHurt(D,st,D.taint.chainHp,E,false,true);if(st.hp<=0){loseRun(D,st,E);break;}E.push({t:'chain',id:x.id});c.eatPick=null;const er=play(D,st,j,tgt(),E);if(er){delete x.free;break;}if(st.combat)st.combat.chain=1;continue;}
+     break;}}
+   break;}
   case 'END_TURN':if(st.screen!=='combat')return fail('不在戰鬥中');endTurn(D,st,E);break;
   case 'CH_CONT':{if(st.screen!=='chask')return fail('現在不能');const nx=st.chNext||2;const CH=D.chapters.find(c=>c.id===nx);if(!CH)return fail('下面沒有路了');st.chapter=nx;if(ascMod(D,st,'chapterSin')){st.sinCh=pick(st,['pride','greed','glutton','envy','wrath','sloth','thirst']);E.push({t:'sinWake',k:st.sinCh});}st.endLayer=CH.to;st.layer=CH.from;st.cont=1;st.hp=Math.min(st.maxHp,st.hp+Math.ceil(st.maxHp*.3));st.row=-1;st.col=null;st.maps[st.layer]=warpMap(D,st,genMap(D,st,st.layer));st.screen='map';E.push({t:'layer',n:st.layer});break;}
   case 'CH_END':{if(st.screen!=='chask')return fail('現在不能');st.layer=st.endLayer||3;st.layer--;nextAfterBoss(D,st,E);break;}
@@ -9303,6 +9905,7 @@ function apply(D,st0,a){CARDS_REF=D.cards;const st=clone(st0);CUR=st;const E=[];
    else if(id==='home')st.homeBonus=(st.homeBonus||0)+5;else if(id==='letter')st.next.draw=(st.next.draw||0)+1;else if(id==='guard')st.next.shade=3;else if(id==='remember')st.next.flame=1;
    E.push({t:'boughtX',id});break;}
   case 'HOLD':{if(st.screen!=='combat'||!TL(st,'cl_write1b'))return fail('還不會');const c=st.combat;if(c.held)return fail('這一場已經夾過書籤了');const x=c.hand[a.i];if(!x)return fail('沒有這張');x.hold=1;c.held=1;E.push({t:'hold'});break;}
+  case 'PURIFY':{if(st.screen!=='rest'||st.flags.rested)return fail('不能休息');if(!D.taint||!D.taint.restPurify)return fail('現在不能');const x=st.deck.find(y=>y.uid===a.uid&&y.tn>0);if(!x)return fail('這張沒有污染');x.tn=0;st.stats.rests=(st.stats.rests||0)+1;E.push({t:'purify',id:x.id});backToMap(D,st,E);break;}
   case 'PEEK_SWAP':{if(st.screen!=='combat'||!pas(D,st,'whisper'))return fail('聽不見');const c=st.combat;if((c.swapN||0)>=(OT(D,st,'B09',2)?2:1)&&c.swapped===c.turn)return fail('這回合已經換過了');if(c.draw.length<3)return fail('抽牌堆不夠三張');if(c.swapped!==c.turn)c.swapN=0;c.swapN=(c.swapN||0)+1;c.swapped=c.turn;pe(E,'whisper');if(OT(D,st,'B09',3)){c.block+=3;E.push({t:'block',n:3});}const L=c.draw.length;const t=c.draw[L-1];c.draw[L-1]=c.draw[L-3];c.draw[L-3]=t;if(!OT(D,st,'B09',1))selfHurt(D,st,2,E);if(st.hp<=0){loseRun(D,st,E);}break;}
   case 'SIGN':{if(st.screen!=='combat'||!pas(D,st,'pactSwap'))return fail('沒有契約可簽');const c=st.combat;if((c.signed||0)>=(OT(D,st,'B11',1)?2:1))return fail('這一場已經簽過了');const x=c.hand[a.i];const e=c.enemies.find(z=>z.uid===a.uid&&z.hp>0);if(!x||!e)return fail('要選一張手牌和一個敵人');c.signed=(c.signed||0)+1;if(OT(D,st,'B11',2))c.energy++;if(OT(D,st,'B11',3))addSt(e,'pact',3);c.hand.splice(a.i,1);if(!x.temp)c.exh.push(strip(x));pe(E,'pactSwap');
    const m=e.intent||{};if(m.a){const n=dmgCalc(m.a,e,c)*(m.h||1);c.block+=n;E.push({t:'block',n});}else draw(D,st,2,E);e.intent={i:-1,n:'停手',idle:1};E.push({t:'lie',uid:e.uid});break;}
@@ -9501,7 +10104,7 @@ function rankOf(d){return d.t==='x'?'x':d.bl?'origin':d.r;}
 function tagDef(k){return D.personas[k]||D.desires[k]||D.hobbies[k]||{n:k};}
 function tagKind(k){return D.personas[k]?'人格':D.desires[k]?'慾望':'癖好';}
 function tagShort(k){const n=tagDef(k).n;return n.length>5?n.slice(0,4)+'…':n;}
-function cardHtml(c,extra,cls){if(c.pl==null&&typeof st!=='undefined'&&st&&st.screen!=='over'&&st.polS>0&&((D.cards[c.id]||{}).bl||(D.cards[c.id]||{}).tag)&&(D.cards[c.id]||{}).t!=='x')c=Object.assign({},c,{pl:st.polS});if(c.fg==null){const F=(typeof st!=='undefined'&&st&&st.screen!=='over'&&st.fg)||(meta&&meta.forge)||{};if(F[c.id])c=Object.assign({},c,{fg:F[c.id]});}const d=C.cardDef(D,c);const k=C.cost(D,c,st&&st.combat?C.phaseOf(st):undefined);const rk=rankOf(d);return `<div class="card ${d.t} ch_${d.ch} ${(c.fa||c.fc)?'f_'+(c.fa||c.fc):''} ${c.fa?'fsteal':''} ${d.rr==='ring'?'rkring rg_'+d.rk:''} ${d.fc?'fthree':''} rk${rk==='x'?'x':rk==='origin'?'o':rk} tier${d.basic?0:(d.r||0)} ${d.tag?'tagc':''}  ${c.fg?'fg'+c.fg:''} ${c.pl?'pl pl'+Math.min(4,polTier(c.pl))+(c.pl>=4?' plv':'')+(c.pl>=7?' plx':''):''} ${c.tax?'taxed':''} ${c.oil?'oiled':''} ${c.lock?'locked':''} ${c.ring?'ring':''} ${c.scar?'sc'+(c.scar>=9?3:c.scar>=4?2:1):''} ${cls||''}${typeof meta!=='undefined'&&meta&&meta.track===c.id?' trk':''}${!d.fourth&&C.desc(D,c).length>40?' lng':''}" data-cid="${c.id}" data-cup="${c.up?1:0}" data-cfg="${c.fg||0}" data-cpl="${c.pl||0}" data-cfc="${c.fc||''}" data-cfa="${c.fa||''}" ${d.bl&&ORC[d.bl]?`style="--oc:${ORC[d.bl]}"`:''} ${extra||''}>${typeof meta!=='undefined'&&meta&&meta.track===c.id?'<b class="trkb">釘羽</b>':''}<div class="ci" style="background-image:url(${d.img})"></div>${d.tag?`<div class="rk tg">${esc(tagShort(d.tag))}</div>`:`<div class="rk">${D.rarity[rk].n}</div>`}<div class="hn">${esc(d.n)}</div><i class="crest">${d.basic?'':d.r>=3?'✦':d.r===2?'◆':''}</i><i class="gems">${'◆'.repeat(d.basic?0:Math.max(0,Math.min(3,d.r||0)))}</i>${c.fg?`<div class="fgb">${'★'.repeat(c.fg)}</div>`:''}${c.pl?`<div class="plb">${c.pl>7?'深'+(CNN2[c.pl-7]||''):'染'+CNN2[c.pl]}</div>`:''}${d.t!=='x'?`<div class="cc">${k}</div>`:''}<div class="cn ${c.up?'up':''}">${esc(d.n)}</div>${puiNote(d)?`<i class="pnote">${esc(puiNote(d))}</i>`:''}${!d.fourth&&C.desc(D,c).length>40?'<i class="lp">長按看全部</i>':''}<div class="cd${!d.fourth&&C.desc(D,c).length>40?' long':''}">${d.fourth?esc(fourthTxt()):esc(C.desc(D,c))}${c.scar?`<br><span style="color:#ff9aa8">疤 ${c.scar}${Math.floor(c.scar/3)?'（+'+Math.min(4,Math.floor(c.scar/3))+'）':''}</span>`:''}</div></div>`;}
+function cardHtml(c,extra,cls){if(c.pl==null&&typeof st!=='undefined'&&st&&st.screen!=='over'&&st.polS>0&&((D.cards[c.id]||{}).bl||(D.cards[c.id]||{}).tag)&&(D.cards[c.id]||{}).t!=='x')c=Object.assign({},c,{pl:st.polS});if(c.fg==null){const F=(typeof st!=='undefined'&&st&&st.screen!=='over'&&st.fg)||(meta&&meta.forge)||{};if(F[c.id])c=Object.assign({},c,{fg:F[c.id]});}const d=C.cardDef(D,c);const k=C.cost(D,c,st&&st.combat?C.phaseOf(st):undefined);const rk=rankOf(d);return `<div class="card ${d.t} ch_${d.ch} ${(c.fa||c.fc)?'f_'+(c.fa||c.fc):''} ${c.fa?'fsteal':''} ${d.rr==='ring'?'rkring rg_'+d.rk:''} ${d.fc?'fthree':''} ${c.tn?'tnt tn'+Math.min(3,c.tn):''} rk${rk==='x'?'x':rk==='origin'?'o':rk} tier${d.basic?0:(d.r||0)} ${d.tag?'tagc':''}  ${c.fg?'fg'+c.fg:''} ${c.pl?'pl pl'+Math.min(4,polTier(c.pl))+(c.pl>=4?' plv':'')+(c.pl>=7?' plx':''):''} ${c.tax?'taxed':''} ${c.oil?'oiled':''} ${c.lock?'locked':''} ${c.ring?'ring':''} ${c.scar?'sc'+(c.scar>=9?3:c.scar>=4?2:1):''} ${cls||''}${typeof meta!=='undefined'&&meta&&meta.track===c.id?' trk':''}${!d.fourth&&C.desc(D,c).length>40?' lng':''}" data-cid="${c.id}" data-cup="${c.up?1:0}" data-cfg="${c.fg||0}" data-cpl="${c.pl||0}" data-cfc="${c.fc||''}" data-cfa="${c.fa||''}" data-ctn="${c.tn||0}" ${d.bl&&ORC[d.bl]?`style="--oc:${ORC[d.bl]}"`:''} ${extra||''}>${typeof meta!=='undefined'&&meta&&meta.track===c.id?'<b class="trkb">釘羽</b>':''}${c.tn?`<b class="tnb">${'●'.repeat(Math.min(3,c.tn))}</b>`:''}<div class="ci${c.tn&&!(D.taintArt||{})[c.id]?' tntfx':''}" style="background-image:url(${c.tn&&(D.taintArt||{})[c.id]?D.taintArt[c.id]:d.img})"></div>${d.tag?`<div class="rk tg">${esc(tagShort(d.tag))}</div>`:`<div class="rk">${D.rarity[rk].n}</div>`}<div class="hn">${esc(d.n)}</div><i class="crest">${d.basic?'':d.r>=3?'✦':d.r===2?'◆':''}</i><i class="gems">${'◆'.repeat(d.basic?0:Math.max(0,Math.min(3,d.r||0)))}</i>${c.fg?`<div class="fgb">${'★'.repeat(c.fg)}</div>`:''}${c.pl?`<div class="plb">${c.pl>7?'深'+(CNN2[c.pl-7]||''):'染'+CNN2[c.pl]}</div>`:''}${d.t!=='x'?`<div class="cc">${k}</div>`:''}<div class="cn ${c.up?'up':''}">${esc(d.n)}</div>${puiNote(d)?`<i class="pnote">${esc(puiNote(d))}</i>`:''}${!d.fourth&&C.desc(D,c).length>40?'<i class="lp">長按看全部</i>':''}<div class="cd${!d.fourth&&C.desc(D,c).length>40?' long':''}">${d.fourth?esc(fourthTxt()):esc(C.desc(D,c))}${c.scar?`<br><span style="color:#ff9aa8">疤 ${c.scar}${Math.floor(c.scar/3)?'（+'+Math.min(4,Math.floor(c.scar/3))+'）':''}</span>`:''}</div></div>`;}
 function fourthTxt(){const F=D.T.FOURTH_BOWL;const n=st&&st.fourthN!=null?st.fourthN:(meta.fourth||0);return F.runs[Math.min(n,F.runs.length-1)]+(n>=8?'（這一局，可以打出一次：所有敵人停手一回合）':'（不能打出，也拿不掉）');}
 const TYPE={a:'攻擊',s:'技能',p:'能力',x:'詛咒'};
 
@@ -9566,7 +10169,7 @@ function phaseEvLine(){if(!st)return '';let L=null;const P=D.T.PHASE_EV||{};if(s
 let CLP='h';function clPhaseCheck(){if(!st||st.ch!=='cl'||!st.combat){CLP=clPhase();return;}const cp=clPhase();const rank={h:0,dim:1,low:2};if(rank[cp]>rank[CLP]){const S=((D.T.CL_STAGES||{})[st.origin||'lamp']||{})[cp];if(S)toast(`<b>${cp==='low'?'燈將熄':'燈搖'}</b><br><small style="color:#a8c0e0">${esc(S.look)}</small><br>克勞德：${esc(S.line[2])}`);}CLP=cp;}
 function meImg(){const c=st.combat;const o=C.originOf(D,st);if(st.ch==='gu')return D.chars.gu.img;if(st.ch==='yx')return skinImg('yx')||((st.desire==='greed'||st.desire==='wrath')?D.inbox+'yx_desire_'+st.desire+'.webp':D.chars.yx.img);if(st.ch==='cl'){let cp=clPhase();if(cp==='h'&&st.pol>=4)cp='low';else if(cp==='h'&&st.pol>=2)cp='dim';return cp==='low'?(o.low||I+'c_sad.webp'):cp==='dim'?(o.dim||D.chars.cl.ex.worry):(skinImg('cl')||o.img||D.chars.cl.img);}if(c&&c.yx)return D.inbox+'yx_base.webp';const ph=C.phaseOf(st);if(ph==='mix'){const sb=C.subOf(D,st);return window._hy&&window._hy[st.origin+'_'+st.sub]===0?(o.full||sb.full||o.half||o.img):(D.inbox+'y_hy_'+st.origin+'_'+st.sub+'.webp');}return ph==='full'?(o.full||o.half||o.img||D.chars.yy.img):(ph==='half'||st.pol>=2)?(o.half||o.img||D.chars.yy.img):(skinImg('yy')||o.img||D.chars.yy.img);}
 function meHtml(){return meHtml0()+yhHud();}
-function yhHud(){if(!st||st.ch!=='yy'||!st.combat)return '';const c=st.combat;const F=c.full?'all':(c.face||'yan');const R0=['devotion','pride','envy','obsess','cruelty','greed','wrath','sweetmalice','vanity','glutton'];const lit=st.rings||{};return `<div class="facebadge f_${F}" onclick="event.stopPropagation();faceInfo()">${F==='all'?'合':(D.faceName[F]||'')}</div><div class="ringhud${c.ten?' ten':''}" onclick="event.stopPropagation();ringInfo()">${R0.map(r=>`<i class="${lit[r]||c.ten?'on':''}" style="background-image:url(${D.inbox}ring_${r}.webp)"></i>`).join('')}</div>${c.ten?`<div class="tenbar">十戒全開　第 ${Math.min(3,3-(c.tenLeft==null?2:c.tenLeft)+(c.full===2?1:0))}／3 回合${c.tenChain?`<b>連動 +${c.tenChain}</b>`:''}</div>`:''}`;}
+function yhHud(){if(!st||st.ch!=='yy'||!st.combat)return '';const c=st.combat;const F=c.full?'all':(c.face||'yan');const R0=['devotion','pride','envy','obsess','cruelty','greed','wrath','sweetmalice','vanity','glutton'];const lit=st.rings||{};const sat=c.sat||0;return `${sat?`<div class="satb" onclick="event.stopPropagation();satInfo()">饜 <b>${sat}</b></div>`:''}<div class="facebadge f_${F}" onclick="event.stopPropagation();faceInfo()">${F==='all'?'合':(D.faceName[F]||'')}</div><div class="ringhud${c.ten?' ten':''}" onclick="event.stopPropagation();ringInfo()">${R0.map(r=>`<i class="${lit[r]||c.ten?'on':''}" style="background-image:url(${D.inbox}ring_${r}.webp)"></i>`).join('')}</div>${c.ten?`<div class="tenbar">十戒全開　第 ${Math.min(3,3-(c.tenLeft==null?2:c.tenLeft)+(c.full===2?1:0))}／3 回合${c.tenChain?`<b>連動 +${c.tenChain}</b>`:''}</div>`:''}`;}
 function meHtml0(){const c=st.combat;const ph=C.phaseOf(st);const fb=ph==='mix'?(C.originOf(D,st).full||C.originOf(D,st).img||D.chars.yy.img):D.chars[st.ch].img;return `<img class="pme ${c&&c.yx?'yx':ph==='mix'?'full':ph} cl_${clPhase()} pol${st.pol||0}" src="${meImg()}" onerror="if(window._hy&&'${st.origin}_${st.sub}')(window._hy=window._hy||{})['${st.origin}_${st.sub}']=0;this.onerror=null;this.src='${fb}'" onclick="meInfo()" alt="">`;}
 function extraBtns(){const c=st.combat;const O=C.originOf(D,st),S=C.subOf(D,st);let h='';const pv=k=>O.passive===k||(st.sub&&S.passive===k&&C.subOn(D,st));
  if(pv('whisper')){const top=c.draw.slice(-3).reverse();h+=`<div class="alt" style="color:#bfe0d0">牌堆頂：${top.map(x=>esc(C.cardDef(D,x).n)).join('、')||'空'} <button class="lampB" style="padding:1px 7px;font-size:12px" ${c.swapped===c.turn||c.draw.length<3?'disabled':''} onclick="event.stopPropagation();peekSwap()">換（失 2 生命）</button></div>`;}
@@ -9672,7 +10275,7 @@ function fanHand(){const el=$('hand');const cs=[...el.children];const n=cs.lengt
  cs.forEach((e,i)=>{const k=i-mid;e.style.left=(W/2+k*sp-56)+'px';e.style.zIndex=10+i;const up=e.classList.contains('kp')?8:0;e.style.transform=e.classList.contains('sel')?`translateY(-52px) scale(1.14)`:`translateY(${k*k*sink-up}px) rotate(${k*th}deg)`;e.dataset.base=e.style.transform;});}
 addEventListener('resize',()=>{if(st&&st.screen==='combat')fanHand();});
 function tapCard(i){if(busy||Date.now()-(window._noClick||0)<350)return;const c=st.combat;
- if(window._eat){const E2=window._eat;if(i===E2.i){window._eat=0;flash('不吃了');drawCombat();return;}const x=c.hand[i];if(!x)return;if(D.cards[x.id].t==='x'){flash('詛咒吃不下去');return;}window._eat=0;window._eatU=x.uid;doPlay(E2.i,E2.uid);return;}
+ if(window._eat){const E2=window._eat;if(i===E2.i){window._eat=0;flash('算了');drawCombat();return;}const x=c.hand[i];if(!x)return;if(D.cards[x.id].t==='x'){flash('詛咒吃不下去');return;}if(E2.k==='taint'&&(x.tn||0)>=3){flash('這張已經吃到底了');return;}window._eat=0;window._eatU=x.uid;doPlay(E2.i,E2.uid);return;}
  if(window._hold){window._hold=0;doAct({type:'HOLD',i},'這張先留著，下回合再寫完');return;}
  if(window._sign===1){window._sign={i};sel=i;drawCombat();flash('再點要簽給的敵人');return;}
  if(sel===i&&c.hand[i].id==='x_fourth'&&st.fourthN>=8&&!st.flags.fourthUsed){sel=null;doPlay(i,null);return;}
@@ -9693,7 +10296,7 @@ function edge(k,ms){const e=$('edge');e.className=k;setTimeout(()=>{if(e.classNa
 function comboShow(n){const e=$('combo');if(n<3){e.classList.remove('on');return;}e.textContent=n+' 連擊';e.style.fontSize=Math.min(52,22+n*4)+'px';e.classList.remove('on');void e.offsetWidth;e.classList.add('on');sfx('sfx_combo',1+(n-3)*.08);clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('on'),1400);}
 function tapFoe(uid){if(window._sign&&window._sign.i!=null){const i=window._sign.i;window._sign=0;sel=null;const r=doAct({type:'SIGN',i,uid});if(r)toast('契約簽好了：牠這回合<b>停手</b>');return;}if(window._eye){window._eye=0;const r=act({type:'EYE',uid});if(r){sfx('sfx_reveal');toast('顧沉舟：'+esc(D.T.UNLOCK_CHARS.gu.inRun[1][2]));drawCombat();}return;}if(busy||sel==null)return;const c=st.combat;if(!C.needsTarget(D,c.hand[sel]))return;doPlay(sel,uid);}
 function playSel(){if(sel==null)return;const c=st.combat;const a=C.alive(c);doPlay(sel,a.length===1?a[0].uid:null);}
-async function doPlay(i,uid){const card=st.combat.hand[i];if(card&&st.ch==='yy'&&C.cardDef(D,card).fx.some(f=>f[0]==='faceNext')&&!window._faceP){const A=st.huang?['yan','xi','huang']:['yan','xi'];modal(`<h3 style="color:var(--gold);margin-top:0">下一回合，讓誰在前面？</h3><p>${A.map(f=>`<button class="main" onclick="window._faceP='${f}';closeModal();doPlay(${i},${uid?`'${uid}'`:'null'})">${D.faceName[f]}</button>`).join(' ')} <button onclick="closeModal()">取消</button></p>`);return;}if(card&&C.cardDef(D,card).fx.some(f=>f[0]==='eatX2')&&!window._eatU){if(st.combat.hand.filter(x=>x!==card&&D.cards[x.id].t!=='x').length===0){flash('手上沒有能吃的牌');return;}window._eat={i,uid};sel=i;flash('點一張要吃掉的手牌（再點這張取消）');drawCombat();return;}busy=true;const before=snapshot();sel=null;ghostFly(i,uid);const eu=window._eatU;window._eatU=null;const fp=window._faceP;window._faceP=null;const r=act({type:'PLAY',i,target:uid,cardUid:eu,face:fp});if(!r){busy=false;drawCombat();return;}
+async function doPlay(i,uid){const card=st.combat.hand[i];if(card&&st.ch==='yy'&&C.cardDef(D,card).fx.some(f=>f[0]==='faceNext')&&!window._faceP){const A=st.huang?['yan','xi','huang']:['yan','xi'];modal(`<h3 style="color:var(--gold);margin-top:0">下一回合，讓誰在前面？</h3><p>${A.map(f=>`<button class="main" onclick="window._faceP='${f}';closeModal();doPlay(${i},${uid?`'${uid}'`:'null'})">${D.faceName[f]}</button>`).join(' ')} <button onclick="closeModal()">取消</button></p>`);return;}{const PK=card?C.cardDef(D,card).fx.find(f=>f[0]==='eatX2'||f[0]==='taint'):null;if(PK&&!window._eatU){const can=st.combat.hand.filter(x=>x!==card&&D.cards[x.id].t!=='x'&&(PK[0]!=='taint'||(x.tn||0)<3));if(can.length===0){if(PK[0]==='eatX2'){flash('手上沒有能吃的牌');return;}}else{window._eat={i,uid,k:PK[0]};sel=i;flash(PK[0]==='taint'?'點一張手牌餵下去（再點這張取消）':'點一張要吃掉的手牌（再點這張取消）');drawCombat();return;}}}busy=true;const before=snapshot();sel=null;ghostFly(i,uid);const eu=window._eatU;window._eatU=null;const fp=window._faceP;window._faceP=null;const r=act({type:'PLAY',i,target:uid,cardUid:eu,face:fp});if(!r){busy=false;drawCombat();return;}
  if(st.combat&&C.cardDef(D,card).t==='a')comboShow(st.combat.atkN);
  await animate(r.events,before,card);busy=false;after(r);}
 function snapshot(){return st.combat?{en:st.combat.enemies.map(e=>({uid:e.uid,hp:e.hp})),hp:st.hp}:null;}
@@ -9711,12 +10314,22 @@ async function animate(evs,before,card){
   else if(e.t==='bossPhase2'){sfx('sfx_boss_phase2');edge('red',800);const T=(D.bossPhase2Text||{})[e.id];fxWord($('f_'+e.uid)||$('me'),'第二階段','#ff4a5a');if(T&&T.line)bubble(String(T.line[0]).split(':')[0],T.line[2],3200);}
   else if(e.t==='sinWake'){const S=(D.sinCh||{})[e.k];if(S){sfx('sfx_sin_wake');toast(`這一章醒來的是<b>${esc(S.n)}</b><br><small>${esc(S.d)}</small>`);}}
   else if(e.t==='sinHit'){flash(e.k==='greed'?'貪：被搶走 3 渡鴉幣':'');}
+  else if(e.t==='taint'){sfx('sfx_corrupt',1.2);if(Math.random()<.5)tBark('polluted');}
+  else if(e.t==='taintPlay'){fxWord($('me'),'饜 +1','#c0415a');edge('red',260);}
+  else if(e.t==='chain'){sfx('sfx_steal',.8);edge('red',420);fxWord($('me'),'停不下來','#ff4a5a');if(!window._chB||Date.now()-window._chB>4000){window._chB=Date.now();tBark('chain');}await wait(260);}
+  else if(e.t==='binge'){sfx('sfx_steal',1.1);fxWord($('me'),'還要','#ff4a5a');await wait(220);}
+  else if(e.t==='withdrawal'){sfx('sfx_hurt',.7);edge('purple',700);toast(`戒斷：這回合沒吃，失去 <b>${e.n}</b> 生命`);tBark('withdrawal');}
+  else if(e.t==='fullAlien'){fxWord($('me'),'滿了更空','#c99be2');if(Math.random()<.4)tBark('fullToAlien');}
+  else if(e.t==='mergeTaint'){const L=((D.taintText||{}).mergeTaint||{}).line;toast(`合相：<b>${e.n}</b> 張牌被一起吃過，污染 +1（這局都在）`);if(L)bubble('yy',L[2],3200);}
+  else if(e.t==='sat'&&e.recall){const L=((D.yhText||{}).callback||{}).after;if(L)setTimeout(()=>bubble('yy',L[2],3200),1600);}
+  else if(e.t==='hoard'){fxWord($('me'),'都是我的','#ff4a5a');}
   else if(e.t==='lastStand'){sfx('sfx_recall');toast('渡鴉之鎖扣住了。<b>還剩 1 口氣。</b>');edge('purple',600);}
   else if(e.t==='rot'){sfx('sfx_trait_rot');flash('腐：這回合少 1 點能量');}
   else if(e.t==='scheme'){sfx('sfx_trait_scheme');flash('算計：一張手牌被換成詛咒');}
   else if(e.t==='pierce'){flash('格擋被打掉 '+e.n);}
   else if(e.t==='eatX2'){fxWord($('me'),'×2','#ff8fd0');}
   else if(e.t==='mark'){fxWord($('f_'+e.uid)||$('me'),'標記','#ffcf6b');}
+  if(st&&st.ch==='yy'&&D.battleBark&&(!window._bbT||Date.now()-window._bbT>9000)){const BB=D.battleBark;let k=null;if(e.t==='play'&&Math.random()<.07)k='play';else if(e.t==='hurt'&&e.n>0&&Math.random()<.15)k=(st.hp>0&&st.hp<st.maxHp*.3)?'lowHp':'hurt';if(k&&BB[k]&&BB[k].length&&!(D.cardLine&&D.cardLine[e.id])){window._bbT=Date.now();const x=BB[k][Math.floor(Math.random()*BB[k].length)];bubble('yy',x[2],2600);}}
   if(e.t==='play'&&D.cards[e.id]&&D.cards[e.id].faceLine&&st.combat){const FL=D.cards[e.id].faceLine[st.combat.face||'yan'];if(FL)bubble('yy',FL[2],2800);}
   if(e.t==='play'&&D.cardLine&&D.cardLine[e.id]){const L=D.cardLine[e.id];bubble(String(L[0]).split(':')[0],L[2],3000);}
   if(e.t==='setOn'){fxWord($('me'),'成套','#ffd56b');sfx('sfx_unlock',1.3);}
@@ -9786,7 +10399,7 @@ function drawPage(){const s=st.screen;const L=D.layers[st.layer]||D.layers[D.lay
   if(p.cards)h+=`<h3 style="color:var(--gold)">帶著的一頁：選一張帶走</h3><div class="cards">${p.cards.map((id,i)=>cardHtml({id,up:0},`onclick="if(act({type:'PREP_CARD',i:${i}}))drawPage()"`)).join('')}</div>`;
   if(p.remove)h+=`<h3 style="color:var(--gold)">剪掉的線頭：移除一張起始牌</h3><div class="cards">${st.deck.map(c=>cardHtml(c,`onclick="prepRemove(${c.uid})"`)).join('')}</div>`;
   h+=`<p style="text-align:center;margin-top:18px"><button class="main" onclick="prepDone()">${p.relics||p.remove||p.cards?'就這樣，出發':'出發'}</button></p>`;}
- else if(s==='rest'){const K=st.kp||[];const curses=st.deck.filter(c=>D.cards[c.id].t==='x');h=`<h2>營火</h2><p class="big">火光很暖。可以在這裡歇一下。</p><button class="opt" onclick="rest()">休息<small>回復 ${Math.floor(st.maxHp*.3)+(st.relics.includes('teapot')?15:0)+(K.includes('m_rest')?5:0)} 點生命</small></button><button class="opt" onclick="smith()">磨亮一張牌<small>選一張牌強化</small></button>${st.persona==='lazy'?`<button class="opt" onclick="restX('SLEEP')">睡久一點<small>回滿生命，可是醒來時影子長了一點（異化值 +15）</small></button>`:''}${st.hobby==='tea'?`<button class="opt" onclick="restX('TEA')">泡茶<small>異化值 -25</small></button>`:''}${st.hobby==='letters'&&!st.flags.wrote?`<button class="opt" onclick="restX('WRITE')">寫信給下一次的自己<small>在信封裡留 30 渡鴉幣（不算休息）</small></button>`:''}${K.includes('m_purge')?`<button class="opt" onclick="purgeList()" ${curses.length?'':'disabled'}>淨火<small>${curses.length?'燒掉一張詛咒（燒了就不能休息）':'牌組裡沒有詛咒'}</small></button>`:''}`;
+ else if(s==='rest'){const K=st.kp||[];const curses=st.deck.filter(c=>D.cards[c.id].t==='x');h=`<h2>營火</h2><p class="big">火光很暖。可以在這裡歇一下。</p><button class="opt" onclick="rest()">休息<small>回復 ${Math.floor(st.maxHp*.3)+(st.relics.includes('teapot')?15:0)+(K.includes('m_rest')?5:0)} 點生命</small></button><button class="opt" onclick="smith()">磨亮一張牌<small>選一張牌強化</small></button>${st.persona==='lazy'?`<button class="opt" onclick="restX('SLEEP')">睡久一點<small>回滿生命，可是醒來時影子長了一點（異化值 +15）</small></button>`:''}${st.hobby==='tea'?`<button class="opt" onclick="restX('TEA')">泡茶<small>異化值 -25</small></button>`:''}${st.hobby==='letters'&&!st.flags.wrote?`<button class="opt" onclick="restX('WRITE')">寫信給下一次的自己<small>在信封裡留 30 渡鴉幣（不算休息）</small></button>`:''}${st.ch==='yy'&&D.taint&&st.deck.some(x=>x.tn>0)?`<button class="opt" onclick="purifyList()">${esc(((D.taintText||{}).restPurify||{}).opt||'斷')}<small>${esc(((D.taintText||{}).restPurify||{}).d||'不回血。選 1 張牌，污染歸 0。')}</small></button>`:''}${K.includes('m_purge')?`<button class="opt" onclick="purgeList()" ${curses.length?'':'disabled'}>淨火<small>${curses.length?'燒掉一張詛咒（燒了就不能休息）':'牌組裡沒有詛咒'}</small></button>`:''}`;
   if(window._purge)h+=`<h3 style="color:var(--gold)">選一張詛咒燒掉</h3><div class="cards">${curses.map(c=>cardHtml(c,`onclick="doPurge(${c.uid})"`)).join('')}</div><p style="text-align:center"><button onclick="window._purge=0;drawPage()">算了</button></p>`;}
  else if(s==='chest'){const id=st.reward.chest;h=`<h2>寶箱</h2>`+(id?`<div class="rel"><img src="${D.relics[id].ic}" alt=""><div><b>${D.relics[id].n}</b><small>${D.relics[id].d}</small></div></div>`:`<p class="big">箱子裡只有 ${st.reward.gold} 枚渡鴉幣。</p>`)+`<p><button class="main" onclick="leave()">繼續往下</button></p>`;}
  else if(s==='shop'){const sh=st.shop;const SX=st.desire&&D.shopX[st.desire];const say=(SX&&SX.say)||D.shopSay[st.desire]||'看看吧。用渡鴉幣就好。';h=`<h2>沒有臉的攤主</h2><p style="color:var(--dim)">「${esc(say)}」</p>${sh.x&&SX?`<div class="rel" style="border-color:#c9a0d8;${sh.x.sold?'opacity:.45':''}" ${sh.x.sold?'':'onclick="buyX()"'}><img src="${I}i_seal.webp" alt=""><div><b>${esc(SX.n)}　${sh.x.sold?'已買':sh.x.price+' 幣'}</b><small>${esc(SX.d)}（只有立了「${esc(D.desires[st.desire].n)}」才看得到）</small></div></div>`:''}<div class="cards">${sh.cards.map((it,i)=>`<div>${cardHtml({id:it.id,up:0},it.sold?'':`onclick="buyCard(${i})"`,it.sold?'no':'')}<span class="price">${it.sold?'已售出':it.price+' 幣'}</span></div>`).join('')}</div>
@@ -10143,19 +10756,21 @@ function f(){if(!document.hidden){x.clearRect(0,0,W,H);for(const p of P){p.t+=.0
   const parts=txt.split('。').map(x=>x.trim()).filter(Boolean);
   let body=parts.map(x=>`<p class="${/^成套/.test(x)?'setl':/^如果/.test(x)?'cnd':''}">${esc(x)}。</p>`).join('');
   if(!c.up&&d.u&&d.t!=='x'){const u=C.desc(D,Object.assign({},c,{up:1}));if(u!==txt)body+=`<p class="up">升級後：${esc(u)}</p>`;}
+  if(c.tn&&D.taint){const n=Math.min(3,c.tn);body+=`<div class="kw tnk"><b>污染 ${n} 層</b>數值 ×${D.taint.mul[n]}。每次打出失去 ${D.taint.hpCost[n]} 生命、異化 +${D.taint.alien[n]}、饜 +1。${n>=3?'<br>停不下來：打完以後，手上的污染牌會從最左邊開始自己打出去，每張再失去 2 生命。':''}</div>`;}
+  if((D.cards[c.id]||{}).fl)body+=`<p class="cfl">${esc(D.cards[c.id].fl)}</p>`;
   if(d.t!=='x'&&(d.ch==='yy'||d.ch==='yx'||d.ch==='any'||d.bl&&d.ch!=='cl'||d.tag)&&typeof st!=='undefined'&&st&&(st.ch==='yy')){const cur=c.fa||c.fc;body+=`<div class="kw"><b>三張臉</b>${['yan','xi','huang'].filter(f=>f!==cur&&(f!=='huang'||st.huang||d.fc)).map(f=>`<br><b class="fn_${f}">${D.faceName[f]}</b>：${esc(C.desc(D,Object.assign({},c,{fc:f,fa:null})))}`).join('')}</div>`;}
   const kws=Object.values(D.status||{}).filter(s=>s&&s.name&&txt.includes(s.name)).map(s=>`<b>${esc(s.name)}</b>：${esc(s.desc||'')}`);
   if(/成套/.test(txt))kws.push('<b>成套</b>：牌組裡同一個系列的牌夠多，這段才會生效。');
   if(/消耗/.test(txt))kws.push('<b>消耗</b>：打出後，這場戰鬥不再回來。');
   const grp=d.tag?tagDef(d.tag).n:d.bl?(((D.origins[(d.ch==='cl'?'cl_':'yy_')+d.bl])||{}).n||''):'';
   const rn=d.basic?'基本':(['基本','普通','罕見','稀有'][d.r||0]||'');
-  $('cdet').innerHTML=`<div class="big t${d.basic?0:(d.r||0)}"><div class="art" style="background-image:url(${d.img})">${d.t!=='x'?`<b>${k}</b>`:''}<span>${rn}・${TYPE2[d.t]||''}</span></div><h3>${esc(d.n)}${c.up?'＋':''}</h3><div class="meta">${grp?'系列：'+esc(grp):''}${c.fg?'　刻印 '+'★'.repeat(c.fg):''}${c.pl?'　污染 '+c.pl:''}</div><div class="body">${body}${kws.length?`<div class="kw">${kws.join('<br>')}</div>`:''}</div></div><small class="tip">點任何地方關掉</small>`;
+  $('cdet').innerHTML=`<div class="big t${d.basic?0:(d.r||0)}"><div class="art" style="background-image:url(${c.tn&&(D.taintArt||{})[c.id]?D.taintArt[c.id]:d.img})">${d.t!=='x'?`<b>${k}</b>`:''}<span>${rn}・${TYPE2[d.t]||''}</span></div><h3>${esc(d.n)}${c.up?'＋':''}</h3><div class="meta">${grp?'系列：'+esc(grp):''}${c.fg?'　刻印 '+'★'.repeat(c.fg):''}${c.pl?'　污染 '+c.pl:''}</div><div class="body">${body}${kws.length?`<div class="kw">${kws.join('<br>')}</div>`:''}</div></div><small class="tip">點任何地方關掉</small>`;
   $('cdet').classList.add('on');sfx&&sfx('sfx_card_lift');};
  window.cdetClose=function(){$('cdet').classList.remove('on');window._noClick=Date.now();};
  const stop=()=>{if(T){clearTimeout(T);T=null;}P=null;};
  document.addEventListener('pointerdown',e=>{const el=e.target.closest&&e.target.closest('.card[data-cid]');if(!el||$('cdet').classList.contains('on'))return;P={x:e.clientX,y:e.clientY};
   T=setTimeout(()=>{T=null;if(!P)return;window._noClick=Date.now()+400;if(typeof DRG!=='undefined'&&DRG){if(DRG.el){DRG.el.classList.remove('drag');DRG.el.style.transform=DRG.el.dataset.base||'';}DRG=null;}
-   cdetOpen({id:el.dataset.cid,up:+el.dataset.cup||0,fg:+el.dataset.cfg||undefined,pl:+el.dataset.cpl||undefined,fc:el.dataset.cfc||undefined,fa:el.dataset.cfa||undefined});},430);},true);
+   cdetOpen({id:el.dataset.cid,up:+el.dataset.cup||0,fg:+el.dataset.cfg||undefined,pl:+el.dataset.cpl||undefined,fc:el.dataset.cfc||undefined,fa:el.dataset.cfa||undefined,tn:+el.dataset.ctn||undefined});},430);},true);
  document.addEventListener('pointermove',e=>{if(P&&Math.hypot(e.clientX-P.x,e.clientY-P.y)>12)stop();},true);
  ['pointerup','pointercancel','scroll'].forEach(v=>document.addEventListener(v,stop,true));
  document.addEventListener('contextmenu',e=>{if(e.target.closest&&e.target.closest('.card[data-cid]'))e.preventDefault();});
@@ -10277,7 +10892,7 @@ function v24Again(){const L=window.LASTRUN;if(!L)return show('town');window.DAIL
 // ── v0.27 語凰嫣介面
 function faceInfo(){const c=st.combat;const F=c.full?'all':(c.face||'yan');const nx=c.faceNext||null;const A=st.huang?['yan','xi','huang']:['yan','xi'];toast(`<b>前臉：${F==='all'?'合相（三張臉同時）':D.faceName[F]}</b><br><small>嫣：厄契 +1、格擋 +2　熙：傷害 +3、打出失 1 生命、抽牌 +1　凰：第一張 2 費以上 -1、攻擊給虛弱、格擋牌回 1 生命</small><br><small>輪替：${A.map(f=>D.faceName[f]).join(' → ')}${nx?'　下一張：'+D.faceName[nx]:''}${st.huang?'':'　凰還沒醒'}</small>`);}
 function ringInfo(){const R0=['devotion','pride','envy','obsess','cruelty','greed','wrath','sweetmalice','vanity','glutton'];const lit=st.rings||{};const L=((D.TX||{}).V028||{}).newCards||{};const COND={devotion:'被克勞德喚回一次',pride:'打倒一個菁英，那場失去的生命不超過 10',envy:'同時持有 4 個遺物',obsess:'同一場戰鬥裡，同一張牌打出 3 次',cruelty:'一個敵人身上同時有 3 種負面狀態',greed:'同時持有 200 渡鴉幣',wrath:'一場戰鬥失去 25 生命以上，仍然打贏',sweetmalice:'一個敵人被反傷或其他敵人的攻擊打倒',vanity:'以滿血結束一場戰鬥',glutton:'牌組達到 30 張'};
- modal(`<h2 style="color:var(--gold);margin-top:0">十指戒　${Object.keys(lit).length}／10</h2><p class="hint">亮起一枚，牌組多一張它的牌。同時亮 5 枚：戒指牌升級（稱號「半掌」）。十枚全亮：下一次異化到 100，是十戒全開。</p>${R0.map(r=>{const c=D.cards['yy_r_'+r];const t=L['yy_r_'+r]||{};return `<div class="rel" style="${lit[r]?'border-color:var(--gold)':'opacity:.7'}"><img src="${D.inbox}ring_${r}.webp" alt=""><div><b>${esc(c?c.n:r)} <small style="color:var(--dim)">${esc(t.finger||'')}${lit[r]?'・亮著':''}</small></b><small>${esc(COND[r])}</small></div></div>`;}).join('')}<p><button onclick="closeModal()">關閉</button></p>`);}
+ modal(`<h2 style="color:var(--gold);margin-top:0">十指戒　${Object.keys(lit).length}／10</h2><p class="hint">亮起一枚，牌組多一張它的牌。同時亮 5 枚：戒指牌升級（稱號「半掌」）。十枚全亮：下一次異化到 100，是十戒全開。</p>${R0.map(r=>{const c=D.cards['yy_r_'+r];const t=L['yy_r_'+r]||{};return `<div class="rel" onclick="closeModal();desireStateShow('${r}')" style="${lit[r]?'border-color:var(--gold)':'opacity:.7'}"><img src="${D.inbox}ring_${r}.webp" alt=""><div><b>${esc(c?c.n:r)} <small style="color:var(--dim)">${esc(t.finger||'')}${lit[r]?'・亮著':''}</small></b><small>${esc(COND[r])}</small></div></div>`;}).join('')}<p><button onclick="closeModal()">關閉</button></p>`);}
 function ringDesire(id){if(!meta.adultOk||!st||st.desire!==id)return;const u=D.inbox+'y_desire_'+id+'.webp';const o=$('ovl');if(!o)return;o.style.backgroundImage=`url(${u})`;o.innerHTML='';o.classList.add('on');setTimeout(()=>o.classList.remove('on'),1100);}
 
 // ── v0.28 深潛 20 階、罪、首領第二階段
@@ -10295,6 +10910,50 @@ function v29Research(){$('btitle').textContent='牌冊';const R0=D.research||{};
 function polAK(){try{const ch=st&&st.ch&&st.ch!=='gu'?(st.ch==='yx'?'yy':st.ch):'yy';return Math.max(0,Math.min(4,C.polStage((meta.pol||{})[ch]||0)||0));}catch(e){return 0;}}
 
 function ascRunInfo(){const n=st.asc||0;toast(`<b>深潛 ${n}${D.asc&&D.asc[n]?'・'+esc(D.asc[n].n):''}</b><br><small>${(D.asc||[]).slice(1,n+1).map((a,i)=>(i+1)+'. '+esc(a.d)).join('<br>')}</small>`);}
+
+// ── v0.31 污染化介面
+function tBark(k){const L=(D.taintText||{})[k];if(Array.isArray(L)&&L.length){const x=L[Math.floor(Math.random()*L.length)];bubble('yy',x[2],3000);}}
+function satInfo(){const c=st.combat;toast(`<b>饜 ${c.sat||0}</b><br><small>每打出一張污染牌 +1。這回合一張污染牌都沒打，回合結束失去「饜」那麼多生命。克勞德喚回時歸 0；「空心」可以把它換成格擋。</small>`);}
+function purifyList(){const L=st.deck.filter(x=>x.tn>0);modal(`<h3 style="color:var(--gold);margin-top:0">${esc(((D.taintText||{}).restPurify||{}).opt||'斷')}</h3><p class="hint">選一張牌，把污染吐出來。這次休息不回血。</p><div class="cards">${L.map(x=>cardHtml(x,`onclick="doPurify('${x.uid}')"`)).join('')}</div><p><button onclick="closeModal()">算了</button></p>`);}
+function doPurify(uid){closeModal();const r=act({type:'PURIFY',uid:isNaN(+uid)?uid:+uid});if(!r.ok){const r2=act({type:'PURIFY',uid});if(!r2.ok){flash(r2.error||r.error);return;}}sfx('sfx_recall');const L=(((D.taintText||{}).restPurify||{}).lines)||[];if(L.length){const x=L[Math.floor(Math.random()*L.length)];setTimeout(()=>bubble('yy',x[2],3200),300);}route();}
+function desireStateShow(id){const S=(D.desireState||{})[id];if(!S)return;const lit=(st&&st.rings||{})[id];modal(`<h2 style="color:var(--gold);margin-top:0">${esc(S.n)}・${esc(S.ring||'')}<small style="color:var(--dim);font-size:13px">　${esc(S.finger||'')}</small></h2>${meta.adultOk&&lit?`<img src="${D.inbox}${S.art}.webp" alt="" style="width:100%;max-height:46vh;object-fit:contain;border-radius:6px">`:''}<p class="big" style="line-height:1.8">${lit?esc(S.see||''):'這一枚還沒亮。亮了才看得見她被它吃成什麼樣子。'}</p>${lit&&S.line?`<p class="big"><b style="color:var(--gold)">語凰嫣</b>　${esc(S.line[2])}</p>`:''}<p><button onclick="closeModal();ringInfo()">回去</button></p>`);}
+</script>
+<script>
+/* v0.29 卡牌自動縮字：放在 hex/index.html 的 core.js 之後、body 結尾之前。
+   不改 cardHtml；用 MutationObserver 抓到新卡就量一次。
+   規則：牌名 13→9px（只看寬）；效果 11→9px；還裝不下就加 fit-tall（圖縮短、效果區變高）再 10→8px；8px 仍裝不下才加 fit-cut 淡出，長按照舊看全文。 */
+(function(){
+  function over(el,w){return w?el.scrollWidth>el.clientWidth+1:el.scrollHeight>el.clientHeight+1;}
+  function fitBox(el,max,min,step,w){
+    el.style.fontSize=max+'px';
+    var s=max;
+    while(s>min&&over(el,w)){s-=step;el.style.fontSize=s+'px';}
+    return !over(el,w);
+  }
+  function fitCard(c){
+    if(!c||!c.offsetWidth)return; // 還沒顯示的卡等下次
+    var cn=c.querySelector('.cn'),cd=c.querySelector('.cd');
+    if(c.querySelector('.pnote'))c.classList.add('has-pnote');
+    if(cn)fitBox(cn,13,9,0.5,1);
+    if(cd){
+      c.classList.remove('fit-tall');
+      var ok=fitBox(cd,11,9,0.5);
+      if(!ok){c.classList.add('fit-tall');ok=fitBox(cd,10,8,0.5);}
+      cd.classList.toggle('fit-cut',!ok);
+    }
+    c.dataset.fit=1;
+  }
+  function fitAll(root){(root||document).querySelectorAll('.card:not([data-fit])').forEach(fitCard);}
+  window.fitCardText=function(){document.querySelectorAll('.card').forEach(function(c){delete c.dataset.fit;});fitAll();};
+  var q=0;
+  new MutationObserver(function(){if(q)return;q=requestAnimationFrame(function(){q=0;fitAll();});})
+    .observe(document.body,{childList:true,subtree:true});
+  window.addEventListener('resize',function(){window.fitCardText();});
+  var t2=0;document.addEventListener('click',function(){clearTimeout(t2);t2=setTimeout(fitAll,60);},true);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){window.fitCardText();});
+  fitAll();
+})();
+
 </script>
 </body>
 </html>
